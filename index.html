@@ -5582,7 +5582,27 @@ function renderDashboard(d){
     {id:'acc-coll',    icon:'💰', title:'Collection Efficiency',  body:`Average payment delay across your portfolio is ${avgDelay} days. ${avgDelay>30?'This is significantly above healthy levels (15–20 days).':avgDelay>20?'Slight improvement in follow-up can reduce this.':'Collection efficiency is acceptable.'}`},
   ];
 
-  return `<div id="dash-content" style="height:100%;display:grid;grid-template-rows:36px 1fr 1fr 1fr;gap:14px;font-family:inherit">
+  // Line path length approximation for draw animation
+  const lineLen = pts.reduce((acc,p,i)=>i===0?0:acc+Math.hypot(p.x-pts[i-1].x,p.y-pts[i-1].y),0);
+
+  return `<style>
+@keyframes cfFadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cfFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes cfRingFill{from{stroke-dasharray:0 ${circ.toFixed(1)}}to{stroke-dasharray:${dash.toFixed(1)} ${circ.toFixed(1)}}}
+@keyframes cfDrawLine{from{stroke-dashoffset:${Math.ceil(lineLen+20)}}to{stroke-dashoffset:0}}
+@keyframes cfBarGrow{from{width:0%}to{width:var(--bar-w)}}
+@keyframes cfPulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes cfCountUp{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes cfSlideRight{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+.cf-card{animation:cfFadeUp .5s cubic-bezier(.22,.68,0,1.2) both}
+.cf-ring{animation:cfRingFill 1.4s cubic-bezier(.4,0,.2,1) .3s both}
+.cf-line{stroke-dasharray:${Math.ceil(lineLen+20)};animation:cfDrawLine 1.6s cubic-bezier(.4,0,.2,1) .6s both}
+.cf-bar{animation:cfBarGrow .8s cubic-bezier(.4,0,.2,1) both}
+.cf-num{animation:cfCountUp .4s ease both}
+.cf-dot{animation:cfFadeIn .3s ease both}
+.cf-chip{animation:cfSlideRight .4s ease both}
+</style>
+<div id="dash-content" style="height:100%;display:grid;grid-template-rows:36px 1fr 1fr 1fr;gap:14px;font-family:inherit">
 
 <!-- ── HEADER BAR ── -->
 <div style="display:flex;align-items:center;justify-content:space-between">
@@ -5606,12 +5626,12 @@ function renderDashboard(d){
     {label:'Outstanding',  val:inrK(exposure), unit:'',  col:'#60a5fa',  bg:'linear-gradient(135deg,#eff6ff,#dbeafe)', sub:`${summary.buyersAnalyzed||0} buyers`,   icon:'₹'},
     {label:'High Risk',    val:summary.highRiskBuyers||0, unit:` of ${summary.buyersAnalyzed||0}`, col:'#f87171', bg:'linear-gradient(135deg,#fff1f2,#ffe4e6)', sub:'buyers at risk', icon:'⚠'},
     {label:'Avg Delay',    val:summary.avgDelay||0,       unit:' days',  col:'#fb923c', bg:'linear-gradient(135deg,#fff7ed,#ffedd5)', sub:'payment lag',  icon:'⏱'},
-  ].map(k=>`
-  <div style="background:${k.bg};border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;height:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.04)">
+  ].map((k,i)=>`
+  <div class="cf-card cf-chip" style="background:${k.bg};border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;height:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.04);animation-delay:${i*0.08}s">
     <div style="width:42px;height:42px;border-radius:12px;background:${k.col}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">${k.icon}</div>
     <div style="min-width:0">
       <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${k.bg.includes('1e293b')?'rgba(255,255,255,.45)':'#94a3b8'};margin-bottom:2px">${k.label}</div>
-      <div style="font-size:22px;font-weight:900;color:${k.bg.includes('1e293b')?'#fff':k.col};line-height:1">${k.val}<span style="font-size:13px;font-weight:600">${k.unit}</span></div>
+      <div class="cf-num" style="font-size:22px;font-weight:900;color:${k.bg.includes('1e293b')?'#fff':k.col};line-height:1;animation-delay:${0.2+i*0.08}s">${k.val}<span style="font-size:13px;font-weight:600">${k.unit}</span></div>
       <div style="font-size:10.5px;color:${k.bg.includes('1e293b')?'rgba(255,255,255,.4)':'#94a3b8'};margin-top:2px">${k.sub}</div>
     </div>
   </div>`).join('')}
@@ -5621,14 +5641,14 @@ function renderDashboard(d){
 <div style="display:grid;grid-template-columns:220px 1fr 1fr;gap:14px;min-height:0">
 
   <!-- Score ring -->
-  <div style="background:linear-gradient(160deg,#0f172a,#1e293b);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+  <div class="cf-card" style="background:linear-gradient(160deg,#0f172a,#1e293b);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;animation-delay:.32s">
     <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px">Health Score</div>
     <div style="position:relative;margin-bottom:12px">
       <svg width="120" height="120" viewBox="0 0 184 184">
         <circle cx="92" cy="92" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="14"/>
-        <circle cx="92" cy="92" r="${r}" fill="none" stroke="${scoreCol}" stroke-width="14"
-          stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-dashoffset="${(circ/4).toFixed(1)}"
-          stroke-linecap="round" style="filter:drop-shadow(0 0 8px ${scoreCol}88)"/>
+        <circle class="cf-ring" cx="92" cy="92" r="${r}" fill="none" stroke="${scoreCol}" stroke-width="14"
+          stroke-dasharray="0 ${circ.toFixed(1)}" stroke-dashoffset="${(circ/4).toFixed(1)}"
+          stroke-linecap="round" style="filter:drop-shadow(0 0 10px ${scoreCol}aa)"/>
       </svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
         <div style="font-size:32px;font-weight:900;color:#fff;line-height:1">${score}</div>
@@ -5642,14 +5662,14 @@ function renderDashboard(d){
       ${[
         {label:'Buyer Risk',key:'buyerRisk'},{label:'Cash Flow',key:'cashStress'},
         {label:'Exposure',key:'exposureConcentration'},{label:'Collections',key:'collectionConfidence'}
-      ].map(item=>{
+      ].map((item,idx)=>{
         const lv=(kd[item.key]||{}).level||'medium';
         const c=lvlC(lv);
         const pct=lv==='low'?25:lv==='medium'?60:90;
-        return `<div style="display:flex;align-items:center;gap:8px">
+        return `<div class="cf-card" style="display:flex;align-items:center;gap:8px;animation-delay:${0.5+idx*0.1}s">
           <div style="font-size:9.5px;color:rgba(255,255,255,.35);width:68px;flex-shrink:0">${item.label}</div>
           <div style="flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${c};border-radius:2px"></div>
+            <div class="cf-bar" style="height:100%;--bar-w:${pct}%;width:${pct}%;background:${c};border-radius:2px;animation-delay:${0.7+idx*0.1}s"></div>
           </div>
           <div style="font-size:9px;font-weight:800;color:${c};width:36px;text-align:right">${lvlOpp(lv)}</div>
         </div>`;
@@ -5658,7 +5678,7 @@ function renderDashboard(d){
   </div>
 
   <!-- Risk Breakdown -->
-  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden">
+  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;animation-delay:.4s">
     <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Risk Breakdown</div>
     <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:14px">What's driving your score down?</div>
     <div style="display:flex;align-items:center;gap:16px;height:calc(100% - 60px)">
@@ -5678,7 +5698,7 @@ function renderDashboard(d){
               <span style="font-size:10px;font-weight:800;color:${drv.col};flex-shrink:0;margin-left:4px">${pct}%</span>
             </div>
             <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${drv.col}99,${drv.col});border-radius:3px"></div>
+              <div class="cf-bar" style="height:100%;--bar-w:${pct}%;width:${pct}%;background:linear-gradient(90deg,${drv.col}99,${drv.col});border-radius:3px;animation-delay:${0.6+i*0.1}s"></div>
             </div>
           </div>`;
         }).join('')}
@@ -5687,7 +5707,7 @@ function renderDashboard(d){
   </div>
 
   <!-- Cash Stress Chart -->
-  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden">
+  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;animation-delay:.48s">
     <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Cash Stress Forecast</div>
     <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px">90-day outlook</div>
     <div style="font-size:11px;color:${stressLineCol};font-weight:600;margin-bottom:12px;padding:7px 11px;background:${stressAreaCol};border-radius:7px;line-height:1.4">${stressMsg}</div>
@@ -5696,9 +5716,9 @@ function renderDashboard(d){
       <rect x="${pad}" y="${yScale(70)}" width="${W-pad*2}" height="${yScale(40)-yScale(70)}" fill="rgba(245,158,11,.05)" rx="2"/>
       <rect x="${pad}" y="${pad}" width="${W-pad*2}" height="${yScale(70)-pad}" fill="rgba(239,68,68,.05)" rx="2"/>
       <path d="${areaPath}" fill="${stressAreaCol}"/>
-      <path d="${linePath}" fill="none" stroke="${stressLineCol}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      ${pts.map(p=>`
-        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${stressLineCol}" stroke="white" stroke-width="2"/>
+      <path class="cf-line" d="${linePath}" fill="none" stroke="${stressLineCol}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      ${pts.map((p,pi)=>`
+        <circle class="cf-dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${stressLineCol}" stroke="white" stroke-width="2" style="animation-delay:${0.8+pi*0.12}s"/>
         <text x="${p.x.toFixed(1)}" y="${(H+14).toFixed(1)}" text-anchor="middle" font-size="9" fill="#94a3b8">${p.d}</text>
       `).join('')}
       <text x="${(W-4).toFixed(1)}" y="${yScale(20).toFixed(1)}" text-anchor="end" font-size="8" fill="#ef4444" font-weight="700">CRIT</text>
@@ -5712,12 +5732,12 @@ function renderDashboard(d){
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;min-height:0">
 
   <!-- Top Risk Buyers -->
-  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column">
+  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column;animation-delay:.56s">
     <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Top Risk Buyers</div>
     <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Buyers needing action</div>
     <div style="display:flex;flex-direction:column;gap:7px;flex:1;overflow:hidden">
       ${fakeBuyers.map((b,i)=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:${b.bg};border:1px solid ${b.col}18;flex-shrink:0">
+      <div class="cf-card" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:${b.bg};border:1px solid ${b.col}18;flex-shrink:0;animation-delay:${0.65+i*0.08}s">
         <div style="width:30px;height:30px;border-radius:50%;background:${b.col}22;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${riskDot(b.risk)}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;font-weight:700;color:#1e293b">Buyer ${String.fromCharCode(65+i)}</div>
@@ -5732,7 +5752,7 @@ function renderDashboard(d){
   </div>
 
   <!-- Recommended Actions -->
-  <div style="background:linear-gradient(160deg,#faf5ff,#f5f3ff);border:1px solid #e9d5ff;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column">
+  <div class="cf-card" style="background:linear-gradient(160deg,#faf5ff,#f5f3ff);border:1px solid #e9d5ff;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column;animation-delay:.64s">
     <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7c3aed;margin-bottom:4px">Actions</div>
     <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Do these tomorrow morning</div>
     <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden">
@@ -5742,7 +5762,7 @@ function renderDashboard(d){
         {t:'Prioritize 60+ day invoice collection',o:'Score +8 pts'},
         {t:'Review credit terms for high-risk buyers',o:'Collect 15d earlier'},
       ]).map((a,i)=>`
-      <div style="background:#fff;border:1px solid #ede9fe;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <div class="cf-card" style="background:#fff;border:1px solid #ede9fe;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;animation-delay:${0.72+i*0.08}s">
         <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:11.5px;font-weight:600;color:#1e293b;margin-bottom:2px;line-height:1.3">${a.t}</div>
@@ -5753,12 +5773,12 @@ function renderDashboard(d){
   </div>
 
   <!-- Explore Why -->
-  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column">
+  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column;animation-delay:.72s">
     <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Explore Why</div>
     <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Drill into any signal</div>
     <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow:hidden">
-      ${accordions.map(acc=>`
-      <div style="border:1px solid #f1f5f9;border-radius:10px;overflow:hidden;flex-shrink:0">
+      ${accordions.map((acc,accIdx)=>`
+      <div class="cf-card" style="border:1px solid #f1f5f9;border-radius:10px;overflow:hidden;flex-shrink:0;animation-delay:${0.8+accIdx*0.08}s">
         <div onclick="(function(el){var b=document.getElementById('${acc.id}-body');var open=b.style.display!=='none';b.style.display=open?'none':'block';el.querySelector('.arr').style.transform=open?'rotate(0deg)':'rotate(90deg)'})(this)" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:#f8fafc;transition:background .15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:14px">${acc.icon}</span>
