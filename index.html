@@ -246,7 +246,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 [data-theme='dark'] .so-cancel:hover{background:var(--gray-700)}
 
 /* -- MAIN -- */
-.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);padding:28px 32px;min-height:calc(100vh - var(--topbar-h))}
+.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow:hidden;padding:20px 24px;background:#f0f4f8;box-sizing:border-box}
 
 /* -- BUTTONS -- */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-sm);font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .12s;white-space:nowrap;font-family:inherit}
@@ -5582,177 +5582,191 @@ function renderDashboard(d){
     {id:'acc-coll',    icon:'💰', title:'Collection Efficiency',  body:`Average payment delay across your portfolio is ${avgDelay} days. ${avgDelay>30?'This is significantly above healthy levels (15–20 days).':avgDelay>20?'Slight improvement in follow-up can reduce this.':'Collection efficiency is acceptable.'}`},
   ];
 
-  return `<div id="dash-content" style="padding:24px 28px 60px;font-family:inherit">
+  return `<div id="dash-content" style="height:100%;display:grid;grid-template-rows:36px 1fr 1fr 1fr;gap:14px;font-family:inherit">
 
 <!-- ── HEADER BAR ── -->
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-  <div>
-    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:3px">Business Diagnostic Report</div>
-    <div style="font-size:13px;color:var(--gray-400)">${summary.buyersAnalyzed||0} buyers · ${summary.totalInvoices||0} records · ${inrK(exposure)} exposure</div>
+<div style="display:flex;align-items:center;justify-content:space-between">
+  <div style="display:flex;align-items:center;gap:16px">
+    <div>
+      <span style="font-size:16px;font-weight:800;color:#0f172a">Business Diagnostic</span>
+      <span style="font-size:12px;color:#94a3b8;margin-left:10px">${summary.buyersAnalyzed||0} buyers · ${summary.totalInvoices||0} records · ${inrK(exposure)} exposure</span>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:5px;background:${statusBg};border:1px solid ${scoreCol}44;border-radius:100px;padding:3px 12px">
+      <div style="width:7px;height:7px;border-radius:50%;background:${scoreCol}"></div>
+      <span style="font-size:11px;font-weight:800;color:${scoreCol};letter-spacing:.06em">${healthLabel}</span>
+    </div>
   </div>
-  <button onclick="cfiqShowOnboarding()" style="background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);color:#4f46e5;border-radius:10px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer">↑ Upload New File</button>
+  <button onclick="cfiqShowOnboarding()" style="background:#6366f1;border:none;color:#fff;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><span>↑</span> Upload New File</button>
 </div>
 
-<!-- ══ ROW 1: SCORE (left) + RISK BREAKDOWN (right) ══ -->
-<div style="display:grid;grid-template-columns:340px 1fr;gap:20px;margin-bottom:20px">
+<!-- ══ ROW 1: KPI STRIP (4 stat chips) ══ -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;min-height:0">
+  ${[
+    {label:'BI Score',     val:score,       unit:'/100',  col:scoreCol,  bg:'linear-gradient(135deg,#1e293b,#0f172a)', sub:healthLabel, icon:'◎'},
+    {label:'Outstanding',  val:inrK(exposure), unit:'',  col:'#60a5fa',  bg:'linear-gradient(135deg,#eff6ff,#dbeafe)', sub:`${summary.buyersAnalyzed||0} buyers`,   icon:'₹'},
+    {label:'High Risk',    val:summary.highRiskBuyers||0, unit:` of ${summary.buyersAnalyzed||0}`, col:'#f87171', bg:'linear-gradient(135deg,#fff1f2,#ffe4e6)', sub:'buyers at risk', icon:'⚠'},
+    {label:'Avg Delay',    val:summary.avgDelay||0,       unit:' days',  col:'#fb923c', bg:'linear-gradient(135deg,#fff7ed,#ffedd5)', sub:'payment lag',  icon:'⏱'},
+  ].map(k=>`
+  <div style="background:${k.bg};border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;height:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.04)">
+    <div style="width:42px;height:42px;border-radius:12px;background:${k.col}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">${k.icon}</div>
+    <div style="min-width:0">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${k.bg.includes('1e293b')?'rgba(255,255,255,.45)':'#94a3b8'};margin-bottom:2px">${k.label}</div>
+      <div style="font-size:22px;font-weight:900;color:${k.bg.includes('1e293b')?'#fff':k.col};line-height:1">${k.val}<span style="font-size:13px;font-weight:600">${k.unit}</span></div>
+      <div style="font-size:10.5px;color:${k.bg.includes('1e293b')?'rgba(255,255,255,.4)':'#94a3b8'};margin-top:2px">${k.sub}</div>
+    </div>
+  </div>`).join('')}
+</div>
 
-  <!-- SECTION 1: HEALTH SCORE -->
-  <div style="background:linear-gradient(160deg,#0f172a,#1e293b);border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:18px">Business Health</div>
-    <div style="position:relative;margin-bottom:16px">
-      <svg width="164" height="164" viewBox="0 0 184 184">
+<!-- ══ ROW 2: SCORE CARD + RISK BARS + CASH CHART ══ -->
+<div style="display:grid;grid-template-columns:220px 1fr 1fr;gap:14px;min-height:0">
+
+  <!-- Score ring -->
+  <div style="background:linear-gradient(160deg,#0f172a,#1e293b);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+    <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px">Health Score</div>
+    <div style="position:relative;margin-bottom:12px">
+      <svg width="120" height="120" viewBox="0 0 184 184">
         <circle cx="92" cy="92" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="14"/>
         <circle cx="92" cy="92" r="${r}" fill="none" stroke="${scoreCol}" stroke-width="14"
           stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-dashoffset="${(circ/4).toFixed(1)}"
-          stroke-linecap="round"/>
+          stroke-linecap="round" style="filter:drop-shadow(0 0 8px ${scoreCol}88)"/>
       </svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <div style="font-size:44px;font-weight:900;color:#fff;line-height:1">${score}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">out of 100</div>
+        <div style="font-size:32px;font-weight:900;color:#fff;line-height:1">${score}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.35)">out of 100</div>
       </div>
     </div>
-    <div style="background:${statusBg};border:1px solid ${scoreCol}44;border-radius:100px;padding:5px 22px;margin-bottom:10px">
-      <span style="font-size:14px;font-weight:900;color:${scoreCol};letter-spacing:.08em">${healthLabel}</span>
+    <div style="background:${statusBg};border-radius:100px;padding:4px 14px;margin-bottom:14px">
+      <span style="font-size:11px;font-weight:900;color:${scoreCol}">${healthLabel}</span>
     </div>
-    <div style="font-size:12.5px;color:rgba(255,255,255,.45);text-align:center;margin-bottom:20px">${healthSub}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%">
+    <div style="width:100%;display:flex;flex-direction:column;gap:6px">
       ${[
-        {label:'Buyer Risk',      key:'buyerRisk'},
-        {label:'Cash Stability',  key:'cashStress'},
-        {label:'Exposure Conc.',  key:'exposureConcentration'},
-        {label:'Collection Eff.', key:'collectionConfidence'},
+        {label:'Buyer Risk',key:'buyerRisk'},{label:'Cash Flow',key:'cashStress'},
+        {label:'Exposure',key:'exposureConcentration'},{label:'Collections',key:'collectionConfidence'}
       ].map(item=>{
         const lv=(kd[item.key]||{}).level||'medium';
         const c=lvlC(lv);
-        return `<div style="background:rgba(255,255,255,.05);border-radius:10px;padding:10px 12px">
-          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-bottom:3px">${item.label}</div>
-          <div style="font-size:12px;font-weight:800;color:${c}">${lvlOpp(lv)}</div>
+        const pct=lv==='low'?25:lv==='medium'?60:90;
+        return `<div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:9.5px;color:rgba(255,255,255,.35);width:68px;flex-shrink:0">${item.label}</div>
+          <div style="flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${c};border-radius:2px"></div>
+          </div>
+          <div style="font-size:9px;font-weight:800;color:${c};width:36px;text-align:right">${lvlOpp(lv)}</div>
         </div>`;
       }).join('')}
     </div>
   </div>
 
-  <!-- SECTION 2: RISK BREAKDOWN -->
-  <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:20px;padding:28px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px">Where Is The Risk?</div>
-    <div style="font-size:15px;font-weight:700;color:var(--gray-800);margin-bottom:20px">What is causing your score to drop?</div>
-    <div style="display:flex;align-items:center;gap:28px">
-      <svg width="180" height="180" viewBox="0 0 200 200" style="flex-shrink:0">
+  <!-- Risk Breakdown -->
+  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden">
+    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Risk Breakdown</div>
+    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:14px">What's driving your score down?</div>
+    <div style="display:flex;align-items:center;gap:16px;height:calc(100% - 60px)">
+      <svg width="130" height="130" viewBox="0 0 200 200" style="flex-shrink:0">
         ${donutPaths}
         <circle cx="100" cy="100" r="46" fill="white"/>
-        <text x="100" y="96" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b">Risk</text>
-        <text x="100" y="112" text-anchor="middle" font-size="11" fill="#64748b">Breakdown</text>
+        <text x="100" y="96" text-anchor="middle" font-size="12" font-weight="800" fill="#1e293b">Risk</text>
+        <text x="100" y="110" text-anchor="middle" font-size="10" fill="#64748b">Mix</text>
       </svg>
-      <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+      <div style="flex:1;display:flex;flex-direction:column;gap:9px;overflow:hidden">
         ${drivers.map((drv,i)=>{
           const lv=(kd[drv.key]||{}).level||'medium';
           const pct=Math.round(weights[i]/total*100);
           return `<div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-              <span style="font-size:12px;font-weight:600;color:var(--gray-700)">${drv.label}</span>
-              <span style="font-size:11px;font-weight:800;color:${drv.col}">${lvlL(lv)} · ${pct}%</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:11px;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">${drv.label}</span>
+              <span style="font-size:10px;font-weight:800;color:${drv.col};flex-shrink:0;margin-left:4px">${pct}%</span>
             </div>
-            <div style="height:7px;background:var(--gray-100);border-radius:4px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:${drv.col};border-radius:4px"></div>
+            <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${drv.col}99,${drv.col});border-radius:3px"></div>
             </div>
           </div>`;
         }).join('')}
       </div>
     </div>
   </div>
-</div>
 
-<!-- ══ ROW 2: CASH FORECAST (left) + TOP BUYERS (right) ══ -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-
-  <!-- SECTION 3: CASH STRESS FORECAST -->
-  <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:20px;padding:28px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px">Cash Stress Forecast</div>
-    <div style="font-size:15px;font-weight:700;color:var(--gray-800);margin-bottom:10px">How long before cash pressure?</div>
-    <div style="font-size:12px;color:${stressLineCol};font-weight:600;margin-bottom:16px;padding:9px 13px;background:${stressAreaCol};border-radius:8px">${stressMsg}</div>
+  <!-- Cash Stress Chart -->
+  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden">
+    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Cash Stress Forecast</div>
+    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px">90-day outlook</div>
+    <div style="font-size:11px;color:${stressLineCol};font-weight:600;margin-bottom:12px;padding:7px 11px;background:${stressAreaCol};border-radius:7px;line-height:1.4">${stressMsg}</div>
     <svg width="100%" viewBox="0 0 ${W} ${H+20}" style="overflow:visible">
-      <rect x="${pad}" y="${yScale(40)}" width="${W-pad*2}" height="${yScale(100)-yScale(40)}" fill="rgba(16,185,129,.06)" rx="3"/>
-      <rect x="${pad}" y="${yScale(70)}" width="${W-pad*2}" height="${yScale(40)-yScale(70)}" fill="rgba(245,158,11,.06)" rx="3"/>
-      <rect x="${pad}" y="${pad}" width="${W-pad*2}" height="${yScale(70)-pad}" fill="rgba(239,68,68,.06)" rx="3"/>
+      <rect x="${pad}" y="${yScale(40)}" width="${W-pad*2}" height="${yScale(100)-yScale(40)}" fill="rgba(16,185,129,.05)" rx="2"/>
+      <rect x="${pad}" y="${yScale(70)}" width="${W-pad*2}" height="${yScale(40)-yScale(70)}" fill="rgba(245,158,11,.05)" rx="2"/>
+      <rect x="${pad}" y="${pad}" width="${W-pad*2}" height="${yScale(70)-pad}" fill="rgba(239,68,68,.05)" rx="2"/>
       <path d="${areaPath}" fill="${stressAreaCol}"/>
-      <path d="${linePath}" fill="none" stroke="${stressLineCol}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${linePath}" fill="none" stroke="${stressLineCol}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       ${pts.map(p=>`
-        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${stressLineCol}" stroke="white" stroke-width="2"/>
-        <text x="${p.x.toFixed(1)}" y="${(H+14).toFixed(1)}" text-anchor="middle" font-size="10" fill="#94a3b8">${p.d}</text>
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${stressLineCol}" stroke="white" stroke-width="2"/>
+        <text x="${p.x.toFixed(1)}" y="${(H+14).toFixed(1)}" text-anchor="middle" font-size="9" fill="#94a3b8">${p.d}</text>
       `).join('')}
-      <text x="${(W-6).toFixed(1)}" y="${yScale(20).toFixed(1)}" text-anchor="end" font-size="9" fill="#ef4444" font-weight="700">CRITICAL</text>
-      <text x="${(W-6).toFixed(1)}" y="${yScale(55).toFixed(1)}" text-anchor="end" font-size="9" fill="#f59e0b" font-weight="700">MONITOR</text>
-      <text x="${(W-6).toFixed(1)}" y="${yScale(85).toFixed(1)}" text-anchor="end" font-size="9" fill="#10b981" font-weight="700">HEALTHY</text>
+      <text x="${(W-4).toFixed(1)}" y="${yScale(20).toFixed(1)}" text-anchor="end" font-size="8" fill="#ef4444" font-weight="700">CRIT</text>
+      <text x="${(W-4).toFixed(1)}" y="${yScale(55).toFixed(1)}" text-anchor="end" font-size="8" fill="#f59e0b" font-weight="700">WATCH</text>
+      <text x="${(W-4).toFixed(1)}" y="${yScale(85).toFixed(1)}" text-anchor="end" font-size="8" fill="#10b981" font-weight="700">OK</text>
     </svg>
   </div>
-
-  <!-- SECTION 4: TOP RISK BUYERS -->
-  <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:20px;padding:28px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px">Top Risk Buyers</div>
-    <div style="font-size:15px;font-weight:700;color:var(--gray-800);margin-bottom:16px">Buyers needing attention now</div>
-    <div style="display:flex;flex-direction:column;gap:9px">
-      ${fakeBuyers.map((b,i)=>`
-      <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:12px;background:${b.bg};border:1px solid ${b.col}22">
-        <div style="font-size:18px;flex-shrink:0">${riskDot(b.risk)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:800;color:var(--gray-900)">Buyer ${String.fromCharCode(65+i)}</div>
-          <div style="font-size:10.5px;font-weight:700;color:${b.col}">${riskLabel(b.risk)}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:12.5px;font-weight:800;color:var(--gray-800)">${inrK(b.outstanding)}</div>
-          <div style="font-size:10px;color:var(--gray-400)">Outstanding</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;margin-left:6px">
-          <div style="font-size:12.5px;font-weight:800;color:${b.col}">${b.delay}d</div>
-          <div style="font-size:10px;color:var(--gray-400)">Delay</div>
-        </div>
-      </div>`).join('')}
-    </div>
-  </div>
 </div>
 
-<!-- ══ ROW 3: ACTIONS (left) + EXPLORE WHY (right) ══ -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<!-- ══ ROW 3: TOP BUYERS + ACTIONS + EXPLORE WHY ══ -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;min-height:0">
 
-  <!-- SECTION 5: RECOMMENDED ACTIONS -->
-  <div style="background:linear-gradient(160deg,#f8f7ff,#faf5ff);border:1px solid rgba(99,102,241,.15);border-radius:20px;padding:28px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6366f1;margin-bottom:4px">Recommended Actions</div>
-    <div style="font-size:15px;font-weight:700;color:var(--gray-800);margin-bottom:16px">What to do tomorrow morning</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${(actions.length ? actions.map((a,i)=>({t:a.action||a.insight||'Take action on overdue accounts',r:a.reason||'',o:a.outcome||impacts[i]||'Reduced risk'})) : [
-        {t:'Follow up with highest overdue buyer',r:'Overdue beyond 60 days significantly increases default probability.',o:'Risk reduction: 12%'},
-        {t:'Reduce credit exposure to concentrated buyers',r:'Top buyer holds over 30% of your receivables.',o:'Cash protected: ₹6.4L'},
-        {t:'Prioritize collection of 60+ day invoices',r:'Each additional day overdue reduces collection probability by 2%.',o:'Score improvement: +8 pts'},
-        {t:'Review credit terms for high-risk buyers',r:'Current terms do not reflect buyer payment behaviour.',o:'Earlier collection: 15 days'},
-      ]).map((a,i)=>`
-      <div style="background:#fff;border:1px solid rgba(99,102,241,.12);border-radius:12px;padding:15px 18px">
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:5px">${a.t}</div>
-            ${a.r?`<div style="font-size:11.5px;color:var(--gray-500);margin-bottom:7px">${a.r}</div>`:''}
-            <span style="background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.2);border-radius:7px;padding:3px 10px;font-size:11px;font-weight:700;color:#059669">${a.o}</span>
-          </div>
+  <!-- Top Risk Buyers -->
+  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column">
+    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Top Risk Buyers</div>
+    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Buyers needing action</div>
+    <div style="display:flex;flex-direction:column;gap:7px;flex:1;overflow:hidden">
+      ${fakeBuyers.map((b,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:${b.bg};border:1px solid ${b.col}18;flex-shrink:0">
+        <div style="width:30px;height:30px;border-radius:50%;background:${b.col}22;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${riskDot(b.risk)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:#1e293b">Buyer ${String.fromCharCode(65+i)}</div>
+          <div style="font-size:10px;font-weight:700;color:${b.col}">${riskLabel(b.risk)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:11.5px;font-weight:800;color:#334155">${inrK(b.outstanding)}</div>
+          <div style="font-size:9.5px;color:#94a3b8">${b.delay}d delay</div>
         </div>
       </div>`).join('')}
     </div>
   </div>
 
-  <!-- SECTION 6: EXPLORE WHY -->
-  <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:20px;padding:28px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px">Explore Why</div>
-    <div style="font-size:15px;font-weight:700;color:var(--gray-800);margin-bottom:16px">Understand the details behind your score</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      ${accordions.map(acc=>`
-      <div style="border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
-        <div onclick="(function(el){var b=document.getElementById('${acc.id}-body');var open=b.style.display!=='none';b.style.display=open?'none':'block';el.querySelector('.acc-arr').style.transform=open?'rotate(0deg)':'rotate(90deg)'})(this)" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;background:var(--gray-50)" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='var(--gray-50)'">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:16px">${acc.icon}</span>
-            <span style="font-size:13px;font-weight:700;color:var(--gray-800)">${acc.title}</span>
-          </div>
-          <span class="acc-arr" style="font-size:11px;color:var(--gray-400);transition:transform .2s">▶</span>
+  <!-- Recommended Actions -->
+  <div style="background:linear-gradient(160deg,#faf5ff,#f5f3ff);border:1px solid #e9d5ff;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column">
+    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7c3aed;margin-bottom:4px">Actions</div>
+    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Do these tomorrow morning</div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden">
+      ${(actions.length ? actions.map((a,i)=>({t:a.action||a.insight||'Take action on overdue accounts',o:a.outcome||impacts[i]||'Reduced risk'})) : [
+        {t:'Follow up with highest overdue buyer',o:'Risk −12%'},
+        {t:'Reduce exposure to concentrated buyers',o:'Cash +₹6.4L'},
+        {t:'Prioritize 60+ day invoice collection',o:'Score +8 pts'},
+        {t:'Review credit terms for high-risk buyers',o:'Collect 15d earlier'},
+      ]).map((a,i)=>`
+      <div style="background:#fff;border:1px solid #ede9fe;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11.5px;font-weight:600;color:#1e293b;margin-bottom:2px;line-height:1.3">${a.t}</div>
+          <span style="font-size:10px;font-weight:700;color:#059669;background:rgba(5,150,105,.08);border-radius:5px;padding:1px 7px">${a.o}</span>
         </div>
-        <div id="${acc.id}-body" style="display:none;padding:14px 16px;font-size:12.5px;color:var(--gray-600);line-height:1.7;border-top:1px solid var(--gray-100)">${acc.body}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Explore Why -->
+  <div style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column">
+    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Explore Why</div>
+    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Drill into any signal</div>
+    <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow:hidden">
+      ${accordions.map(acc=>`
+      <div style="border:1px solid #f1f5f9;border-radius:10px;overflow:hidden;flex-shrink:0">
+        <div onclick="(function(el){var b=document.getElementById('${acc.id}-body');var open=b.style.display!=='none';b.style.display=open?'none':'block';el.querySelector('.arr').style.transform=open?'rotate(0deg)':'rotate(90deg)'})(this)" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:#f8fafc;transition:background .15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:14px">${acc.icon}</span>
+            <span style="font-size:12px;font-weight:700;color:#334155">${acc.title}</span>
+          </div>
+          <span class="arr" style="font-size:10px;color:#94a3b8;transition:transform .2s;flex-shrink:0">▶</span>
+        </div>
+        <div id="${acc.id}-body" style="display:none;padding:10px 14px;font-size:11.5px;color:#64748b;line-height:1.6;border-top:1px solid #f1f5f9">${acc.body}</div>
       </div>`).join('')}
     </div>
   </div>
