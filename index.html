@@ -5635,15 +5635,6 @@ function renderDashboard(d){
 
 </div>`;
 
-  // Legacy variables kept for compatibility (unused in new dashboard)
-  const fmt    = v => IAH_DATA.fmt(v||0);
-  const ccCol  = d.collectionConfidence>=80?'#10b981':d.collectionConfidence>=60?'#f59e0b':'#ef4444';
-  const arCol  = d.acceptanceRate>=85?'#10b981':d.acceptanceRate>=70?'#f59e0b':'#ef4444';
-  const ttBadge= tt=>`badge-${tt==='Credit'?'blue':tt==='Advance'?'green':'purple'}`;
-  const stCls  = s =>`status-${s==='Confirmed'?'green':s==='Pending'?'amber':'blue'}`;
-  const srcBadge = d._source==='api'
-    ? `<span style="font-size:10px;background:#e0f2fe;color:#0284c7;border-radius:6px;padding:2px 8px;font-weight:700;margin-left:8px;vertical-align:middle">● Live</span>`
-    : `<span style="font-size:10px;background:#f3f4f6;color:#9ca3af;border-radius:6px;padding:2px 8px;font-weight:600;margin-left:8px;vertical-align:middle">○ Local</span>`;
 
   const cashCard = d.cashPosition!=null
     ? `<div class="kpi-card"><div class="kpi-icon purple"><svg width="18" height="18" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><rect x="1" y="5" width="14" height="9" rx="1.5"/><circle cx="8" cy="9.5" r="1.5" stroke-width="1.5"/></svg></div><div class="kpi-val">${inr(d.cashPosition)}</div><div class="kpi-label">Cash Position</div></div>`
