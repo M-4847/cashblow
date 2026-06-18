@@ -5663,7 +5663,7 @@ function renderDashboard(d){
         {label:'Buyer Risk',key:'buyerRisk'},{label:'Cash Flow',key:'cashStress'},
         {label:'Exposure',key:'exposureConcentration'},{label:'Collections',key:'collectionConfidence'}
       ].map((item,idx)=>{
-        const lv=(kd[item.key]||{}).level||'medium';
+        const raw=kd[item.key]; const lv=(typeof raw==='string'?raw:(raw||{}).level||'medium').toLowerCase();
         const c=lvlC(lv);
         const pct=lv==='low'?25:lv==='medium'?60:90;
         return `<div class="cf-card" style="display:flex;align-items:center;gap:8px;animation-delay:${0.5+idx*0.1}s">
@@ -5690,7 +5690,7 @@ function renderDashboard(d){
       </svg>
       <div style="flex:1;display:flex;flex-direction:column;gap:9px;overflow:hidden">
         ${drivers.map((drv,i)=>{
-          const lv=(kd[drv.key]||{}).level||'medium';
+          const raw=kd[drv.key]; const lv=(typeof raw==='string'?raw:(raw||{}).level||'medium').toLowerCase();
           const pct=Math.round(weights[i]/total*100);
           return `<div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
