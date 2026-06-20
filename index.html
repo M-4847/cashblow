@@ -10919,14 +10919,15 @@ window.initCashExposureMap = function(){
 
   function squarify(items, x, y, w, h){
     if(!items.length) return [];
-    var total = items.reduce(function(s,d){return s+d.value;},0);
     var rects=[], rem=items.slice();
     var cx=x, cy=y, cw=w, ch=h;
     while(rem.length){
+      // Use REMAINING total so tiles always fill the remaining space
+      var remTotal=rem.reduce(function(s,d){return s+d.value;},0);
       var isH=cw>=ch, row=[], rs=0, best=Infinity;
       for(var i=0;i<rem.length;i++){
         row.push(rem[i]); rs+=rem[i].value;
-        var rl=isH?ch:cw, rw=(rs/total)*(isH?cw:ch), worst=0;
+        var rl=isH?ch:cw, rw=(rs/remTotal)*(isH?cw:ch), worst=0;
         for(var j=0;j<row.length;j++){
           var f=row[j].value/rs, tw=isH?rw:f*rl, th=isH?f*rl:rw;
           var rat=Math.max(tw/th,th/tw); if(rat>worst) worst=rat;
@@ -10934,7 +10935,7 @@ window.initCashExposureMap = function(){
         if(worst>best){row.pop();rs-=rem[i].value;break;}
         best=worst;
       }
-      var rf=rs/total, rd=isH?cw*rf:ch*rf, off=0;
+      var rd=isH?cw*(rs/remTotal):ch*(rs/remTotal), off=0;
       for(var k=0;k<row.length;k++){
         var fk=row[k].value/rs;
         if(isH){rects.push(Object.assign({},row[k],{x:cx,y:cy+off,w:rd,h:ch*fk}));off+=ch*fk;}
