@@ -5505,17 +5505,100 @@ function renderDashboard(d){
   const lvlL = l => l==='low'?'Low':l==='medium'?'Medium':'High';
   const lvlOpp = l => l==='low'?'Good':l==='medium'?'Moderate':'High Risk';
 
-  // ── Risk Donut (SVG) ──
-  const drivers = [
-    {label:'Buyer Concentration', key:'exposureConcentration', col:'#ef4444'},
-    {label:'Overdue Receivables',  key:'buyerRisk',            col:'#f97316'},
-    {label:'Cash Stress',          key:'cashStress',           col:'#f59e0b'},
-    {label:'Collection Risk',      key:'collectionConfidence', col:'#6366f1'},
-  ];
-  const weights = drivers.map(d=>{
-    const lv = (kd[d.key]||{}).level||'medium';
-    return lv==='high'?40:lv==='medium'?25:15;
+  // ── Compute real metrics from DB.buyers (live data, always up to date) ──
+  const inrK = v => v>=1e7?'₹'+(v/1e7).toFixed(1)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v;
+  const riskDot   = r2 => r2==='high'?'🔴':r2==='medium'?'🟠':'🟢';
+  const riskLabel = r2 => r2==='high'?'High Risk':r2==='medium'?'Medium Risk':'Low Risk';
+
+  const liveDB = DB.buyers && DB.buyers.length > 0;
+  const allBuyers = liveDB ? DB.buyers : [];
+
+  /* Portfolio totals from real data */
+  const exposure        = liveDB ? allBuyers.reduce((s,b)=>s+(b.currentExposure||0),0) : (summary.outstandingExposure||0);
+  const totalBuyers     = liveDB ? allBuyers.length : (summary.buyersAnalyzed||1);
+  const avgDelay        = liveDB && allBuyers.length
+    ? Math.round(allBuyers.reduce((s,b)=>s+(b.avgDelay||0),0)/allBuyers.length)
+    : (summary.avgDelay||0);
+
+  /* Risk classification: riskScore < 45 = high, 45-70 = medium, >70 = low */
+  const classifyRisk = b => b.riskScore < 45 ? 'high' : b.riskScore < 70 ? 'medium' : 'low';
+  const highRisk     = liveDB ? allBuyers.filter(b=>classifyRisk(b)==='high').length : (summary.highRiskBuyers||0);
+
+  /* Top risk buyers: sort by risk score ascending (worst first) */
+  const topRiskBuyers = liveDB
+    ? [...allBuyers].sort((a,b)=>a.riskScore-b.riskScore).slice(0,6).map(b=>{
+        const tier = classifyRisk(b);
+        return {
+          name: b.name, risk: tier,
+          col: tier==='high'?'#ef4444':tier==='medium'?'#f97316':'#10b981',
+          bg:  tier==='high'?'#fef2f2':tier==='medium'?'#fff7ed':'#f0fdf4',
+          outstanding: b.currentExposure||0, delay: b.avgDelay||0,
+          overdueCount: b.overdueCount||0,
+        };
+      })
+    : [
+        {name:'Top Buyer A',risk:'high',col:'#ef4444',bg:'#fef2f2',outstanding:Math.round(exposure*0.28),delay:Math.round(avgDelay*1.8),overdueCount:2},
+        {name:'Top Buyer B',risk:'high',col:'#ef4444',bg:'#fef2f2',outstanding:Math.round(exposure*0.19),delay:Math.round(avgDelay*1.5),overdueCount:1},
+      ];
+
+  /* Cash stress from real invoice due dates */
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  const liveInvoices = DB.invoices && DB.invoices.length > 0 ? DB.invoices : [];
+  const overdueTotal  = liveInvoices.filter(i=>i.status==='Overdue'||((i.dueDate&&new Date(i.dueDate)<today2)&&i.status!=='Paid'))
+                                     .reduce((s,i)=>s+i.amount,0);
+  const overdueRatio  = exposure > 0 ? Math.round((overdueTotal/exposure)*100) : 0;
+  const stress        = liveDB
+    ? Math.min(100, Math.round(overdueRatio*0.50 + (highRisk/Math.max(totalBuyers,1))*100*0.35 + Math.min(100,(exposure>0?(allBuyers.reduce((m,b)=>Math.max(m,b.currentExposure||0),0)/exposure)*100:0))*0.15))
+    : (ob.summary?.cashStressScore || 30);
+
+  /* Build 90-day cash stress projection from upcoming due dates */
+  const futureOblByWeek = [0,0,0,0,0,0]; // weeks 0-2w, 2-4w, 4-6w, 6-8w, 8-10w, 10-12w
+  liveInvoices.filter(i=>i.status!=='Paid').forEach(i=>{
+    if(!i.dueDate) return;
+    const dd=new Date(i.dueDate), diff=Math.round((dd-today2)/86400000);
+    const wi = diff<0?0:Math.min(5,Math.floor(diff/15));
+    futureOblByWeek[wi]+=(i.amount||0);
   });
+  const maxObl = Math.max(...futureOblByWeek, 1);
+  const stressPoints = [
+    {d:'Now',    v: Math.min(100,Math.round(stress*0.45))},
+    {d:'15d',    v: Math.min(100,Math.round(stress*0.55 + (futureOblByWeek[0]/maxObl)*20))},
+    {d:'30d',    v: Math.min(100,Math.round(stress*0.72 + (futureOblByWeek[1]/maxObl)*20))},
+    {d:'45d',    v: Math.min(100,Math.round(stress*0.83 + (futureOblByWeek[2]/maxObl)*15))},
+    {d:'60d',    v: Math.min(100,Math.round(stress*0.92 + (futureOblByWeek[3]/maxObl)*10))},
+    {d:'90d',    v: Math.min(100,Math.round(stress*1.05 + (futureOblByWeek[4]/maxObl)*8))},
+  ];
+
+  // ── Convert stressPoints to SVG coordinates ──
+  const W=520, H=120, pad=32;
+  const xStep=(W-pad*2)/5;
+  const yScale=v=>H-pad-(v/100)*(H-pad*2);
+  const pts=stressPoints.map((p,i)=>({x:pad+i*xStep, y:yScale(p.v), d:p.d, v:p.v}));
+  const linePath='M'+pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L');
+  const areaPath=linePath+` L${pts[pts.length-1].x.toFixed(1)},${H-pad} L${pts[0].x.toFixed(1)},${H-pad} Z`;
+  const critDay=stressPoints.findIndex(p=>p.v>=70);
+  const critDayLabel=['Now','15d','30d','45d','60d','90d'];
+  const stressMsg = critDay>=0
+    ? `At current collection behaviour, cash stress is likely within <strong>${critDayLabel[critDay]}</strong>.`
+    : stress<30 ? `Cash position looks stable for the next 90 days. Overdue: ${overdueRatio}%.`
+    : `Monitor collections closely — stress score ${stress}/100 (overdue ${overdueRatio}% of portfolio).`;
+
+  // ── Pre-compute concentration stats ──
+  const topConc = liveDB && allBuyers.length
+    ? Math.round((Math.max(...allBuyers.map(b=>b.currentExposure||0))/Math.max(exposure,1))*100) : 0;
+  const topBuyerName = liveDB && allBuyers.length
+    ? [...allBuyers].sort((a,b)=>(b.currentExposure||0)-(a.currentExposure||0))[0]?.name : 'Top buyer';
+  const overdueCount = liveDB ? allBuyers.reduce((s,b)=>s+(b.overdueCount||0),0) : 0;
+
+  // ── Risk Donut ──
+  const lvStr = v => (typeof v==='string'?v:(v&&v.level)||'medium').toLowerCase();
+  const drivers = [
+    {label:'Buyer Concentration', col:'#ef4444', score: liveDB ? Math.min(100,Math.round((highRisk/Math.max(totalBuyers,1))*100+topConc*0.5)) : (lvStr(kd.exposureConcentration)==='high'?75:lvStr(kd.exposureConcentration)==='low'?20:45)},
+    {label:'Overdue Receivables',  col:'#f97316', score: liveDB ? Math.min(100,overdueRatio) : (lvStr(kd.buyerRisk)==='high'?75:lvStr(kd.buyerRisk)==='low'?20:45)},
+    {label:'Cash Stress',          col:'#f59e0b', score: stress},
+    {label:'Collection Risk',      col:'#6366f1', score: liveDB ? Math.min(100,Math.round(avgDelay*2)) : (lvStr(kd.collectionConfidence)==='high'?20:lvStr(kd.collectionConfidence)==='low'?75:45)},
+  ];
+  const weights = drivers.map(d=>Math.max(5, d.score||25));
   const total = weights.reduce((a,b)=>a+b,0);
   let cumAngle = -Math.PI/2;
   const donutPaths = drivers.map((d,i)=>{
@@ -5525,61 +5608,28 @@ function renderDashboard(d){
     cumAngle += angle;
     const x2=100+80*Math.cos(cumAngle), y2=100+80*Math.sin(cumAngle);
     const large = angle>Math.PI?1:0;
-    const xi=100+48*Math.cos(cumAngle-angle/2), yi=100+48*Math.sin(cumAngle-angle/2);
     return `<path d="M100,100 L${x1.toFixed(1)},${y1.toFixed(1)} A80,80 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${d.col}" opacity="0.88"/>`;
   }).join('');
 
-  // ── Cash Stress Timeline (SVG) ──
-  const stress = ob.summary?.cashStressScore || 30;
-  const stressPoints = [
-    {d:'Today',   v: Math.max(5,stress*0.4)},
-    {d:'15 Days', v: Math.max(5,stress*0.6)},
-    {d:'30 Days', v: Math.max(5,stress*0.78)},
-    {d:'45 Days', v: Math.max(5,stress*0.88)},
-    {d:'60 Days', v: Math.max(5,stress*0.95)},
-    {d:'90 Days', v: Math.min(100,stress*1.1)},
-  ];
-  const W=520, H=120, pad=32;
-  const xStep=(W-pad*2)/5;
-  const yScale=v=>H-pad-(v/100)*(H-pad*2);
-  const pts=stressPoints.map((p,i)=>({x:pad+i*xStep,y:yScale(p.v),d:p.d,v:p.v}));
-  const linePath='M'+pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L');
-  const areaPath=linePath+` L${pts[pts.length-1].x.toFixed(1)},${H-pad} L${pts[0].x.toFixed(1)},${H-pad} Z`;
-  const critDay = stressPoints.findIndex(p=>p.v>=70);
-  const stressMsg = critDay>=0
-    ? `At current collection behaviour, cash stress is likely within <strong>${[0,15,30,45,60,90][critDay]} days</strong>.`
-    : stress<40 ? 'Cash position looks stable for the next 90 days.' : 'Monitor collections closely over the next 30 days.';
+  // ── Cash Stress SVG colors ──
   const stressAreaCol = stress>=70?'rgba(239,68,68,.15)':stress>=45?'rgba(245,158,11,.15)':'rgba(16,185,129,.15)';
   const stressLineCol = stress>=70?'#ef4444':stress>=45?'#f59e0b':'#10b981';
-
-  // ── Top Risk Buyers (generated from summary) ──
-  const highRisk = summary.highRiskBuyers||0;
-  const totalBuyers = summary.buyersAnalyzed||1;
-  const exposure = summary.outstandingExposure||0;
-  const avgDelay = summary.avgDelay||0;
-  const medRisk = Math.max(0, Math.min(totalBuyers-highRisk, Math.round(totalBuyers*0.3)));
-  const fakeBuyers = [
-    {name:'Top Buyer A', risk:'high',  col:'#ef4444', bg:'#fef2f2', outstanding: Math.round(exposure*0.28/100)*100, delay: Math.round(avgDelay*1.8)},
-    {name:'Top Buyer B', risk:'high',  col:'#ef4444', bg:'#fef2f2', outstanding: Math.round(exposure*0.19/100)*100, delay: Math.round(avgDelay*1.5)},
-    {name:'Mid Buyer C',  risk:'medium',col:'#f97316', bg:'#fff7ed', outstanding: Math.round(exposure*0.14/100)*100, delay: Math.round(avgDelay*1.1)},
-    {name:'Mid Buyer D',  risk:'medium',col:'#f97316', bg:'#fff7ed', outstanding: Math.round(exposure*0.10/100)*100, delay: Math.round(avgDelay*0.9)},
-    {name:'Safe Buyer E', risk:'low',   col:'#10b981', bg:'#f0fdf4', outstanding: Math.round(exposure*0.06/100)*100, delay: Math.round(avgDelay*0.3)},
-  ].filter((_,i)=> i<Math.max(2,Math.min(5,totalBuyers)));
-  const riskDot = r2 => r2==='high'?'🔴':r2==='medium'?'🟠':'🟢';
-  const riskLabel = r2 => r2==='high'?'High Risk':r2==='medium'?'Medium Risk':'Low Risk';
-  const inrK = v => v>=1e7?'₹'+(v/1e7).toFixed(1)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v;
 
   // ── Recommended Actions ──
   const actions = Object.values(rec).filter(Boolean).slice(0,4);
   const impacts = ['12%','₹6.4L','+8 pts','15 days'];
   const impactLabels = ['Risk reduction','Cash protected','Score improvement','Earlier collection'];
 
-  // ── Explore Why accordion ──
+  // ── Explore Why accordion (all values from live computed data) ──
   const accordions = [
-    {id:'acc-buyer',   icon:'🛡', title:'Buyer Risk Analysis',    body:`${highRisk} out of ${totalBuyers} buyers show high payment risk. ${highRisk>0?'These buyers account for a disproportionate share of your overdue exposure.':'Your buyer portfolio looks relatively healthy.'}`},
-    {id:'acc-cash',    icon:'📈', title:'Cash Stress Forecast',   body:`Your cash stress score is ${stress}/100 (${summary.cashStressLabel||'Moderate'}). ${stress>=70?'Immediate collections are needed to avoid a cash gap.':stress>=45?'Collections should be prioritized in the next 30 days.':'Cash position is manageable.'}`},
-    {id:'acc-exposure',icon:'🎯', title:'Exposure Concentration', body:`Your top buyers hold a concentrated portion of your total ₹${inrK(exposure)} exposure. High concentration means one delayed buyer can severely impact your cash flow.`},
-    {id:'acc-coll',    icon:'💰', title:'Collection Efficiency',  body:`Average payment delay across your portfolio is ${avgDelay} days. ${avgDelay>30?'This is significantly above healthy levels (15–20 days).':avgDelay>20?'Slight improvement in follow-up can reduce this.':'Collection efficiency is acceptable.'}`},
+    {id:'acc-buyer',   icon:'🛡', title:'Buyer Risk Analysis',
+     body:`${highRisk} of ${totalBuyers} buyers are high risk. ${highRisk>0?`These ${highRisk} buyer${highRisk>1?'s':''} carry the most overdue exposure and need immediate follow-up.`:'Your buyer portfolio looks healthy overall.'}`},
+    {id:'acc-cash',    icon:'📈', title:'Cash Stress Forecast',
+     body:`Stress score: ${stress}/100. Overdue receivables are ${overdueRatio}% of total portfolio (${inrK(overdueTotal)}). ${stress>=70?'Immediate collection action needed.':stress>=40?'Prioritize follow-ups in the next 30 days.':'Cash position is manageable.'}`},
+    {id:'acc-exposure',icon:'🎯', title:'Exposure Concentration',
+     body:`${topBuyerName} holds ${topConc}% of total ${inrK(exposure)} outstanding. ${topConc>=25?'Dangerous concentration — one default would cause severe cash stress. Diversify immediately.':topConc>=15?'Elevated concentration. Reduce dependency on this single buyer.':'Concentration risk is within safe limits.'}`},
+    {id:'acc-coll',    icon:'💰', title:'Collection Efficiency',
+     body:`Avg payment delay: ${avgDelay} days across ${totalBuyers} buyers. ${overdueCount} overdue invoice${overdueCount!==1?'s':''} totalling ${inrK(overdueTotal)}. ${avgDelay>30?'Significantly above healthy range (15–20 days). Review credit terms.':avgDelay>20?'Above target. Structured follow-up cadence can reduce this.':'Collection efficiency is within acceptable range.'}`},
   ];
 
   // Line path length approximation for draw animation
@@ -5609,7 +5659,7 @@ function renderDashboard(d){
   <div style="display:flex;align-items:center;gap:16px">
     <div>
       <span style="font-size:16px;font-weight:800;color:#0f172a">Business Diagnostic</span>
-      <span style="font-size:12px;color:#94a3b8;margin-left:10px">${summary.buyersAnalyzed||0} buyers · ${summary.totalInvoices||0} records · ${inrK(exposure)} exposure</span>
+      <span style="font-size:12px;color:#94a3b8;margin-left:10px">${totalBuyers} buyer${totalBuyers!==1?'s':''} · ${DB.invoices?DB.invoices.length:0} records · ${inrK(exposure)} exposure</span>
     </div>
     <div style="display:inline-flex;align-items:center;gap:5px;background:${statusBg};border:1px solid ${scoreCol}44;border-radius:100px;padding:3px 12px">
       <div style="width:7px;height:7px;border-radius:50%;background:${scoreCol}"></div>
@@ -5622,10 +5672,10 @@ function renderDashboard(d){
 <!-- ══ ROW 1: KPI STRIP (4 stat chips) ══ -->
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;min-height:0">
   ${[
-    {label:'BI Score',     val:score,       unit:'/100',  col:scoreCol,  bg:'linear-gradient(135deg,#1e293b,#0f172a)', sub:healthLabel, icon:'◎'},
-    {label:'Outstanding',  val:inrK(exposure), unit:'',  col:'#60a5fa',  bg:'linear-gradient(135deg,#eff6ff,#dbeafe)', sub:`${summary.buyersAnalyzed||0} buyers`,   icon:'₹'},
-    {label:'High Risk',    val:summary.highRiskBuyers||0, unit:` of ${summary.buyersAnalyzed||0}`, col:'#f87171', bg:'linear-gradient(135deg,#fff1f2,#ffe4e6)', sub:'buyers at risk', icon:'⚠'},
-    {label:'Avg Delay',    val:summary.avgDelay||0,       unit:' days',  col:'#fb923c', bg:'linear-gradient(135deg,#fff7ed,#ffedd5)', sub:'payment lag',  icon:'⏱'},
+    {label:'BI Score',     val:score,          unit:'/100',              col:scoreCol,  bg:'linear-gradient(135deg,#1e293b,#0f172a)', sub:healthLabel,         icon:'◎'},
+    {label:'Outstanding',  val:inrK(exposure), unit:'',                  col:'#60a5fa',  bg:'linear-gradient(135deg,#eff6ff,#dbeafe)', sub:`${totalBuyers} buyer${totalBuyers!==1?'s':''}`, icon:'₹'},
+    {label:'High Risk',    val:highRisk,        unit:` of ${totalBuyers}`,col:'#f87171', bg:'linear-gradient(135deg,#fff1f2,#ffe4e6)', sub:'buyers at risk',     icon:'⚠'},
+    {label:'Avg Delay',    val:avgDelay,        unit:' days',             col:'#fb923c', bg:'linear-gradient(135deg,#fff7ed,#ffedd5)', sub:'payment lag',        icon:'⏱'},
   ].map((k,i)=>`
   <div class="cf-card cf-chip" style="background:${k.bg};border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;height:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.04);animation-delay:${i*0.08}s">
     <div style="width:42px;height:42px;border-radius:12px;background:${k.col}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">${k.icon}</div>
@@ -5690,15 +5740,17 @@ function renderDashboard(d){
       </svg>
       <div style="flex:1;display:flex;flex-direction:column;gap:9px;overflow:hidden">
         ${drivers.map((drv,i)=>{
-          const raw=kd[drv.key]; const lv=(typeof raw==='string'?raw:(raw||{}).level||'medium').toLowerCase();
           const pct=Math.round(weights[i]/total*100);
+          const scorePct=Math.min(100,drv.score||25);
+          const riskLbl=scorePct>=70?'High Risk':scorePct>=40?'Moderate':'Low';
+          const riskClr=scorePct>=70?drv.col:scorePct>=40?drv.col+'bb':'#10b981';
           return `<div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span style="font-size:11px;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">${drv.label}</span>
-              <span style="font-size:10px;font-weight:800;color:${drv.col};flex-shrink:0;margin-left:4px">${pct}%</span>
+              <span style="font-size:11px;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${drv.label}</span>
+              <span style="font-size:10px;font-weight:800;color:${riskClr};flex-shrink:0;margin-left:4px">${pct}%</span>
             </div>
             <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden">
-              <div class="cf-bar" style="height:100%;--bar-w:${pct}%;width:${pct}%;background:linear-gradient(90deg,${drv.col}99,${drv.col});border-radius:3px;animation-delay:${0.6+i*0.1}s"></div>
+              <div class="cf-bar" style="height:100%;--bar-w:${pct}%;width:${pct}%;background:linear-gradient(90deg,${drv.col}88,${drv.col});border-radius:3px;animation-delay:${0.6+i*0.1}s"></div>
             </div>
           </div>`;
         }).join('')}
@@ -5736,16 +5788,16 @@ function renderDashboard(d){
     <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Top Risk Buyers</div>
     <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Buyers needing action</div>
     <div style="display:flex;flex-direction:column;gap:7px;flex:1;overflow:hidden">
-      ${fakeBuyers.map((b,i)=>`
-      <div class="cf-card" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:${b.bg};border:1px solid ${b.col}18;flex-shrink:0;animation-delay:${0.65+i*0.08}s">
+      ${topRiskBuyers.map((b,i)=>`
+      <div class="cf-card" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:${b.bg};border:1px solid ${b.col}28;flex-shrink:0;animation-delay:${0.65+i*0.08}s">
         <div style="width:30px;height:30px;border-radius:50%;background:${b.col}22;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${riskDot(b.risk)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:700;color:#1e293b">Buyer ${String.fromCharCode(65+i)}</div>
-          <div style="font-size:10px;font-weight:700;color:${b.col}">${riskLabel(b.risk)}</div>
+        <div style="flex:1;min-width:0;overflow:hidden">
+          <div style="font-size:12px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.name}">${b.name}</div>
+          <div style="font-size:10px;font-weight:700;color:${b.col}">${riskLabel(b.risk)}${b.overdueCount>0?' · '+b.overdueCount+' overdue':''}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:11.5px;font-weight:800;color:#334155">${inrK(b.outstanding)}</div>
-          <div style="font-size:9.5px;color:#94a3b8">${b.delay}d delay</div>
+          <div style="font-size:9.5px;color:#94a3b8">${b.delay>0?b.delay+'d delay':'On time'}</div>
         </div>
       </div>`).join('')}
     </div>
@@ -10866,39 +10918,98 @@ window.cfiqToggleGroup=function(id){
    lives in window.initCashExposureMap(), called by onStateChange
    ============================================================ */
 
+/* ── Exposure View state & controls ── */
+window._cemView = window._cemView || 'all';
+
+window.cemToggleDD = function(){
+  var m = document.getElementById('cem-dd-menu');
+  if(m) m.style.display = m.style.display==='none' ? 'block' : 'none';
+};
+
+window.cemSetView = function(v){
+  window._cemView = v;
+  var m = document.getElementById('cem-dd-menu');
+  if(m) m.style.display = 'none';
+  var labels = {all:'▼ All Exposure', sector:'▼ Sector Exposure', state:'▼ State Exposure'};
+  var lbl = document.getElementById('cem-dd-label');
+  if(lbl) lbl.textContent = labels[v]||'▼ Exposure View';
+  /* Highlight active item */
+  document.querySelectorAll('[data-cemv]').forEach(function(el){
+    el.style.color = el.dataset.cemv===v ? '#818cf8' : '#94a3b8';
+    el.style.fontWeight = el.dataset.cemv===v ? '800' : '600';
+  });
+  /* Animate out → redraw → animate in */
+  var svg = document.getElementById('cem-svg');
+  if(svg){ svg.style.transition='opacity .25s'; svg.style.opacity='0'; }
+  setTimeout(function(){
+    window.initCashExposureMap && window.initCashExposureMap();
+    if(svg){ svg.style.opacity='1'; }
+  }, 260);
+};
+
+/* Close dropdown on outside click */
+document.addEventListener('click', function(e){
+  var wrap = document.getElementById('cem-view-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    var m = document.getElementById('cem-dd-menu');
+    if(m) m.style.display='none';
+  }
+});
+
 window.CEM_BUYERS = [
-  {name:'Patel Enterprises',  short:'Patel Ent.',   outstanding:3200000, delay:109, risk:'critical', share:18.2, action:'Pause new orders. Escalate to senior management immediately.',   collect:'05 Jul 2026'},
-  {name:'Sharma Traders',     short:'Sharma',       outstanding:2300000, delay:112, risk:'critical', share:13.1, action:'Legal notice required. Send demand letter this week.',            collect:'12 Jul 2026'},
-  {name:'Gupta Wholesale',    short:'Gupta Whl.',   outstanding:2100000, delay:39,  risk:'high',     share:11.9, action:'Reduce credit limit. Collect before next order.',                collect:'28 Jun 2026'},
-  {name:'Reddy Distributors', short:'Reddy Dist.',  outstanding:1800000, delay:22,  risk:'medium',   share:10.2, action:'Follow up this week. Offer early payment discount.',              collect:'30 Jun 2026'},
-  {name:'Kumar & Sons',       short:'Kumar',        outstanding:1200000, delay:56,  risk:'high',     share:6.8,  action:'Send reminder. Discuss payment plan.',                           collect:'10 Jul 2026'},
-  {name:'Mehta Corporation',  short:'Mehta Corp.',  outstanding:950000,  delay:17,  risk:'low',      share:5.4,  action:'On track. Monitor monthly.',                                    collect:'25 Jun 2026'},
-  {name:'Singh Industries',   short:'Singh Ind.',   outstanding:880000,  delay:68,  risk:'high',     share:5.0,  action:'Request post-dated cheques for next shipment.',                  collect:'15 Jul 2026'},
-  {name:'Verma Exports',      short:'Verma Exp.',   outstanding:760000,  delay:14,  risk:'low',      share:4.3,  action:'Healthy account. Eligible for credit increase.',                 collect:'24 Jun 2026'},
-  {name:'Joshi Trading Co.',  short:'Joshi Trd.',   outstanding:640000,  delay:44,  risk:'medium',   share:3.6,  action:'Send second reminder. Escalate if no response in 3 days.',      collect:'08 Jul 2026'},
-  {name:'Malhotra Retail',    short:'Malhotra',     outstanding:590000,  delay:29,  risk:'medium',   share:3.4,  action:'Collect outstanding before next dispatch.',                      collect:'02 Jul 2026'},
-  {name:'Agarwal & Co.',      short:'Agarwal',      outstanding:520000,  delay:11,  risk:'low',      share:3.0,  action:'Good payer. No action needed.',                                 collect:'22 Jun 2026'},
-  {name:'Bose Traders',       short:'Bose Trd.',    outstanding:480000,  delay:87,  risk:'critical', share:2.7,  action:'Demand immediate payment. Hold all shipments.',                  collect:'20 Jul 2026'},
-  {name:'Chopra Wholesale',   short:'Chopra',       outstanding:420000,  delay:33,  risk:'medium',   share:2.4,  action:'Follow up this week.',                                           collect:'04 Jul 2026'},
-  {name:'Desai Enterprises',  short:'Desai Ent.',   outstanding:380000,  delay:7,   risk:'low',      share:2.2,  action:'Excellent payer. Priority relationship.',                        collect:'21 Jun 2026'},
-  {name:'Iyer Industries',    short:'Iyer Ind.',    outstanding:340000,  delay:51,  risk:'high',     share:1.9,  action:'Send written notice. Last reminder before legal.',               collect:'11 Jul 2026'},
-  {name:'Kapoor Exports',     short:'Kapoor',       outstanding:310000,  delay:19,  risk:'low',      share:1.8,  action:'On schedule. No action required.',                              collect:'26 Jun 2026'},
-  {name:'Lal Distributors',   short:'Lal Dist.',    outstanding:290000,  delay:62,  risk:'high',     share:1.6,  action:'Offer discount for immediate payment.',                          collect:'13 Jul 2026'},
-  {name:'Mishra & Sons',      short:'Mishra',       outstanding:270000,  delay:25,  risk:'medium',   share:1.5,  action:'Gentle follow-up call this week.',                               collect:'01 Jul 2026'},
-  {name:'Nair Trading',       short:'Nair Trd.',    outstanding:240000,  delay:9,   risk:'low',      share:1.4,  action:'Consistent payer. Eligible for extended terms.',                 collect:'23 Jun 2026'},
-  {name:'Oberoi Retail',      short:'Oberoi',       outstanding:220000,  delay:78,  risk:'critical', share:1.2,  action:'Escalate to collections agency if no payment in 7 days.',       collect:'22 Jul 2026'},
-  {name:'Pillai Wholesale',   short:'Pillai',       outstanding:200000,  delay:36,  risk:'medium',   share:1.1,  action:'Request payment schedule confirmation.',                         collect:'05 Jul 2026'},
-  {name:'Qureshi Exports',    short:'Qureshi',      outstanding:185000,  delay:13,  risk:'low',      share:1.0,  action:'Good standing. Regular follow-up sufficient.',                   collect:'24 Jun 2026'},
-  {name:'Rao Enterprises',    short:'Rao Ent.',     outstanding:170000,  delay:45,  risk:'medium',   share:1.0,  action:'Check in this week. Approaching overdue threshold.',              collect:'07 Jul 2026'},
-  {name:'Saxena Traders',     short:'Saxena',       outstanding:155000,  delay:71,  risk:'high',     share:0.9,  action:'Require payment before next order dispatch.',                    collect:'16 Jul 2026'},
-  {name:'Tiwari Industries',  short:'Tiwari Ind.',  outstanding:140000,  delay:18,  risk:'low',      share:0.8,  action:'On time payer. No concerns.',                                    collect:'25 Jun 2026'},
-  {name:'Upadhyay & Co.',     short:'Upadhyay',     outstanding:125000,  delay:53,  risk:'high',     share:0.7,  action:'Send formal payment demand letter.',                             collect:'12 Jul 2026'},
-  {name:'Varma Distributors', short:'Varma Dist.',  outstanding:110000,  delay:27,  risk:'medium',   share:0.6,  action:'Follow up via WhatsApp. Confirm payment date.',                  collect:'03 Jul 2026'},
-  {name:'Walia Retail',       short:'Walia',        outstanding:95000,   delay:6,   risk:'low',      share:0.5,  action:'Excellent history. Reward with better credit terms.',            collect:'22 Jun 2026'},
-  {name:'Yadav Trading',      short:'Yadav Trd.',   outstanding:80000,   delay:41,  risk:'medium',   share:0.5,  action:'Routine follow-up next week.',                                   collect:'08 Jul 2026'},
-  {name:'Zaveri Exports',     short:'Zaveri',       outstanding:65000,   delay:8,   risk:'low',      share:0.4,  action:'No issues. Maintain current terms.',                             collect:'23 Jun 2026'},
+  /* ── TRADING ── */
+  {name:'Sharma Traders',     short:'Sharma',      outstanding:2300000, delay:112, risk:'critical', share:13.1, industry:'Trading',      action:'Legal notice required. Send demand letter this week.',            collect:'12 Jul 2026'},
+  {name:'Agarwal & Co.',      short:'Agarwal',     outstanding:520000,  delay:11,  risk:'low',      share:3.0,  industry:'Trading',      action:'Good payer. No action needed.',                                  collect:'22 Jun 2026'},
+  {name:'Bose Traders',       short:'Bose Trd.',   outstanding:480000,  delay:87,  risk:'critical', share:2.7,  industry:'Trading',      action:'Demand immediate payment. Hold all shipments.',                  collect:'20 Jul 2026'},
+  {name:'Nair Trading',       short:'Nair Trd.',   outstanding:240000,  delay:9,   risk:'low',      share:1.4,  industry:'Trading',      action:'Consistent payer. Eligible for extended terms.',                 collect:'23 Jun 2026'},
+  {name:'Saxena Traders',     short:'Saxena',      outstanding:155000,  delay:71,  risk:'high',     share:0.9,  industry:'Trading',      action:'Require payment before next order dispatch.',                    collect:'16 Jul 2026'},
+  {name:'Yadav Trading',      short:'Yadav Trd.',  outstanding:80000,   delay:41,  risk:'medium',   share:0.5,  industry:'Trading',      action:'Routine follow-up next week.',                                   collect:'08 Jul 2026'},
+  /* ── DISTRIBUTION ── */
+  {name:'Patel Enterprises',  short:'Patel Ent.',  outstanding:3200000, delay:109, risk:'critical', share:18.2, industry:'Distribution', action:'Pause new orders. Escalate to senior management immediately.',   collect:'05 Jul 2026'},
+  {name:'Reddy Distributors', short:'Reddy Dist.', outstanding:1800000, delay:22,  risk:'medium',   share:10.2, industry:'Distribution', action:'Follow up this week. Offer early payment discount.',              collect:'30 Jun 2026'},
+  {name:'Lal Distributors',   short:'Lal Dist.',   outstanding:290000,  delay:62,  risk:'high',     share:1.6,  industry:'Distribution', action:'Offer discount for immediate payment.',                          collect:'13 Jul 2026'},
+  {name:'Varma Distributors', short:'Varma Dist.', outstanding:110000,  delay:27,  risk:'medium',   share:0.6,  industry:'Distribution', action:'Follow up via WhatsApp. Confirm payment date.',                  collect:'03 Jul 2026'},
+  /* ── WHOLESALE ── */
+  {name:'Gupta Wholesale',    short:'Gupta Whl.',  outstanding:2100000, delay:39,  risk:'high',     share:11.9, industry:'Wholesale',    action:'Reduce credit limit. Collect before next order.',                collect:'28 Jun 2026'},
+  {name:'Chopra Wholesale',   short:'Chopra',      outstanding:420000,  delay:33,  risk:'medium',   share:2.4,  industry:'Wholesale',    action:'Follow up this week.',                                           collect:'04 Jul 2026'},
+  {name:'Pillai Wholesale',   short:'Pillai',      outstanding:200000,  delay:36,  risk:'medium',   share:1.1,  industry:'Wholesale',    action:'Request payment schedule confirmation.',                         collect:'05 Jul 2026'},
+  /* ── MANUFACTURING ── */
+  {name:'Kumar & Sons',       short:'Kumar',       outstanding:1200000, delay:56,  risk:'high',     share:6.8,  industry:'Manufacturing',action:'Send reminder. Discuss payment plan.',                           collect:'10 Jul 2026'},
+  {name:'Singh Industries',   short:'Singh Ind.',  outstanding:880000,  delay:68,  risk:'high',     share:5.0,  industry:'Manufacturing',action:'Request post-dated cheques for next shipment.',                  collect:'15 Jul 2026'},
+  {name:'Iyer Industries',    short:'Iyer Ind.',   outstanding:340000,  delay:51,  risk:'high',     share:1.9,  industry:'Manufacturing',action:'Send written notice. Last reminder before legal.',               collect:'11 Jul 2026'},
+  {name:'Mishra & Sons',      short:'Mishra',      outstanding:270000,  delay:25,  risk:'medium',   share:1.5,  industry:'Manufacturing',action:'Gentle follow-up call this week.',                               collect:'01 Jul 2026'},
+  {name:'Tiwari Industries',  short:'Tiwari Ind.', outstanding:140000,  delay:18,  risk:'low',      share:0.8,  industry:'Manufacturing',action:'On time payer. No concerns.',                                    collect:'25 Jun 2026'},
+  {name:'Upadhyay & Co.',     short:'Upadhyay',    outstanding:125000,  delay:53,  risk:'high',     share:0.7,  industry:'Manufacturing',action:'Send formal payment demand letter.',                             collect:'12 Jul 2026'},
+  /* ── RETAIL ── */
+  {name:'Malhotra Retail',    short:'Malhotra',    outstanding:590000,  delay:29,  risk:'medium',   share:3.4,  industry:'Retail',       action:'Collect outstanding before next dispatch.',                      collect:'02 Jul 2026'},
+  {name:'Oberoi Retail',      short:'Oberoi',      outstanding:220000,  delay:78,  risk:'critical', share:1.2,  industry:'Retail',       action:'Escalate to collections agency if no payment in 7 days.',       collect:'22 Jul 2026'},
+  {name:'Walia Retail',       short:'Walia',       outstanding:95000,   delay:6,   risk:'low',      share:0.5,  industry:'Retail',       action:'Excellent history. Reward with better credit terms.',            collect:'22 Jun 2026'},
+  /* ── EXPORTS ── */
+  {name:'Verma Exports',      short:'Verma Exp.',  outstanding:760000,  delay:14,  risk:'low',      share:4.3,  industry:'Exports',      action:'Healthy account. Eligible for credit increase.',                 collect:'24 Jun 2026'},
+  {name:'Kapoor Exports',     short:'Kapoor',      outstanding:310000,  delay:19,  risk:'low',      share:1.8,  industry:'Exports',      action:'On schedule. No action required.',                              collect:'26 Jun 2026'},
+  {name:'Qureshi Exports',    short:'Qureshi',     outstanding:185000,  delay:13,  risk:'low',      share:1.0,  industry:'Exports',      action:'Good standing. Regular follow-up sufficient.',                   collect:'24 Jun 2026'},
+  {name:'Zaveri Exports',     short:'Zaveri',      outstanding:65000,   delay:8,   risk:'low',      share:0.4,  industry:'Exports',      action:'No issues. Maintain current terms.',                             collect:'23 Jun 2026'},
+  /* ── SERVICES ── */
+  {name:'Mehta Corporation',  short:'Mehta Corp.', outstanding:950000,  delay:17,  risk:'low',      share:5.4,  industry:'Services',     action:'On track. Monitor monthly.',                                    collect:'25 Jun 2026'},
+  {name:'Joshi Trading Co.',  short:'Joshi Trd.',  outstanding:640000,  delay:44,  risk:'medium',   share:3.6,  industry:'Services',     action:'Send second reminder. Escalate if no response in 3 days.',      collect:'08 Jul 2026'},
+  {name:'Desai Enterprises',  short:'Desai Ent.',  outstanding:380000,  delay:7,   risk:'low',      share:2.2,  industry:'Services',     action:'Excellent payer. Priority relationship.',                        collect:'21 Jun 2026'},
+  {name:'Rao Enterprises',    short:'Rao Ent.',    outstanding:170000,  delay:45,  risk:'medium',   share:1.0,  industry:'Services',     action:'Check in this week. Approaching overdue threshold.',              collect:'07 Jul 2026'},
 ];
 
+/* Risk → continuous gradient #FF0000 → #008000 */
+window.CEM_RISK_SCORE = {critical:4, high:28, medium:58, low:90};
+window.CEM_RISK_COLOR = function(risk){
+  var t = (window.CEM_RISK_SCORE[risk]||50) / 100;
+  var r = Math.round(255*(1-t));
+  var g = Math.round(128*t);
+  return 'rgb('+r+','+g+',0)';
+};
+window.CEM_RISK_COLOR2 = function(risk){ /* slightly darker shade for gradient */
+  var t = (window.CEM_RISK_SCORE[risk]||50) / 100;
+  var r = Math.round(200*(1-t));
+  var g = Math.round(100*t);
+  return 'rgb('+r+','+g+',0)';
+};
 window.CEM_PALETTE = {
   low:      {bg:'#008000', bg2:'#006600', label:'LOW',      badge:'rgba(0,128,0,.18)',     badgeText:'#66CC66'},
   medium:   {bg:'#FFFF00', bg2:'#cccc00', label:'MEDIUM',   badge:'rgba(255,255,0,.12)',   badgeText:'#b3b300'},
@@ -10907,35 +11018,97 @@ window.CEM_PALETTE = {
 };
 
 window.initCashExposureMap = function(){
-  var BUYERS  = window.CEM_BUYERS;
-  var PALETTE = window.CEM_PALETTE;
-  var svg     = document.getElementById('cem-svg');
-  var wrap    = document.getElementById('cem-wrap');
-  var tip     = document.getElementById('cem-tip');
-  var panel   = document.getElementById('cem-panel');
-  if(!svg || !wrap) return;
+  /* ── Build buyers from live DB data if available, else use demo ── */
+  var BUYERS;
+  var liveBuyers = (typeof DB !== 'undefined') && DB.buyers && DB.buyers.length > 0
+    && DB.buyers.some(function(b){ return (b.currentExposure||0) > 0; });
 
-  function inrFmt(v){ return v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v; }
+  if(liveBuyers){
+    /* Map raw industry/sector to CEM sector categories */
+    function cemSector(ind){
+      if(!ind) return 'Services';
+      var s = ind.toLowerCase();
+      if(/distribut|logistics|transport|supply/.test(s)) return 'Distribution';
+      if(/trading|trader|commodity|commodities/.test(s)) return 'Trading';
+      if(/wholesale|fmcg/.test(s)) return 'Wholesale';
+      if(/retail|consumer|shop/.test(s)) return 'Retail';
+      if(/export|import|international/.test(s)) return 'Exports';
+      if(/manufactur|foundry|automotive|steel|engineer|machiner|plastic|chemical|textile|packaging|pharma|electronic|industri|agro|food|agri/.test(s)) return 'Manufacturing';
+      return 'Services';
+    }
+    /* Convert riskScore to CEM risk tier */
+    function cemRisk(score){
+      return score < 35 ? 'critical' : score < 55 ? 'high' : score < 75 ? 'medium' : 'low';
+    }
+    /* Generate action text from risk + delay */
+    function cemAction(risk, delay){
+      if(risk==='critical') return delay>90 ? 'Legal notice required. Send demand letter immediately.' : 'Pause new orders. Escalate to senior management.';
+      if(risk==='high')     return delay>60 ? 'Send formal demand. Require payment before next order.' : 'Reduce credit limit. Collect before next order.';
+      if(risk==='medium')   return delay>30 ? 'Second reminder required. Offer payment plan.' : 'Routine follow-up this week.';
+      return 'Good payer. No action needed.';
+    }
+    /* Collect date: today + avgDelay days */
+    function cemCollect(delay){
+      var d = new Date(); d.setDate(d.getDate() + Math.max(1, delay||14));
+      return d.getDate()+' '+ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getFullYear();
+    }
+    var totalExp = DB.buyers.reduce(function(s,b){ return s + (b.currentExposure||0); }, 0);
+    BUYERS = DB.buyers
+      .filter(function(b){ return (b.currentExposure||0) > 0; })
+      .map(function(b){
+        var risk = cemRisk(b.riskScore||50);
+        var short = b.name.split(' ').slice(0,2).join(' ');
+        return {
+          name: b.name,
+          short: short,
+          outstanding: b.currentExposure||0,
+          delay: b.avgDelay||0,
+          risk: risk,
+          riskScore: b.riskScore||50,
+          share: totalExp > 0 ? Math.round((b.currentExposure/totalExp)*1000)/10 : 0,
+          industry: cemSector(b.industry||b.sector||''),
+          rawSector: (b.sector||b.industry||'').trim() || 'Other',
+          state: (b.state||b.location||'').trim() || 'Unknown',
+          action: cemAction(risk, b.avgDelay||0),
+          collect: cemCollect(b.avgDelay||14),
+        };
+      });
+    if(BUYERS.length === 0) BUYERS = window.CEM_BUYERS; /* fallback if all zero exposure */
+  } else {
+    BUYERS = window.CEM_BUYERS;
+  }
 
-  function squarify(items, x, y, w, h){
-    if(!items.length) return [];
-    var rects=[], rem=items.slice();
-    var cx=x, cy=y, cw=w, ch=h;
+  var riskColor = window.CEM_RISK_COLOR;
+  var riskColor2= window.CEM_RISK_COLOR2;
+  var svg   = document.getElementById('cem-svg');
+  var wrap  = document.getElementById('cem-wrap');
+  var tip   = document.getElementById('cem-tip');
+  var panel = document.getElementById('cem-panel');
+  if(!svg||!wrap) return;
+  var ns='http://www.w3.org/2000/svg';
+
+  var RISK_LABEL={critical:'CRITICAL',high:'HIGH',medium:'MEDIUM',low:'LOW'};
+  var SECTOR_ORDER=['Distribution','Trading','Wholesale','Manufacturing','Retail','Exports','Services'];
+
+  function inrFmt(v){return v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v;}
+
+  function squarify(items,x,y,w,h){
+    if(!items.length||w<=0||h<=0) return [];
+    var rects=[],rem=items.slice(),cx=x,cy=y,cw=w,ch=h;
     while(rem.length){
-      // Use REMAINING total so tiles always fill the remaining space
       var remTotal=rem.reduce(function(s,d){return s+d.value;},0);
-      var isH=cw>=ch, row=[], rs=0, best=Infinity;
+      var isH=cw>=ch,row=[],rs=0,best=Infinity;
       for(var i=0;i<rem.length;i++){
         row.push(rem[i]); rs+=rem[i].value;
-        var rl=isH?ch:cw, rw=(rs/remTotal)*(isH?cw:ch), worst=0;
+        var rl=isH?ch:cw,rw=(rs/remTotal)*(isH?cw:ch),worst=0;
         for(var j=0;j<row.length;j++){
-          var f=row[j].value/rs, tw=isH?rw:f*rl, th=isH?f*rl:rw;
+          var f=row[j].value/rs,tw=isH?rw:f*rl,th=isH?f*rl:rw;
           var rat=Math.max(tw/th,th/tw); if(rat>worst) worst=rat;
         }
         if(worst>best){row.pop();rs-=rem[i].value;break;}
         best=worst;
       }
-      var rd=isH?cw*(rs/remTotal):ch*(rs/remTotal), off=0;
+      var rd=isH?cw*(rs/remTotal):ch*(rs/remTotal),off=0;
       for(var k=0;k<row.length;k++){
         var fk=row[k].value/rs;
         if(isH){rects.push(Object.assign({},row[k],{x:cx,y:cy+off,w:rd,h:ch*fk}));off+=ch*fk;}
@@ -10947,110 +11120,173 @@ window.initCashExposureMap = function(){
     return rects;
   }
 
+  function makeSVGEl(tag,attrs){
+    var el=document.createElementNS(ns,tag);
+    Object.keys(attrs).forEach(function(k){el.setAttribute(k,attrs[k]);});
+    return el;
+  }
+
   function draw(){
     var W=wrap.clientWidth, H=wrap.clientHeight;
     if(!W||!H) return;
     svg.setAttribute('viewBox','0 0 '+W+' '+H);
     svg.setAttribute('width',W); svg.setAttribute('height',H);
-    var items=BUYERS.map(function(b){return Object.assign({},b,{value:b.outstanding});});
-    var GAP=2;
-    var rects=squarify(items,GAP,GAP,W-GAP*2,H-GAP*2);
     svg.innerHTML='';
 
-    // Defs
-    var ns='http://www.w3.org/2000/svg';
-    var defs=document.createElementNS(ns,'defs');
-    rects.forEach(function(r,i){
-      var p=PALETTE[r.risk];
-      var g=document.createElementNS(ns,'linearGradient');
-      g.setAttribute('id','cemg'+i); g.setAttribute('x1','0'); g.setAttribute('y1','0'); g.setAttribute('x2','1'); g.setAttribute('y2','1');
-      var s1=document.createElementNS(ns,'stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color',p.bg);
-      var s2=document.createElementNS(ns,'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color',p.bg2);
+    var OUTER_GAP=3, SECTOR_GAP=2, TILE_GAP=1, LABEL_H=20;
+
+    /* ── Group buyers by sector ── */
+    var groupMap={};
+    BUYERS.forEach(function(b){
+      if(!groupMap[b.industry]) groupMap[b.industry]={key:b.industry,buyers:[],total:0};
+      groupMap[b.industry].buyers.push(b);
+      groupMap[b.industry].total+=b.outstanding;
+    });
+    var sectors=SECTOR_ORDER.filter(function(s){return groupMap[s];}).map(function(s){
+      return Object.assign({value:groupMap[s].total},groupMap[s]);
+    });
+
+    /* ── Squarify sectors into full canvas ── */
+    var secRects=squarify(sectors,OUTER_GAP,OUTER_GAP,W-OUTER_GAP*2,H-OUTER_GAP*2);
+
+    /* ── Defs: one gradient per risk level ── */
+    var defs=makeSVGEl('defs',{});
+    ['critical','high','medium','low'].forEach(function(risk){
+      var g=makeSVGEl('linearGradient',{id:'cemGrad_'+risk,x1:'0',y1:'0',x2:'1',y2:'1'});
+      var s1=makeSVGEl('stop',{offset:'0%','stop-color':riskColor(risk)});
+      var s2=makeSVGEl('stop',{offset:'100%','stop-color':riskColor2(risk)});
       g.appendChild(s1); g.appendChild(s2); defs.appendChild(g);
     });
+    /* legend gradient */
+    var lg=makeSVGEl('linearGradient',{id:'cemLegGrad',x1:'0',y1:'0',x2:'1',y2:'0'});
+    lg.appendChild(makeSVGEl('stop',{offset:'0%','stop-color':'#FF0000'}));
+    lg.appendChild(makeSVGEl('stop',{offset:'33%','stop-color':'#FF6600'}));
+    lg.appendChild(makeSVGEl('stop',{offset:'65%','stop-color':'#448800'}));
+    lg.appendChild(makeSVGEl('stop',{offset:'100%','stop-color':'#008000'}));
+    defs.appendChild(lg);
     svg.appendChild(defs);
 
-    rects.forEach(function(r,i){
-      var p=PALETTE[r.risk];
-      var tw=r.w-GAP*2, th=r.h-GAP*2;
-      if(tw<4||th<4) return;
-      var g=document.createElementNS(ns,'g');
-      g.style.cursor='pointer'; g.style.opacity='0';
-      g.style.transition='opacity .35s ease';
-      setTimeout(function(gg){gg.style.opacity='1';}(g),0); // immediate fade-in via transition
-      requestAnimationFrame(function(gg,delay){ setTimeout(function(){gg.style.opacity='1';},delay); }.bind(null,g,i*10));
+    var tileIdx=0;
+    secRects.forEach(function(sr){
+      var sector=groupMap[sr.key];
+      var sx=sr.x+SECTOR_GAP, sy=sr.y+SECTOR_GAP;
+      var sw=sr.w-SECTOR_GAP*2, sh=sr.h-SECTOR_GAP*2;
+      if(sw<10||sh<10) return;
 
-      // Tile rect
-      var rect=document.createElementNS(ns,'rect');
-      rect.setAttribute('x',r.x+GAP); rect.setAttribute('y',r.y+GAP);
-      rect.setAttribute('width',tw); rect.setAttribute('height',th);
-      rect.setAttribute('rx','6'); rect.setAttribute('fill','url(#cemg'+i+')');
-      rect.style.transition='filter .15s,transform .15s';
-      g.appendChild(rect);
+      /* Sector background */
+      svg.appendChild(makeSVGEl('rect',{x:sx,y:sy,width:sw,height:sh,rx:'5',fill:'#0a0f1a',opacity:'1'}));
 
-      // Sheen overlay
-      if(tw>50&&th>30){
-        var ov=document.createElementNS(ns,'rect');
-        ov.setAttribute('x',r.x+GAP); ov.setAttribute('y',r.y+GAP);
-        ov.setAttribute('width',tw); ov.setAttribute('height',Math.min(th*0.4,20));
-        ov.setAttribute('rx','6'); ov.setAttribute('fill','rgba(255,255,255,.07)');
-        g.appendChild(ov);
-      }
+      /* Sector label bar */
+      svg.appendChild(makeSVGEl('rect',{x:sx,y:sy,width:sw,height:LABEL_H,rx:'4',fill:'rgba(255,255,255,.04)'}));
+      var lbl=makeSVGEl('text',{x:sx+7,y:sy+LABEL_H-6,'font-size':'9','font-weight':'900','fill':'rgba(255,255,255,.45)','font-family':'system-ui,sans-serif','letter-spacing':'0.08em','pointer-events':'none'});
+      lbl.textContent=sr.key.toUpperCase();
+      svg.appendChild(lbl);
 
-      // Name label
-      if(tw>55&&th>28){
-        var fs=Math.max(8,Math.min(13,tw/8));
-        var cx2=r.x+GAP+tw/2, cy2=r.y+GAP+th/2;
-        var tN=document.createElementNS(ns,'text');
-        tN.setAttribute('x',cx2); tN.setAttribute('y',th>50?cy2-7:cy2+1);
-        tN.setAttribute('text-anchor','middle'); tN.setAttribute('dominant-baseline','middle');
-        tN.setAttribute('font-size',fs); tN.setAttribute('font-weight','800');
-        tN.setAttribute('fill','rgba(255,255,255,.92)'); tN.setAttribute('font-family','system-ui,sans-serif');
-        tN.setAttribute('pointer-events','none');
-        tN.textContent=tw<100?r.short:r.name;
-        g.appendChild(tN);
-        if(th>50){
-          var tA=document.createElementNS(ns,'text');
-          tA.setAttribute('x',cx2); tA.setAttribute('y',cy2+9);
-          tA.setAttribute('text-anchor','middle'); tA.setAttribute('dominant-baseline','middle');
-          tA.setAttribute('font-size',Math.max(7,fs-2)); tA.setAttribute('font-weight','500');
-          tA.setAttribute('fill','rgba(255,255,255,.55)'); tA.setAttribute('font-family','system-ui,sans-serif');
-          tA.setAttribute('pointer-events','none');
-          tA.textContent=inrFmt(r.outstanding);
-          g.appendChild(tA);
+      /* Tile area inside sector (below label) */
+      var ta_x=sx+TILE_GAP, ta_y=sy+LABEL_H+TILE_GAP;
+      var ta_w=sw-TILE_GAP*2, ta_h=sh-LABEL_H-TILE_GAP*2;
+      if(ta_w<6||ta_h<6) return;
+
+      var buyerItems=sector.buyers.map(function(b){return Object.assign({},b,{value:b.outstanding});});
+      var tileRects=squarify(buyerItems,ta_x,ta_y,ta_w,ta_h);
+
+      tileRects.forEach(function(r,bi){
+        var tw=r.w-TILE_GAP*2, th=r.h-TILE_GAP*2;
+        if(tw<3||th<3) return;
+        var rx=r.x+TILE_GAP, ry=r.y+TILE_GAP;
+
+        /* clipPath — text stays inside tile bounds */
+        var clipId='cemclip_'+tileIdx;
+        var cp=makeSVGEl('clipPath',{id:clipId});
+        cp.appendChild(makeSVGEl('rect',{x:rx,y:ry,width:tw,height:th}));
+        defs.appendChild(cp);
+
+        var grp=makeSVGEl('g',{'clip-path':'url(#'+clipId+')'});
+        grp.style.cursor='pointer';
+        grp.style.opacity='0';
+        grp.style.transition='opacity .4s ease '+(tileIdx*12)+'ms';
+        (function(gg){requestAnimationFrame(function(){gg.style.opacity='1';});})(grp);
+        tileIdx++;
+
+        /* tile fill */
+        var rect=makeSVGEl('rect',{x:rx,y:ry,width:tw,height:th,rx:'3',fill:'url(#cemGrad_'+r.risk+')'});
+        rect.style.transition='filter .15s';
+        grp.appendChild(rect);
+
+        /* sheen */
+        if(tw>36&&th>22){
+          grp.appendChild(makeSVGEl('rect',{x:rx,y:ry,width:tw,height:Math.min(th*0.38,14),rx:'3',fill:'rgba(255,255,255,.08)','pointer-events':'none'}));
         }
-      }
 
-      // Critical pulse dot
-      if(r.risk==='critical'&&tw>80&&th>50){
-        var dot=document.createElementNS(ns,'circle');
-        dot.setAttribute('cx',r.x+GAP+tw-12); dot.setAttribute('cy',r.y+GAP+12);
-        dot.setAttribute('r','4'); dot.setAttribute('fill','#fff'); dot.setAttribute('opacity','0.8');
-        dot.setAttribute('pointer-events','none');
-        g.appendChild(dot);
-      }
+        /* text via foreignObject for native word-wrap */
+        if(tw>28&&th>18){
+          var PAD=4;
+          var fo=makeSVGEl('foreignObject',{x:rx+PAD,y:ry+PAD,width:Math.max(0,tw-PAD*2),height:Math.max(0,th-PAD*2),'pointer-events':'none'});
+          /* font size: scale with tile area, clamped */
+          var area=tw*th;
+          var fs=Math.max(7, Math.min(16, Math.sqrt(area)/12));
+          var fsAmt=Math.max(6, fs-2);
+          var useShort=tw<90;
+          var label=useShort?r.short:r.name;
+          var div=document.createElement('div');
+          div.setAttribute('xmlns','http://www.w3.org/1999/xhtml');
+          div.style.cssText='width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box;text-align:center';
+          var nm=document.createElement('div');
+          nm.style.cssText='font-size:'+fs+'px;font-weight:800;color:rgba(255,255,255,.92);font-family:system-ui,sans-serif;word-break:break-word;overflow-wrap:break-word;white-space:normal;line-height:1.2;max-width:100%;';
+          nm.textContent=label;
+          div.appendChild(nm);
+          if(th>36){
+            var am=document.createElement('div');
+            am.style.cssText='font-size:'+fsAmt+'px;font-weight:500;color:rgba(255,255,255,.5);font-family:system-ui,sans-serif;margin-top:2px;white-space:nowrap;';
+            am.textContent=inrFmt(r.outstanding);
+            div.appendChild(am);
+          }
+          fo.appendChild(div);
+          grp.appendChild(fo);
+        }
 
-      // Events
-      g.addEventListener('mouseenter',function(rr,rct,ev){ rct.style.filter='brightness(1.2) drop-shadow(0 4px 18px rgba(0,0,0,.55))'; showTip(rr,ev); }.bind(null,r,rect));
-      g.addEventListener('mousemove', function(ev){ moveTip(ev); });
-      g.addEventListener('mouseleave',function(rct){ rct.style.filter=''; tip.style.display='none'; }.bind(null,rect));
-      g.addEventListener('click',     function(rr){ openPanel(rr); }.bind(null,r));
-      svg.appendChild(g);
+        grp.addEventListener('mouseenter',function(rr,rc,ev){rc.style.filter='brightness(1.25) drop-shadow(0 3px 12px rgba(0,0,0,.6))';showTip(rr,ev);}.bind(null,r,rect));
+        grp.addEventListener('mousemove',function(ev){moveTip(ev);});
+        grp.addEventListener('mouseleave',function(rc){rc.style.filter='';tip.style.display='none';}.bind(null,rect));
+        grp.addEventListener('click',function(rr){openPanel(rr);}.bind(null,r));
+        svg.appendChild(grp);
+      });
+    });
+
+    /* ── Bottom-right legend ── */
+    var LEG_W=180, LEG_H=36, LEG_PAD=10;
+    var lx=W-LEG_W-LEG_PAD, ly=H-LEG_H-LEG_PAD;
+
+    /* legend bg */
+    svg.appendChild(makeSVGEl('rect',{x:lx-8,y:ly-6,width:LEG_W+16,height:LEG_H+12,rx:'6',fill:'rgba(0,0,0,.65)'}));
+
+    /* gradient bar */
+    svg.appendChild(makeSVGEl('rect',{x:lx,y:ly+14,width:LEG_W,height:10,rx:'3',fill:'url(#cemLegGrad)'}));
+
+    /* labels */
+    var legTitle=makeSVGEl('text',{x:lx+LEG_W/2,y:ly+8,'text-anchor':'middle','font-size':'8','font-weight':'700','fill':'rgba(255,255,255,.5)','font-family':'system-ui,sans-serif','letter-spacing':'0.08em'});
+    legTitle.textContent='RISK EXPOSURE';
+    svg.appendChild(legTitle);
+
+    [['CRITICAL',lx,0],['LOW',lx+LEG_W,1]].forEach(function(item){
+      var t=makeSVGEl('text',{x:item[1],y:ly+34,'text-anchor':item[2]===0?'start':'end','font-size':'7.5','font-weight':'700','fill':item[2]===0?'#FF4444':'#44AA44','font-family':'system-ui,sans-serif'});
+      t.textContent=item[0];
+      svg.appendChild(t);
     });
   }
 
   function showTip(r,e){
-    var p=PALETTE[r.risk];
-    document.getElementById('cem-tip-name').textContent   = r.name;
-    document.getElementById('cem-tip-badge').style.background = p.badge;
-    document.getElementById('cem-tip-risk').textContent   = p.label+' RISK';
-    document.getElementById('cem-tip-risk').style.color   = p.badgeText;
-    document.getElementById('cem-tip-dot').style.background = p.bg;
-    document.getElementById('cem-tip-amt').textContent    = inrFmt(r.outstanding);
-    document.getElementById('cem-tip-share').textContent  = r.share+'%';
-    document.getElementById('cem-tip-delay').textContent  = r.delay+' days';
-    document.getElementById('cem-tip-collect').textContent= r.collect;
-    document.getElementById('cem-tip-action').textContent = r.action;
+    var rc=riskColor(r.risk), rl=RISK_LABEL[r.risk];
+    document.getElementById('cem-tip-name').textContent    = r.name;
+    document.getElementById('cem-tip-badge').style.background = rc+'22';
+    document.getElementById('cem-tip-risk').textContent    = rl+' RISK';
+    document.getElementById('cem-tip-risk').style.color    = rc;
+    document.getElementById('cem-tip-dot').style.background  = rc;
+    document.getElementById('cem-tip-amt').textContent     = inrFmt(r.outstanding);
+    document.getElementById('cem-tip-share').textContent   = r.share+'%';
+    document.getElementById('cem-tip-delay').textContent   = r.delay+' days';
+    document.getElementById('cem-tip-collect').textContent = r.collect;
+    document.getElementById('cem-tip-action').textContent  = r.action;
     tip.style.display='block';
     moveTip(e);
   }
@@ -11062,18 +11298,18 @@ window.initCashExposureMap = function(){
     tip.style.left=lx+'px'; tip.style.top=Math.max(0,ly)+'px';
   }
   function openPanel(r){
-    var p=PALETTE[r.risk];
+    var rc=riskColor(r.risk), rl=RISK_LABEL[r.risk];
     var pri=r.risk==='critical'?92:r.risk==='high'?72:r.risk==='medium'?45:22;
     document.getElementById('cem-panel-body').innerHTML=
-      '<div style="background:'+p.bg+';border-radius:12px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden">'
-      +'<div style="font-size:9px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.6);text-transform:uppercase;margin-bottom:5px">'+p.label+' RISK</div>'
+      '<div style="background:linear-gradient(135deg,'+rc+','+riskColor2(r.risk)+');border-radius:12px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden">'
+      +'<div style="font-size:9px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.65);text-transform:uppercase;margin-bottom:5px">'+rl+' RISK &bull; '+r.industry+'</div>'
       +'<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:2px">'+r.name+'</div>'
       +'<div style="font-size:24px;font-weight:900;color:#fff">'+inrFmt(r.outstanding)+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:1px">Outstanding</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:1px">Outstanding Receivable</div>'
       +'<div style="position:absolute;right:-8px;top:-8px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.07)"></div>'
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px">'
-      +[{l:'Portfolio Share',v:r.share+'%'},{l:'Avg Delay',v:r.delay+' days'},{l:'Expected Collection',v:r.collect},{l:'Risk Rating',v:p.label}]
+      +[{l:'Portfolio Share',v:r.share+'%'},{l:'Avg Delay',v:r.delay+' days'},{l:'Expected Collection',v:r.collect},{l:'Industry',v:r.industry}]
        .map(function(k){return '<div style="background:#1e293b;border-radius:9px;padding:11px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin-bottom:3px">'+k.l+'</div><div style="font-size:13px;font-weight:800;color:#f1f5f9">'+k.v+'</div></div>';}).join('')
       +'</div>'
       +'<div style="background:#1e293b;border-radius:10px;padding:13px;margin-bottom:12px">'
@@ -11081,38 +11317,281 @@ window.initCashExposureMap = function(){
       +'<div style="font-size:12px;color:#cbd5e1;line-height:1.6">'+r.action+'</div>'
       +'</div>'
       +'<div style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:13px">'
-      +'<div style="font-size:11px;font-weight:700;color:#818cf8;margin-bottom:8px">⚡ Priority Score</div>'
+      +'<div style="font-size:11px;font-weight:700;color:#818cf8;margin-bottom:8px">&#9889; Priority Score</div>'
       +'<div style="display:flex;align-items:center;gap:10px">'
-      +'<div style="flex:1;height:5px;background:#1e293b;border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pri+'%;background:'+p.bg+';border-radius:3px"></div></div>'
+      +'<div style="flex:1;height:5px;background:#1e293b;border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pri+'%;background:'+rc+';border-radius:3px"></div></div>'
       +'<span style="font-size:12px;font-weight:900;color:#f1f5f9">'+pri+'/100</span>'
       +'</div></div>';
     panel.style.right='0';
   }
 
-  draw();
+  /* ── Flat treemap for Sector / State views ── */
+  function scoreToRisk(score){
+    return score < 35 ? 'critical' : score < 55 ? 'high' : score < 75 ? 'medium' : 'low';
+  }
+
+  function buildAggregated(groupKey){
+    /* groupKey = 'industry' for sector, 'state' for state */
+    var map={};
+    BUYERS.forEach(function(b){
+      var key = (b[groupKey]||'').trim() || 'Unknown';
+      if(!map[key]) map[key]={name:key, outstanding:0, _wScore:0, buyers:[]};
+      map[key].outstanding += b.outstanding||0;
+      /* weighted risk score using riskScore from DB or derived from risk string */
+      var rs = b.riskScore != null ? b.riskScore
+               : (b.risk==='low'?85:b.risk==='medium'?62:b.risk==='high'?42:20);
+      map[key]._wScore += rs * (b.outstanding||0);
+      map[key].buyers.push(b);
+    });
+    return Object.values(map)
+      .filter(function(g){return g.outstanding>0;})
+      .map(function(g){
+        var wScore = g.outstanding>0 ? Math.round(g._wScore/g.outstanding) : 50;
+        var risk = scoreToRisk(wScore);
+        var totalAll = BUYERS.reduce(function(s,b){return s+(b.outstanding||0);},0);
+        return Object.assign({},g,{
+          value: g.outstanding, risk: risk, riskScore: wScore,
+          share: totalAll>0 ? Math.round((g.outstanding/totalAll)*1000)/10 : 0,
+          short: g.name,
+          delay: g.buyers.length ? Math.round(g.buyers.reduce(function(s,b){return s+(b.delay||b.avgDelay||0);},0)/g.buyers.length) : 0,
+          count: g.buyers.length,
+          /* top 3 buyers by outstanding */
+          topBuyers: g.buyers.slice().sort(function(a,b){return (b.outstanding||0)-(a.outstanding||0);}).slice(0,3),
+        });
+      })
+      .sort(function(a,b){return b.outstanding-a.outstanding;});
+  }
+
+  function drawFlat(items, groupLabel){
+    var W=wrap.clientWidth, H=wrap.clientHeight;
+    if(!W||!H) return;
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    svg.setAttribute('width',W); svg.setAttribute('height',H);
+    svg.innerHTML='';
+
+    if(!items.length){
+      /* empty state */
+      var fo=makeSVGEl('foreignObject',{x:0,y:0,width:W,height:H});
+      var d=document.createElement('div');
+      d.setAttribute('xmlns','http://www.w3.org/1999/xhtml');
+      d.style.cssText='width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#475569;font-family:system-ui,sans-serif';
+      d.innerHTML='<div style="font-size:36px">📭</div>'
+        +'<div style="font-size:14px;font-weight:700;color:#64748b">'+groupLabel+' information not available in uploaded data</div>'
+        +'<button onclick="AppState.set({page:\'onboarding\'});App.onStateChange()" style="margin-top:8px;padding:9px 22px;background:#6366f1;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Upload Updated Data</button>';
+      fo.appendChild(d); svg.appendChild(fo);
+      return;
+    }
+
+    var OUTER_GAP=3, TILE_GAP=2;
+    var itemsWithVal = items.map(function(it){return Object.assign({},it,{value:it.outstanding});});
+    var rects = squarify(itemsWithVal, OUTER_GAP, OUTER_GAP, W-OUTER_GAP*2, H-OUTER_GAP*2);
+
+    /* defs */
+    var defs=makeSVGEl('defs',{});
+    ['critical','high','medium','low'].forEach(function(risk){
+      var g=makeSVGEl('linearGradient',{id:'cemGradF_'+risk,x1:'0',y1:'0',x2:'1',y2:'1'});
+      g.appendChild(makeSVGEl('stop',{offset:'0%','stop-color':riskColor(risk)}));
+      g.appendChild(makeSVGEl('stop',{offset:'100%','stop-color':riskColor2(risk)}));
+      defs.appendChild(g);
+    });
+    var lg=makeSVGEl('linearGradient',{id:'cemLegGradF',x1:'0',y1:'0',x2:'1',y2:'0'});
+    lg.appendChild(makeSVGEl('stop',{offset:'0%','stop-color':'#FF0000'}));
+    lg.appendChild(makeSVGEl('stop',{offset:'33%','stop-color':'#FF6600'}));
+    lg.appendChild(makeSVGEl('stop',{offset:'65%','stop-color':'#448800'}));
+    lg.appendChild(makeSVGEl('stop',{offset:'100%','stop-color':'#008000'}));
+    defs.appendChild(lg);
+    svg.appendChild(defs);
+
+    var tIdx=0;
+    rects.forEach(function(r){
+      var tw=r.w-TILE_GAP*2, th=r.h-TILE_GAP*2;
+      if(tw<4||th<4) return;
+      var rx=r.x+TILE_GAP, ry=r.y+TILE_GAP;
+
+      var clipId='cemclipF_'+tIdx;
+      var cp=makeSVGEl('clipPath',{id:clipId});
+      cp.appendChild(makeSVGEl('rect',{x:rx,y:ry,width:tw,height:th}));
+      defs.appendChild(cp);
+
+      var grp=makeSVGEl('g',{'clip-path':'url(#'+clipId+')'});
+      grp.style.cursor='pointer';
+      grp.style.opacity='0';
+      grp.style.transition='opacity .4s ease '+(tIdx*15)+'ms';
+      (function(gg){requestAnimationFrame(function(){gg.style.opacity='1';});})(grp);
+      tIdx++;
+
+      var rect=makeSVGEl('rect',{x:rx,y:ry,width:tw,height:th,rx:'5',fill:'url(#cemGradF_'+r.risk+')'});
+      rect.style.transition='filter .15s';
+      grp.appendChild(rect);
+
+      /* sheen */
+      if(tw>40&&th>24){
+        grp.appendChild(makeSVGEl('rect',{x:rx,y:ry,width:tw,height:Math.min(th*0.3,16),rx:'4',fill:'rgba(255,255,255,.09)','pointer-events':'none'}));
+      }
+
+      /* buyer count badge */
+      if(tw>60&&th>40){
+        var badgeW=Math.max(28, String(r.count+' buyers').length*6+8);
+        grp.appendChild(makeSVGEl('rect',{x:rx+6,y:ry+6,width:badgeW,height:16,rx:'4',fill:'rgba(0,0,0,.35)'}));
+        var bt=makeSVGEl('text',{x:rx+10,y:ry+17,'font-size':'8','font-weight':'700','fill':'rgba(255,255,255,.7)','font-family':'system-ui,sans-serif'});
+        bt.textContent=r.count+' buyer'+(r.count!==1?'s':'');
+        grp.appendChild(bt);
+      }
+
+      /* text */
+      if(tw>30&&th>22){
+        var PAD=5;
+        var fo=makeSVGEl('foreignObject',{x:rx+PAD,y:ry+PAD,width:Math.max(0,tw-PAD*2),height:Math.max(0,th-PAD*2),'pointer-events':'none'});
+        var area=tw*th;
+        var fs=Math.max(8, Math.min(22, Math.sqrt(area)/10));
+        var fsAmt=Math.max(7, fs-3);
+        var div=document.createElement('div');
+        div.setAttribute('xmlns','http://www.w3.org/1999/xhtml');
+        div.style.cssText='width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box;text-align:center';
+        var nm=document.createElement('div');
+        nm.style.cssText='font-size:'+fs+'px;font-weight:900;color:rgba(255,255,255,.95);font-family:system-ui,sans-serif;word-break:break-word;overflow-wrap:break-word;white-space:normal;line-height:1.15;max-width:100%';
+        nm.textContent=r.name;
+        div.appendChild(nm);
+        if(th>45){
+          var am=document.createElement('div');
+          am.style.cssText='font-size:'+fsAmt+'px;font-weight:600;color:rgba(255,255,255,.55);font-family:system-ui,sans-serif;margin-top:3px;white-space:nowrap';
+          am.textContent=inrFmt(r.outstanding);
+          div.appendChild(am);
+        }
+        fo.appendChild(div);
+        grp.appendChild(fo);
+      }
+
+      grp.addEventListener('mouseenter',function(rr,rc,ev){rc.style.filter='brightness(1.2) drop-shadow(0 4px 14px rgba(0,0,0,.6))';showFlatTip(rr,ev,groupLabel);}.bind(null,r,rect));
+      grp.addEventListener('mousemove',function(ev){moveTip(ev);});
+      grp.addEventListener('mouseleave',function(rc){rc.style.filter='';tip.style.display='none';}.bind(null,rect));
+      grp.addEventListener('click',function(rr){openFlatPanel(rr,groupLabel);}.bind(null,r));
+      svg.appendChild(grp);
+    });
+
+    /* Legend */
+    var LEG_W=180,LEG_H=36,LEG_PAD=10;
+    var lx=W-LEG_W-LEG_PAD, ly=H-LEG_H-LEG_PAD;
+    svg.appendChild(makeSVGEl('rect',{x:lx-8,y:ly-6,width:LEG_W+16,height:LEG_H+12,rx:'6',fill:'rgba(0,0,0,.65)'}));
+    svg.appendChild(makeSVGEl('rect',{x:lx,y:ly+14,width:LEG_W,height:10,rx:'3',fill:'url(#cemLegGradF)'}));
+    var lt=makeSVGEl('text',{x:lx+LEG_W/2,y:ly+8,'text-anchor':'middle','font-size':'8','font-weight':'700','fill':'rgba(255,255,255,.5)','font-family':'system-ui,sans-serif','letter-spacing':'0.08em'});
+    lt.textContent='RISK EXPOSURE'; svg.appendChild(lt);
+    [['CRITICAL',lx,0],['LOW',lx+LEG_W,1]].forEach(function(item){
+      var t=makeSVGEl('text',{x:item[1],y:ly+34,'text-anchor':item[2]===0?'start':'end','font-size':'7.5','font-weight':'700','fill':item[2]===0?'#FF4444':'#44AA44','font-family':'system-ui,sans-serif'});
+      t.textContent=item[0]; svg.appendChild(t);
+    });
+  }
+
+  function showFlatTip(r, e, groupLabel){
+    var rc=riskColor(r.risk), rl=RISK_LABEL[r.risk];
+    document.getElementById('cem-tip-name').textContent    = r.name;
+    document.getElementById('cem-tip-badge').style.background = rc+'22';
+    document.getElementById('cem-tip-risk').textContent    = rl+' RISK';
+    document.getElementById('cem-tip-risk').style.color    = rc;
+    document.getElementById('cem-tip-dot').style.background  = rc;
+    document.getElementById('cem-tip-amt').textContent     = inrFmt(r.outstanding);
+    document.getElementById('cem-tip-share').textContent   = r.share+'%';
+    document.getElementById('cem-tip-delay').textContent   = r.delay+' days avg';
+    document.getElementById('cem-tip-collect').textContent = r.count+' buyer'+(r.count!==1?'s':'');
+    document.getElementById('cem-tip-action').textContent  = 'Top: '+(r.topBuyers||[]).map(function(b){return b.name;}).join(', ');
+    tip.style.display='block';
+    moveTip(e);
+  }
+
+  function openFlatPanel(r, groupLabel){
+    var rc=riskColor(r.risk), rl=RISK_LABEL[r.risk];
+    var pri=r.risk==='critical'?92:r.risk==='high'?72:r.risk==='medium'?45:22;
+    var topList=(r.topBuyers||[]).map(function(b){
+      var br=scoreToRisk(b.riskScore||50);
+      var bc=riskColor(br);
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1e293b">'
+        +'<div style="font-size:11px;font-weight:700;color:#e2e8f0">'+b.name+'</div>'
+        +'<div style="display:flex;gap:8px;align-items:center">'
+        +'<span style="font-size:10px;color:'+bc+';font-weight:700">'+RISK_LABEL[br]+'</span>'
+        +'<span style="font-size:12px;font-weight:800;color:#f1f5f9">'+inrFmt(b.outstanding||b.currentExposure||0)+'</span>'
+        +'</div></div>';
+    }).join('');
+    document.getElementById('cem-panel-body').innerHTML=
+      '<div style="background:linear-gradient(135deg,'+rc+','+riskColor2(r.risk)+');border-radius:12px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden">'
+      +'<div style="font-size:9px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.65);text-transform:uppercase;margin-bottom:5px">'+rl+' RISK &bull; '+groupLabel.toUpperCase()+'</div>'
+      +'<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:2px">'+r.name+'</div>'
+      +'<div style="font-size:24px;font-weight:900;color:#fff">'+inrFmt(r.outstanding)+'</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:1px">Total Outstanding · '+r.count+' buyers</div>'
+      +'<div style="position:absolute;right:-8px;top:-8px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.07)"></div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px">'
+      +[{l:'Portfolio Share',v:r.share+'%'},{l:'Buyers',v:r.count},{l:'Avg Delay',v:r.delay+' days'},{l:'Weighted Risk',v:r.riskScore+'/100'}]
+       .map(function(k){return '<div style="background:#1e293b;border-radius:9px;padding:11px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin-bottom:3px">'+k.l+'</div><div style="font-size:13px;font-weight:800;color:#f1f5f9">'+k.v+'</div></div>';}).join('')
+      +'</div>'
+      +'<div style="background:#1e293b;border-radius:10px;padding:13px;margin-bottom:12px">'
+      +'<div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#475569;margin-bottom:7px">Top Buyers</div>'
+      +topList
+      +'</div>'
+      +'<div style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:13px">'
+      +'<div style="font-size:11px;font-weight:700;color:#818cf8;margin-bottom:8px">&#9889; Priority Score</div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<div style="flex:1;height:5px;background:#1e293b;border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pri+'%;background:'+rc+';border-radius:3px"></div></div>'
+      +'<span style="font-size:12px;font-weight:900;color:#f1f5f9">'+pri+'/100</span>'
+      +'</div></div>';
+    panel.style.right='0';
+  }
+
+  var view = window._cemView || 'all';
+  if(view==='sector'){
+    var aggSector = buildAggregated('rawSector');
+    drawFlat(aggSector, 'Sector');
+  } else if(view==='state'){
+    var aggState = buildAggregated('state');
+    drawFlat(aggState, 'State');
+  } else {
+    draw();
+  }
+
   if(window._cemRO) window._cemRO.disconnect();
-  window._cemRO = new ResizeObserver(function(){ draw(); });
+  window._cemRO = new ResizeObserver(function(){
+    var v=window._cemView||'all';
+    if(v==='sector') drawFlat(buildAggregated('rawSector'),'Sector');
+    else if(v==='state') drawFlat(buildAggregated('state'),'State');
+    else draw();
+  });
   window._cemRO.observe(wrap);
 };
 
 function renderCashExposureMap(){
-  var total = window.CEM_BUYERS.reduce(function(s,b){return s+b.outstanding;},0);
   var inrFmt = function(v){return v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v;};
   var PAL = window.CEM_PALETTE;
+  /* Use live DB data for header counts if available */
+  var liveExp = (typeof DB!=='undefined') && DB.buyers && DB.buyers.some(function(b){return (b.currentExposure||0)>0;});
+  var headerBuyers = liveExp
+    ? DB.buyers.filter(function(b){return (b.currentExposure||0)>0;})
+    : window.CEM_BUYERS;
+  var total = headerBuyers.reduce(function(s,b){return s+(b.outstanding||b.currentExposure||0);},0);
 
-  return '<div style="height:calc(100vh - var(--topbar-h));display:flex;flex-direction:column;padding:20px 24px;background:#0d1117;box-sizing:border-box;overflow:hidden">'
+  return '<div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0d1117;box-sizing:border-box;overflow:hidden">'
 
     /* ── Header ── */
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0">'
     +'<div>'
     +'<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:3px">Cash Intelligence</div>'
     +'<div style="font-size:22px;font-weight:900;color:#f1f5f9;letter-spacing:-.3px">Cash Exposure Map</div>'
-    +'<div style="font-size:12px;color:#475569;margin-top:2px">Where your cash flow risk is concentrated &nbsp;·&nbsp; '+window.CEM_BUYERS.length+' buyers &nbsp;·&nbsp; '+inrFmt(total)+' total exposure</div>'
+    +'<div style="font-size:12px;color:#475569;margin-top:2px">Where your cash flow risk is concentrated &nbsp;·&nbsp; '+headerBuyers.length+' buyers &nbsp;·&nbsp; '+inrFmt(total)+' total exposure</div>'
     +'</div>'
     +'<div style="display:flex;align-items:center;gap:12px;flex-shrink:0">'
     +['low','medium','high','critical'].map(function(r){return '<div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:'+PAL[r].bg+'"></div><span style="font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase">'+PAL[r].label+'</span></div>';}).join('')
     +'<div style="width:1px;height:18px;background:#1e293b;margin:0 2px"></div>'
     +'<div style="font-size:10.5px;color:#475569">Tile size = Outstanding</div>'
+    +'<div style="width:1px;height:18px;background:#1e293b;margin:0 2px"></div>'
+    /* ── Exposure View dropdown ── */
+    +'<div style="position:relative" id="cem-view-wrap">'
+    +'<button onclick="window.cemToggleDD()" id="cem-dd-btn" style="display:flex;align-items:center;gap:7px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 12px;color:#e2e8f0;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">'
+    +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6366f1" stroke-width="1.5"/><path d="M4 6h4M6 4v4" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    +'<span id="cem-dd-label">▼ Exposure View</span>'
+    +'</button>'
+    +'<div id="cem-dd-menu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#0f172a;border:1px solid #1e293b;border-radius:10px;box-shadow:0 16px 40px rgba(0,0,0,.7);z-index:100;min-width:180px;overflow:hidden">'
+    +[['all','All Exposure'],['sector','Sector Exposure'],['state','State Exposure']].map(function(opt){
+      return '<button onclick="window.cemSetView(\''+opt[0]+'\')" data-cemv="'+opt[0]+'" style="display:block;width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'#1e293b\'" onmouseout="this.style.background=\'none\'">'+opt[1]+'</button>';
+    }).join('')
+    +'</div></div>'
     +'</div></div>'
 
     /* ── Treemap canvas ── */
@@ -11525,34 +12004,22 @@ async function initDB(){
       API.get('/api/alerts?limit=200'),
     ]);
 
-    if(buyersRes.status==='fulfilled' && buyersRes.value?.items?.length){
-      DB.buyers = buyersRes.value.items.map(b=>({
-        id: b.id, name: b.name, code: b.code||'', gstin: b.gstin||'',
-        contact: b.contact_name||'', phone: b.contact_phone||'', email: b.contact_email||'',
-        tradeTerm: b.trade_term||'Credit', cluster: b.cluster||'', since: '',
-        industry: b.industry||'', state: '', creditLimit: parseFloat(b.credit_limit)||0,
-        currentExposure: parseFloat(b.outstanding)||0,
-        avgMonthlyPurchase: parseFloat(b.outstanding)||0,
-        riskScore: parseInt(b.risk_score)||50,
-        avgDelay: 0, highestDelay: 0, onTimePct: 50, overdueCount: 0,
-        concentrationRisk: 'Low', tradeTermBreachPct: 0,
-        scenario: '', story: '',
-      }));
-    }
+    const stageMap = {'Pending':'pending','Paid':'settled','Overdue':'overdue','Draft':'draft'};
 
+    /* ── 1. Load invoices first (needed to compute buyer metrics) ── */
+    let rawInvoices = [];
     if(invoicesRes.status==='fulfilled' && invoicesRes.value?.items){
-      const stageMap = {'Pending':'pending','Paid':'settled','Overdue':'overdue','Draft':'draft'};
-      DB.invoices = invoicesRes.value.items.map(i=>({
+      rawInvoices = invoicesRes.value.items;
+      DB.invoices = rawInvoices.map(i=>({
         id: i.id, buyerId: i.buyer_id, buyerName: i.buyer_name||'',
         amount: parseFloat(i.amount)||0, value: parseFloat(i.amount)||0,
         status: i.status, stage: stageMap[i.status]||'pending',
-        issuedDate: i.issued_date, dueDate: i.due_date||i.due_date,
+        issuedDate: i.issued_date, dueDate: i.due_date,
         due: i.due_date, tradeTerm: i.trade_term||'Credit',
         orderId: i.order_id, paidDate: i.paid_date,
       }));
-      // Update IAH_DATA invoices too
       IAH_DATA.invoices.length = 0;
-      invoicesRes.value.items.forEach(i=>{
+      rawInvoices.forEach(i=>{
         IAH_DATA.invoices.push({
           id: i.id, buyer: i.buyer_id, value: parseFloat(i.amount)||0,
           stage: stageMap[i.status]||'pending',
@@ -11561,6 +12028,100 @@ async function initDB(){
       });
     }
 
+    /* ── 2. Build per-buyer invoice index from real data ── */
+    const today = new Date(); today.setHours(0,0,0,0);
+    const buyerInvMap = {};
+    DB.invoices.forEach(inv=>{
+      if(!buyerInvMap[inv.buyerId]) buyerInvMap[inv.buyerId]=[];
+      buyerInvMap[inv.buyerId].push(inv);
+    });
+
+    /* ── 3. Load buyers and compute ALL metrics from invoices ── */
+    if(buyersRes.status==='fulfilled' && buyersRes.value?.items?.length){
+      const totalPortfolioOut = buyersRes.value.items.reduce((s,b)=>s+(parseFloat(b.outstanding)||0),0);
+
+      DB.buyers = buyersRes.value.items.map(b=>{
+        const invs = buyerInvMap[b.id] || [];
+        const outstanding = parseFloat(b.outstanding)||0;
+
+        /* Classify each invoice */
+        const overdueInvs = invs.filter(i=>{
+          if(i.status==='Paid') return false;
+          const dd = i.dueDate ? new Date(i.dueDate) : null;
+          return dd && dd < today;
+        });
+        const paidInvs = invs.filter(i=>i.status==='Paid'||i.paidDate);
+
+        /* Overdue days for each overdue invoice */
+        const overdueDelays = overdueInvs.map(i=>{
+          const dd = new Date(i.dueDate);
+          return Math.max(0, Math.round((today - dd)/86400000));
+        });
+
+        /* Payment delay (paid invoices: paymentDate - dueDate) */
+        const paidDelays = paidInvs.filter(i=>i.paidDate&&i.dueDate).map(i=>{
+          const pd=new Date(i.paidDate), dd=new Date(i.dueDate);
+          return Math.max(0, Math.round((pd-dd)/86400000));
+        });
+
+        const avgDelay = overdueDelays.length
+          ? Math.round(overdueDelays.reduce((s,d)=>s+d,0)/overdueDelays.length)
+          : (paidDelays.length ? Math.round(paidDelays.reduce((s,d)=>s+d,0)/paidDelays.length) : 0);
+        const highestDelay = overdueDelays.length ? Math.max(...overdueDelays) : (paidDelays.length ? Math.max(...paidDelays) : 0);
+        const overdueCount = overdueInvs.length;
+        const onTimePct = invs.length ? Math.round(((invs.length-overdueCount)/invs.length)*100) : 100;
+        const tradeTermBreachPct = invs.length ? Math.round((overdueCount/invs.length)*100) : 0;
+
+        /* Exposure concentration */
+        const expPct = totalPortfolioOut>0 ? (outstanding/totalPortfolioOut)*100 : 0;
+        const concentrationRisk = expPct>=15?'Very High':expPct>=10?'High':expPct>=5?'Medium':'Low';
+
+        /* Recompute risk score from real data */
+        const payBehavScore = onTimePct;
+        const delayScore    = Math.max(0, 100 - avgDelay*2);
+        const expScore      = Math.max(0, 100 - expPct*2);
+        const overdueScore  = Math.max(0, 100 - overdueCount*15);
+        const riskScore     = Math.round(
+          payBehavScore * 0.35 +
+          delayScore    * 0.25 +
+          expScore      * 0.20 +
+          overdueScore  * 0.20
+        );
+
+        /* Build payment history for this buyer from real invoices */
+        if(!DB.paymentHistory) DB.paymentHistory={};
+        DB.paymentHistory[b.id] = invs.map(i=>({
+          invoiceNumber: i.id,
+          buyerId: b.id,
+          buyerName: b.name,
+          invoiceDate: i.issuedDate||i.dueDate,
+          dueDate: i.dueDate,
+          paymentDate: i.paidDate||null,
+          invoiceAmount: i.amount,
+          status: i.paidDate?'Paid':(i.status==='Overdue'?'Overdue':'Pending'),
+          note:'',
+        }));
+
+        return {
+          id: b.id, name: b.name, code: b.code||'', gstin: b.gstin||'',
+          contact: b.contact_name||'', phone: b.contact_phone||'', email: b.contact_email||'',
+          tradeTerm: b.trade_term||'Credit', cluster: b.cluster||'', since: b.created_at||'',
+          industry: b.industry||b.sector||'',
+          sector: b.industry||b.sector||'',
+          state: b.cluster||b.state||b.location||'',
+          creditLimit: parseFloat(b.credit_limit)||0,
+          currentExposure: outstanding, avgMonthlyPurchase: outstanding,
+          riskScore, avgDelay, highestDelay, onTimePct, overdueCount,
+          concentrationRisk, tradeTermBreachPct,
+          scenario: '', story: '',
+          _invoiceCount: invs.length,
+          _overdueAmount: overdueInvs.reduce((s,i)=>s+i.amount,0),
+          _exposurePct: Math.round(expPct*10)/10,
+        };
+      });
+    }
+
+    /* ── 4. Orders ── */
     if(ordersRes.status==='fulfilled' && ordersRes.value?.items){
       DB.orders = ordersRes.value.items.map(o=>({
         id: o.id, buyerId: o.buyer_id, buyerName: o.buyer_name||'',
@@ -11573,14 +12134,21 @@ async function initDB(){
       }));
     }
 
+    /* ── 5. Receivables — enrich with real overdue days ── */
     if(receivablesRes.status==='fulfilled' && receivablesRes.value?.items){
-      DB.receivables = receivablesRes.value.items.map(r=>({
-        id: r.id, buyerId: r.buyer_id, buyerName: r.buyer_name||'',
-        amount: parseFloat(r.amount)||0, daysOverdue: parseInt(r.days_overdue)||0,
-        status: r.status||'Current', invoiceId: r.invoice_id,
-      }));
+      DB.receivables = receivablesRes.value.items.map(r=>{
+        const dd = r.due_date ? new Date(r.due_date) : null;
+        const daysOverdue = dd ? Math.max(0,Math.round((today-dd)/86400000)) : parseInt(r.days_overdue)||0;
+        return {
+          id: r.id, buyerId: r.buyer_id, buyerName: r.buyer_name||'',
+          amount: parseFloat(r.amount)||0, daysOverdue,
+          status: daysOverdue>0?'Overdue':(r.status||'Current'), invoiceId: r.invoice_id,
+          dueDate: r.due_date,
+        };
+      });
     }
 
+    /* ── 6. Alerts ── */
     if(alertsRes.status==='fulfilled' && alertsRes.value?.items){
       DB.alerts = alertsRes.value.items.map(a=>({
         id: a.id, type: a.type||'info', severity: a.severity||'low',
@@ -11588,6 +12156,8 @@ async function initDB(){
         isRead: a.is_read, createdAt: a.created_at,
       }));
     }
+
+    console.log('[CashFlowIQ] DB loaded — buyers:'+DB.buyers.length+' invoices:'+DB.invoices.length);
   } catch(e) {
     console.warn('[CashFlowIQ] initDB failed:', e.message);
   }
@@ -11741,6 +12311,8 @@ async function cfiqOnboardProcess(){
     window._OB = data;
     localStorage.setItem('cfiq_ob', JSON.stringify(data));
     await initDB();
+    // Force all pages to re-render with fresh DB data
+    App.onStateChange();
     await new Promise(r=>setTimeout(r,600));
     cfiqOnboardRenderResults(data);
     cfiqOnboardGoStep('results');
