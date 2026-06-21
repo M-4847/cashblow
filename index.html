@@ -11761,49 +11761,49 @@ async function initDB(){
         const invs = buyerInvMap[b.id] || [];
         const outstanding = parseFloat(b.outstanding)||0;
 
-        /* Classify each invoice */
-        const overdueInvs = invs.filter(i=>{
-          if(i.status==='Paid') return false;
+        /* ── Classify invoices ── */
+        const paidInvs    = invs.filter(i=>i.status==='Paid'||i.paidDate);
+        const unpaidInvs  = invs.filter(i=>i.status!=='Paid'&&!i.paidDate);
+        const overdueInvs = unpaidInvs.filter(i=>{
           const dd = i.dueDate ? new Date(i.dueDate) : null;
           return dd && dd < today;
         });
-        const paidInvs = invs.filter(i=>i.status==='Paid'||i.paidDate);
-
-        /* Overdue days for each overdue invoice */
-        const overdueDelays = overdueInvs.map(i=>{
-          const dd = new Date(i.dueDate);
-          return Math.max(0, Math.round((today - dd)/86400000));
+        /* Late-paid = paid after due date */
+        const latePayInvs = paidInvs.filter(i=>{
+          if(!i.paidDate||!i.dueDate) return false;
+          return new Date(i.paidDate) > new Date(i.dueDate);
         });
 
-        /* Payment delay (paid invoices: paymentDate - dueDate) */
-        const paidDelays = paidInvs.filter(i=>i.paidDate&&i.dueDate).map(i=>{
-          const pd=new Date(i.paidDate), dd=new Date(i.dueDate);
-          return Math.max(0, Math.round((pd-dd)/86400000));
-        });
+        /* Delay values — combine overdue + late-paid for a complete picture */
+        const overdueDelays = overdueInvs.map(i=>
+          Math.max(0, Math.round((today - new Date(i.dueDate))/86400000))
+        );
+        const latePayDelays = latePayInvs.map(i=>
+          Math.max(0, Math.round((new Date(i.paidDate) - new Date(i.dueDate))/86400000))
+        );
+        const allDelays = [...overdueDelays, ...latePayDelays];
 
-        const avgDelay = overdueDelays.length
-          ? Math.round(overdueDelays.reduce((s,d)=>s+d,0)/overdueDelays.length)
-          : (paidDelays.length ? Math.round(paidDelays.reduce((s,d)=>s+d,0)/paidDelays.length) : 0);
-        const highestDelay = overdueDelays.length ? Math.max(...overdueDelays) : (paidDelays.length ? Math.max(...paidDelays) : 0);
-        const overdueCount = overdueInvs.length;
-        const onTimePct = invs.length ? Math.round(((invs.length-overdueCount)/invs.length)*100) : 100;
-        const tradeTermBreachPct = invs.length ? Math.round((overdueCount/invs.length)*100) : 0;
+        const overdueCount  = overdueInvs.length;
+        const latePayCount  = latePayInvs.length;
+        const badCount      = overdueCount + latePayCount;  // total problematic invoices
+        const onTimePct     = invs.length ? Math.round(((invs.length - badCount)/invs.length)*100) : 100;
+        const avgDelay      = allDelays.length ? Math.round(allDelays.reduce((s,d)=>s+d,0)/allDelays.length) : 0;
+        const highestDelay  = allDelays.length ? Math.max(...allDelays) : 0;
+        const tradeTermBreachPct = invs.length ? Math.round((badCount/invs.length)*100) : 0;
 
         /* Exposure concentration */
         const expPct = totalPortfolioOut>0 ? (outstanding/totalPortfolioOut)*100 : 0;
         const concentrationRisk = expPct>=15?'Very High':expPct>=10?'High':expPct>=5?'Medium':'Low';
 
-        /* Recompute risk score from real data */
+        /* Risk Score — same formula as backend (0=worst, 100=best) */
         const payBehavScore = onTimePct;
-        const delayScore    = Math.max(0, 100 - avgDelay*2);
-        const expScore      = Math.max(0, 100 - expPct*2);
-        const overdueScore  = Math.max(0, 100 - overdueCount*15);
-        const riskScore     = Math.round(
-          payBehavScore * 0.35 +
-          delayScore    * 0.25 +
-          expScore      * 0.20 +
-          overdueScore  * 0.20
-        );
+        const delayScore    = Math.max(0, 100 - avgDelay * 1.5);
+        const overdueScore  = invs.length ? Math.max(0, 100 - (overdueCount/invs.length)*200) : 100;
+        const riskScore     = Math.min(100, Math.max(0, Math.round(
+          payBehavScore * 0.40 +
+          delayScore    * 0.30 +
+          overdueScore  * 0.30
+        )));
 
         /* Build payment history for this buyer from real invoices */
         if(!DB.paymentHistory) DB.paymentHistory={};
