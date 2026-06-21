@@ -14673,10 +14673,18 @@ window.initCashFlowForecast = function(){
   }
 };
 
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async ()=>{
   App.init();
   if(localStorage.getItem('cfiq_login')==='true'){
     cfiqShowApp();
+    // Fetch real data from API on every page load/refresh
+    if(API.isConfigured()){
+      try{
+        await initDB();
+        // Re-render dashboard now that DB has real data
+        if(AppState.get().page==='dashboard') App.onStateChange();
+      }catch(e){ console.warn('[CashFlowIQ] initDB on load failed:',e.message); }
+    }
   } else {
     cfiqShowLanding();
   }
