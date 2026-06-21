@@ -2169,57 +2169,9 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
           <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M8 1.5L3 4v4C3 11.5 5.2 13.8 8 14.5c2.8-.7 5-3 5-6.5V4L8 1.5z" stroke-linejoin="round"/></svg></span>
           Risk Profiles
         </button>
-        <button class="nav-item nav-child" data-page="paymentBehaviour">
-          <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M2 12l3.5-4 3 2.5L12 5l2 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          Payment Behaviour
-        </button>
         <button class="nav-item nav-child" data-page="exposureAnalysis">
           <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           Exposure Analysis
-        </button>
-      </div>
-    </div>
-
-    <!-- ── Cash Flow & Risk ── -->
-    <div class="nav-group ng-risk" id="ng-risk">
-      <div class="nav-group-hdr" onclick="window.cfiqToggleGroup('ng-risk')">
-        <svg class="ng-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M2 12l3-3 2.5 2 3-5 3 2.5"/><path d="M2 14h12" stroke-linecap="round" opacity=".4"/></svg>
-        Cash Flow &amp; Risk
-        <span class="ng-arrow">▶</span>
-      </div>
-      <div class="nav-group-body">
-        <button class="nav-item nav-child" data-page="riskReports">
-          <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M2 12l3-3 2.5 2 3-5 3 2.5"/><path d="M2 14h12" stroke-linecap="round" opacity=".4"/></svg></span>
-          Cash Flow Forecast
-        </button>
-        <button class="nav-item nav-child" data-page="alerts">
-          <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M7.1 2.5L1.5 12a1 1 0 00.9 1.5h11.2a1 1 0 00.9-1.5L8.9 2.5a1 1 0 00-1.8 0z" stroke-linejoin="round"/><path d="M8 6.5v3" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".75" fill="currentColor" stroke="none"/></svg></span>
-          Predictive Alerts
-          <span class="nav-badge" id="badge-alerts" style="font-size:9px">0</span>
-        </button>
-        <button class="nav-item nav-child" data-page="scenarioAnalysis">
-          <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M2 8h3l2-4 2 8 2-4h3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          Scenario Analysis
-        </button>
-      </div>
-    </div>
-
-    <!-- ── Decision Engine ── -->
-    <div class="nav-group ng-decision" id="ng-decision">
-      <div class="nav-group-hdr" onclick="window.cfiqToggleGroup('ng-decision')">
-        <svg class="ng-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r=".9" fill="currentColor" stroke="none"/></svg>
-        Decision Engine
-        <span class="ng-arrow">▶</span>
-      </div>
-      <div class="nav-group-body">
-        <button class="nav-item nav-child" data-page="orderSimulator">
-          <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r=".9" fill="currentColor" stroke="none"/></svg></span>
-          Order Simulator
-          <span class="nav-badge ai" style="font-size:9px;padding:1px 5px">AI</span>
-        </button>
-        <button class="nav-item nav-child" data-page="portfolioImpact">
-          <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M2 12l3-4 3 2 3-5 3 3"/><path d="M2 14h12" stroke-linecap="round" opacity=".4"/></svg></span>
-          Portfolio Impact
         </button>
       </div>
     </div>
@@ -2783,7 +2735,7 @@ const DB = {
 const AppState = (() => {
   const KEY = 'cfiq_state_v1';
   window.CFIQ_API_BASE = 'https://cashflowiq-backend-production-7e59.up.railway.app';
-  const defaults = {page:'orderSimulator',tradeTerm:'All',cluster:'All',selectedBuyer:null};
+  const defaults = {page:'dashboard',tradeTerm:'All',cluster:'All',selectedBuyer:null};
   function load(){try{return Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch{return{...defaults};}}
   function save(s){localStorage.setItem(KEY,JSON.stringify(s));}
   let state = load();
@@ -3091,23 +3043,18 @@ const DashboardAPI = (() => {
 
 const PAGE_LABELS={
   dashboard:'Business Intelligence Dashboard',
-  orderSimulator:'Order Acceptance Decision Engine',
-  portfolioImpact:'Portfolio Impact Analysis',
   tradeAgreements:'Trade Agreements',
   orders:'Decision History',
   receivables:'Receivables Overview',
   collections:'Collections Intelligence',
   receivablesMap:'Receivable Intelligence Map',
   buyerRiskProfiles:'Buyer Risk Profiles',
-  paymentBehaviour:'Payment Behaviour Analysis',
   supplyMap:'Buyer Network Map',
   tradeRelationship:'Trade Relationship Intelligence',
   exposureAnalysis:'Concentration & Exposure Analysis',
   buyerComparison:'Buyer Comparison',
-  riskReports:'Cash Flow Stress Forecast',
   riskReport:'Risk Intelligence Report',
   alerts:'Predictive Alerts',
-  scenarioAnalysis:'Scenario Analysis',
   financingReadiness:'Financing Readiness Score',
   settings:'Settings',
   tradeTermDetail:'Trade Term Detail',
@@ -5459,475 +5406,254 @@ const TAEngine = (() => {
    if the API responds with live data.
    ============================================================ */
 function renderDashboard(d){
-  // ── Pull onboarding intelligence if available ──
-  const ob = window._OB || (()=>{ try{ return JSON.parse(localStorage.getItem('cfiq_ob')||'null'); }catch(e){return null;} })();
-
-  // ── No data uploaded yet: show upload hero ──
-  if(!ob){
+  return _renderBusinessDashboard();
+}
+function _renderBusinessDashboard(){
+  // ── Only show live data if it came from the API (not demo defaults) ──
+  const hasData = DB._fromAPI === true && DB.buyers && DB.buyers.length > 0;
+  if(!hasData){
     return `<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 20px">
-  <div style="max-width:560px;width:100%;text-align:center">
-    <div style="font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:16px">Business Diagnostic Engine</div>
-    <h1 style="font-size:32px;font-weight:900;color:var(--gray-900);line-height:1.2;margin:0 0 12px">Upload Your Receivables Report</h1>
-    <p style="font-size:15px;color:var(--gray-500);line-height:1.7;margin:0 0 32px">Upload one Excel file from Tally, Busy, Vyapar, or any ERP.<br>Get your Business Intelligence Score instantly.</p>
-    <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:36px">
-      ${['Tally','Busy','Vyapar','Excel'].map(s=>`<div style="background:var(--white);border:1px solid var(--gray-200);border-radius:10px;padding:8px 18px;font-size:12px;font-weight:700;color:var(--gray-600)">✓ ${s}</div>`).join('')}
-    </div>
-    <div onclick="cfiqShowOnboarding()" style="border:2px dashed #6366f1;border-radius:16px;padding:48px 32px;cursor:pointer;background:linear-gradient(135deg,rgba(99,102,241,.03),rgba(139,92,246,.03));transition:border-color .2s,background .2s" onmouseover="this.style.borderColor='#4f46e5';this.style.background='rgba(99,102,241,.07)'" onmouseout="this.style.borderColor='#6366f1';this.style.background='linear-gradient(135deg,rgba(99,102,241,.03),rgba(139,92,246,.03))'">
-      <div style="font-size:40px;margin-bottom:12px">📊</div>
-      <div style="font-size:16px;font-weight:700;color:#4f46e5;margin-bottom:6px">Drag & Drop Your File Here</div>
-      <div style="font-size:13px;color:var(--gray-400)">or click to browse — .xlsx, .xls, .csv supported</div>
-    </div>
-    <button onclick="cfiqShowOnboarding()" style="margin-top:20px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:12px;padding:14px 36px;font-size:15px;font-weight:700;cursor:pointer;width:100%;letter-spacing:.01em">
-      Upload & Analyze My Business →
+  <div style="max-width:520px;width:100%;text-align:center">
+    <div style="font-size:48px;margin-bottom:20px">📊</div>
+    <h1 style="font-size:28px;font-weight:900;color:var(--gray-900);line-height:1.2;margin:0 0 10px">Upload Your Receivables Data</h1>
+    <p style="font-size:14px;color:var(--gray-500);line-height:1.7;margin:0 0 28px">Upload your Excel file to see who is hurting your cash flow,<br>how much is stuck, and what to do next.</p>
+    <button onclick="cfiqShowOnboarding()" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:12px;padding:14px 36px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.01em">
+      Upload Excel File →
     </button>
-    <div style="margin-top:20px;font-size:12px;color:var(--gray-400)">No data entry. No forms. Just upload and get your diagnosis.</div>
+    <div style="margin-top:14px;font-size:11.5px;color:var(--gray-400)">Supports Tally, Busy, Vyapar, or any Excel export</div>
   </div>
 </div>`;
   }
 
-  // ── Data uploaded: full diagnosis view ──
-  const score = ob.biScore || 0;
-  const kd = ob.keyDrivers || {};
-  const summary = ob.summary || {};
-  const rec = ob.recommendedActions || {};
+  // ── Build live metrics from DB ──
+  const fmt = v => v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+Math.round(v);
+  const buyers = DB.buyers || [];
+  const invoices = DB.invoices || [];
+  const totalExp = buyers.reduce((s,b)=>s+(b.currentExposure||0),0);
+  const totalBuyers = buyers.length;
+  const totalInvoices = invoices.length;
+  const classifyRisk = b => b.riskScore<45?'High':b.riskScore<70?'Medium':'Low';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const overdueInvs = invoices.filter(i=>!i.paidDate&&i.status!=='Paid'&&i.dueDate&&new Date(i.dueDate)<today);
+  const overdueAmt = overdueInvs.reduce((s,i)=>s+i.amount,0);
+  const overdueRatio = totalExp>0?Math.round((overdueAmt/totalExp)*100):0;
+  const highRiskBuyers = buyers.filter(b=>classifyRisk(b)==='High');
+  const avgDelay = buyers.length ? Math.round(buyers.reduce((s,b)=>s+(b.avgDelay||0),0)/buyers.length) : 0;
 
-  // Health label & color
-  const healthLabel = score>=90?'HEALTHY':score>=75?'GOOD':score>=60?'WATCH':'CRITICAL';
-  const healthSub   = score>=90?'Your business is in great shape':score>=75?'Minor areas need attention':score>=60?'Some risks need your attention':'Immediate action required';
-  const scoreCol    = score>=90?'#10b981':score>=75?'#22c55e':score>=60?'#f59e0b':'#ef4444';
-  const statusBg    = score>=90?'rgba(16,185,129,.12)':score>=75?'rgba(34,197,94,.12)':score>=60?'rgba(245,158,11,.12)':'rgba(239,68,68,.12)';
+  // Health score
+  const onTimePct = buyers.length ? Math.round(buyers.reduce((s,b)=>s+(b.onTimePct||0),0)/buyers.length) : 50;
+  const healthScore = Math.round(onTimePct*0.35 + Math.max(0,100-avgDelay*2)*0.25 + Math.max(0,100-overdueRatio)*0.25 + Math.max(0,100-highRiskBuyers.length/Math.max(buyers.length,1)*200)*0.15);
+  const healthLabel = healthScore>=75?'Good':healthScore>=55?'Watch':healthScore>=35?'At Risk':'Critical';
+  const healthCol = healthScore>=75?'#10b981':healthScore>=55?'#f59e0b':healthScore>=35?'#f97316':'#ef4444';
 
-  // Score ring
-  const r=72, circ=2*Math.PI*r, dash=(score/100)*circ;
+  // Top 3 concentration
+  const sorted = [...buyers].sort((a,b)=>(b.currentExposure||0)-(a.currentExposure||0));
+  const top3Exp = sorted.slice(0,3).reduce((s,b)=>s+(b.currentExposure||0),0);
+  const concPct = totalExp>0?Math.round((top3Exp/totalExp)*100):0;
 
-  // Driver level helpers
-  const lvlC = l => l==='low'?'#10b981':l==='medium'?'#f59e0b':'#ef4444';
-  const lvlL = l => l==='low'?'Low':l==='medium'?'Medium':'High';
-  const lvlOpp = l => l==='low'?'Good':l==='medium'?'Moderate':'High Risk';
+  // High risk count driving delayed receivables
+  const highRiskExp = highRiskBuyers.reduce((s,b)=>s+(b.currentExposure||0),0);
+  const highRiskPct = totalExp>0?Math.round((highRiskExp/totalExp)*100):0;
 
-  // ── Compute real metrics from DB.buyers (live data, always up to date) ──
-  const inrK = v => v>=1e7?'₹'+(v/1e7).toFixed(1)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v;
-  const riskDot   = r2 => r2==='high'?'🔴':r2==='medium'?'🟠':'🟢';
-  const riskLabel = r2 => r2==='high'?'High Risk':r2==='medium'?'Medium Risk':'Low Risk';
+  // Top 5 cash drainers — use invoice total per buyer as exposure if currentExposure=0
+  const buyerInvTotal = {};
+  invoices.forEach(i=>{ buyerInvTotal[i.buyerId]=(buyerInvTotal[i.buyerId]||0)+i.amount; });
+  const effectiveExp = b => (b.currentExposure||0) > 0 ? (b.currentExposure||0) : (buyerInvTotal[b.id]||0);
+  const grandTotal = totalExp > 0 ? totalExp : buyers.reduce((s,b)=>s+(buyerInvTotal[b.id]||0),0);
 
-  const liveDB = DB.buyers && DB.buyers.length > 0;
-  const allBuyers = liveDB ? DB.buyers : [];
+  // Deduplicate by buyer name (handles duplicate DB records from multiple uploads)
+  const _seenNames = new Set();
+  const drainers = [...buyers]
+    .filter(b => {
+      if(_seenNames.has(b.name)) return false;
+      _seenNames.add(b.name);
+      return effectiveExp(b) > 0 || (b.avgDelay||0) > 0 || (b.overdueCount||0) > 0;
+    })
+    .map(b => {
+      const exp = effectiveExp(b);
+      // Keep 1 decimal to avoid 0% for small contributors
+      const contrib = grandTotal > 0 ? Math.round((exp/grandTotal)*1000)/10 : 0;
+      return {...b, _exp: exp, contrib};
+    })
+    .sort((a,b) => (b.avgDelay||0)-(a.avgDelay||0) || b._exp-a._exp)
+    .slice(0,5);
 
-  /* Portfolio totals from real data */
-  const exposure        = liveDB ? allBuyers.reduce((s,b)=>s+(b.currentExposure||0),0) : (summary.outstandingExposure||0);
-  const totalBuyers     = liveDB ? allBuyers.length : (summary.buyersAnalyzed||1);
-  const avgDelay        = liveDB && allBuyers.length
-    ? Math.round(allBuyers.reduce((s,b)=>s+(b.avgDelay||0),0)/allBuyers.length)
-    : (summary.avgDelay||0);
+  const totalDrainerExp = drainers.reduce((s,b)=>s+b._exp,0);
+  const contribFmt = c => c < 0.1 ? '<0.1%' : c+'%';
 
-  /* Risk classification: riskScore < 45 = high, 45-70 = medium, >70 = low */
-  const classifyRisk = b => b.riskScore < 45 ? 'high' : b.riskScore < 70 ? 'medium' : 'low';
-  const highRisk     = liveDB ? allBuyers.filter(b=>classifyRisk(b)==='high').length : (summary.highRiskBuyers||0);
+  // Recommended actions for top drainers
+  const actionMap = {
+    'High': [
+      b=>`Reduce credit limit for ${b.name.split(' ')[0]} immediately.`,
+      b=>`Follow up ${b.name.split(' ')[0]} — ${b.avgDelay||0} days overdue.`,
+      b=>`Do not extend new orders until outstanding is cleared.`,
+    ],
+    'Medium': [
+      b=>`Monitor ${b.name.split(' ')[0]} closely — payment delay trend.`,
+      b=>`Request payment commitment with due date.`,
+      b=>`No increase in credit limit until delay resolves.`,
+    ],
+    'Low': [
+      b=>`Routine follow-up with ${b.name.split(' ')[0]}.`,
+      b=>`Eligible for credit review if needed.`,
+    ],
+  };
 
-  /* Top risk buyers: sort by risk score ascending (worst first) */
-  const topRiskBuyers = liveDB
-    ? [...allBuyers].sort((a,b)=>a.riskScore-b.riskScore).slice(0,6).map(b=>{
-        const tier = classifyRisk(b);
-        return {
-          name: b.name, risk: tier,
-          col: tier==='high'?'#ef4444':tier==='medium'?'#f97316':'#10b981',
-          bg:  tier==='high'?'#fef2f2':tier==='medium'?'#fff7ed':'#f0fdf4',
-          outstanding: b.currentExposure||0, delay: b.avgDelay||0,
-          overdueCount: b.overdueCount||0,
-        };
-      })
-    : [
-        {name:'Top Buyer A',risk:'high',col:'#ef4444',bg:'#fef2f2',outstanding:Math.round(exposure*0.28),delay:Math.round(avgDelay*1.8),overdueCount:2},
-        {name:'Top Buyer B',risk:'high',col:'#ef4444',bg:'#fef2f2',outstanding:Math.round(exposure*0.19),delay:Math.round(avgDelay*1.5),overdueCount:1},
-      ];
+  const riskCol = r => r==='High'?'#ef4444':r==='Medium'?'#f97316':'#10b981';
+  const riskBg  = r => r==='High'?'#fef2f2':r==='Medium'?'#fff7ed':'#f0fdf4';
+  const contribCol = c => c>=15?'#ef4444':c>=10?'#f97316':c>=7?'#f59e0b':'#6366f1';
 
-  /* Cash stress from real invoice due dates */
-  const today2 = new Date(); today2.setHours(0,0,0,0);
-  const liveInvoices = DB.invoices && DB.invoices.length > 0 ? DB.invoices : [];
-  const overdueTotal  = liveInvoices.filter(i=>i.status==='Overdue'||((i.dueDate&&new Date(i.dueDate)<today2)&&i.status!=='Paid'))
-                                     .reduce((s,i)=>s+i.amount,0);
-  const overdueRatio  = exposure > 0 ? Math.round((overdueTotal/exposure)*100) : 0;
-  const stress        = liveDB
-    ? Math.min(100, Math.round(overdueRatio*0.50 + (highRisk/Math.max(totalBuyers,1))*100*0.35 + Math.min(100,(exposure>0?(allBuyers.reduce((m,b)=>Math.max(m,b.currentExposure||0),0)/exposure)*100:0))*0.15))
-    : (ob.summary?.cashStressScore || 30);
 
-  /* Build 90-day cash stress projection from upcoming due dates */
-  const futureOblByWeek = [0,0,0,0,0,0]; // weeks 0-2w, 2-4w, 4-6w, 6-8w, 8-10w, 10-12w
-  liveInvoices.filter(i=>i.status!=='Paid').forEach(i=>{
-    if(!i.dueDate) return;
-    const dd=new Date(i.dueDate), diff=Math.round((dd-today2)/86400000);
-    const wi = diff<0?0:Math.min(5,Math.floor(diff/15));
-    futureOblByWeek[wi]+=(i.amount||0);
-  });
-  const maxObl = Math.max(...futureOblByWeek, 1);
-  const stressPoints = [
-    {d:'Now',    v: Math.min(100,Math.round(stress*0.45))},
-    {d:'15d',    v: Math.min(100,Math.round(stress*0.55 + (futureOblByWeek[0]/maxObl)*20))},
-    {d:'30d',    v: Math.min(100,Math.round(stress*0.72 + (futureOblByWeek[1]/maxObl)*20))},
-    {d:'45d',    v: Math.min(100,Math.round(stress*0.83 + (futureOblByWeek[2]/maxObl)*15))},
-    {d:'60d',    v: Math.min(100,Math.round(stress*0.92 + (futureOblByWeek[3]/maxObl)*10))},
-    {d:'90d',    v: Math.min(100,Math.round(stress*1.05 + (futureOblByWeek[4]/maxObl)*8))},
+  // ── KPI cards data ──
+  const kpis = [
+    {
+      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#6366f1" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 014 0" stroke-linecap="round"/><circle cx="12" cy="14" r="2" fill="#6366f1" stroke="none"/></svg>`,
+      label:'Total Receivables Exposure', val:fmt(totalExp),
+      sub:`${totalBuyers} buyer${totalBuyers!==1?'s':''} · ${totalInvoices} invoice${totalInvoices!==1?'s':''}`,
+      col:'#6366f1', bg:'rgba(99,102,241,.08)', border:'#6366f1',
+    },
+    {
+      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="${healthCol}" stroke-width="1.8"><path d="M12 21C12 21 4 15 4 9a8 8 0 0116 0c0 6-8 12-8 12z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      label:'Cash Health Score', val:`${healthScore}/100`,
+      pill:healthLabel, pillCol:healthCol,
+      sub:'Overall business health',
+      col:healthCol, bg:`${healthCol}14`, border:healthCol,
+    },
+    {
+      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#f97316" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-linecap="round"/></svg>`,
+      label:'Top Risk Buyers', val:`${highRiskBuyers.length} Buyer${highRiskBuyers.length!==1?'s':''}`,
+      sub:`Driving ${highRiskPct}% of delayed receivables`,
+      col:'#f97316', bg:'rgba(249,115,22,.08)', border:'#f97316',
+    },
+    {
+      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3"/></svg>`,
+      label:'Concentration Risk', val:`${concPct}%`,
+      sub:'Exposure in Top 3 buyers',
+      col:'#f59e0b', bg:'rgba(245,158,11,.08)', border:'#f59e0b',
+    },
+    {
+      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
+      label:'Overdue Exposure', val:fmt(overdueAmt),
+      sub:`${overdueRatio}% of portfolio overdue`,
+      col:'#ef4444', bg:'rgba(239,68,68,.08)', border:'#ef4444',
+    },
   ];
 
-  // ── Convert stressPoints to SVG coordinates ──
-  const W=520, H=120, pad=32;
-  const xStep=(W-pad*2)/5;
-  const yScale=v=>H-pad-(v/100)*(H-pad*2);
-  const pts=stressPoints.map((p,i)=>({x:pad+i*xStep, y:yScale(p.v), d:p.d, v:p.v}));
-  const linePath='M'+pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L');
-  const areaPath=linePath+` L${pts[pts.length-1].x.toFixed(1)},${H-pad} L${pts[0].x.toFixed(1)},${H-pad} Z`;
-  const critDay=stressPoints.findIndex(p=>p.v>=70);
-  const critDayLabel=['Now','15d','30d','45d','60d','90d'];
-  const stressMsg = critDay>=0
-    ? `At current collection behaviour, cash stress is likely within <strong>${critDayLabel[critDay]}</strong>.`
-    : stress<30 ? `Cash position looks stable for the next 90 days. Overdue: ${overdueRatio}%.`
-    : `Monitor collections closely — stress score ${stress}/100 (overdue ${overdueRatio}% of portfolio).`;
+  return `
+<div id="dash-content" style="padding:24px 28px;max-width:1400px;margin:0 auto">
 
-  // ── Pre-compute concentration stats ──
-  const topConc = liveDB && allBuyers.length
-    ? Math.round((Math.max(...allBuyers.map(b=>b.currentExposure||0))/Math.max(exposure,1))*100) : 0;
-  const topBuyerName = liveDB && allBuyers.length
-    ? [...allBuyers].sort((a,b)=>(b.currentExposure||0)-(a.currentExposure||0))[0]?.name : 'Top buyer';
-  const overdueCount = liveDB ? allBuyers.reduce((s,b)=>s+(b.overdueCount||0),0) : 0;
-
-  // ── Risk Donut ──
-  const lvStr = v => (typeof v==='string'?v:(v&&v.level)||'medium').toLowerCase();
-  const drivers = [
-    {label:'Buyer Concentration', col:'#ef4444', score: liveDB ? Math.min(100,Math.round((highRisk/Math.max(totalBuyers,1))*100+topConc*0.5)) : (lvStr(kd.exposureConcentration)==='high'?75:lvStr(kd.exposureConcentration)==='low'?20:45)},
-    {label:'Overdue Receivables',  col:'#f97316', score: liveDB ? Math.min(100,overdueRatio) : (lvStr(kd.buyerRisk)==='high'?75:lvStr(kd.buyerRisk)==='low'?20:45)},
-    {label:'Cash Stress',          col:'#f59e0b', score: stress},
-    {label:'Collection Risk',      col:'#6366f1', score: liveDB ? Math.min(100,Math.round(avgDelay*2)) : (lvStr(kd.collectionConfidence)==='high'?20:lvStr(kd.collectionConfidence)==='low'?75:45)},
-  ];
-  const weights = drivers.map(d=>Math.max(5, d.score||25));
-  const total = weights.reduce((a,b)=>a+b,0);
-  let cumAngle = -Math.PI/2;
-  const donutPaths = drivers.map((d,i)=>{
-    const frac = weights[i]/total;
-    const angle = frac*2*Math.PI;
-    const x1=100+80*Math.cos(cumAngle), y1=100+80*Math.sin(cumAngle);
-    cumAngle += angle;
-    const x2=100+80*Math.cos(cumAngle), y2=100+80*Math.sin(cumAngle);
-    const large = angle>Math.PI?1:0;
-    return `<path d="M100,100 L${x1.toFixed(1)},${y1.toFixed(1)} A80,80 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${d.col}" opacity="0.88"/>`;
-  }).join('');
-
-  // ── Cash Stress SVG colors ──
-  const stressAreaCol = stress>=70?'rgba(239,68,68,.15)':stress>=45?'rgba(245,158,11,.15)':'rgba(16,185,129,.15)';
-  const stressLineCol = stress>=70?'#ef4444':stress>=45?'#f59e0b':'#10b981';
-
-  // ── Recommended Actions ──
-  const actions = Object.values(rec).filter(Boolean).slice(0,4);
-  const impacts = ['12%','₹6.4L','+8 pts','15 days'];
-  const impactLabels = ['Risk reduction','Cash protected','Score improvement','Earlier collection'];
-
-  // ── Explore Why accordion (all values from live computed data) ──
-  const accordions = [
-    {id:'acc-buyer',   icon:'🛡', title:'Buyer Risk Analysis',
-     body:`${highRisk} of ${totalBuyers} buyers are high risk. ${highRisk>0?`These ${highRisk} buyer${highRisk>1?'s':''} carry the most overdue exposure and need immediate follow-up.`:'Your buyer portfolio looks healthy overall.'}`},
-    {id:'acc-cash',    icon:'📈', title:'Cash Stress Forecast',
-     body:`Stress score: ${stress}/100. Overdue receivables are ${overdueRatio}% of total portfolio (${inrK(overdueTotal)}). ${stress>=70?'Immediate collection action needed.':stress>=40?'Prioritize follow-ups in the next 30 days.':'Cash position is manageable.'}`},
-    {id:'acc-exposure',icon:'🎯', title:'Exposure Concentration',
-     body:`${topBuyerName} holds ${topConc}% of total ${inrK(exposure)} outstanding. ${topConc>=25?'Dangerous concentration — one default would cause severe cash stress. Diversify immediately.':topConc>=15?'Elevated concentration. Reduce dependency on this single buyer.':'Concentration risk is within safe limits.'}`},
-    {id:'acc-coll',    icon:'💰', title:'Collection Efficiency',
-     body:`Avg payment delay: ${avgDelay} days across ${totalBuyers} buyers. ${overdueCount} overdue invoice${overdueCount!==1?'s':''} totalling ${inrK(overdueTotal)}. ${avgDelay>30?'Significantly above healthy range (15–20 days). Review credit terms.':avgDelay>20?'Above target. Structured follow-up cadence can reduce this.':'Collection efficiency is within acceptable range.'}`},
-  ];
-
-  // Line path length approximation for draw animation
-  const lineLen = pts.reduce((acc,p,i)=>i===0?0:acc+Math.hypot(p.x-pts[i-1].x,p.y-pts[i-1].y),0);
-
-  return `<style>
-@keyframes cfFadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes cfFadeIn{from{opacity:0}to{opacity:1}}
-@keyframes cfRingFill{from{stroke-dasharray:0 ${circ.toFixed(1)}}to{stroke-dasharray:${dash.toFixed(1)} ${circ.toFixed(1)}}}
-@keyframes cfDrawLine{from{stroke-dashoffset:${Math.ceil(lineLen+20)}}to{stroke-dashoffset:0}}
-@keyframes cfBarGrow{from{width:0%}to{width:var(--bar-w)}}
-@keyframes cfPulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes cfCountUp{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
-@keyframes cfSlideRight{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-.cf-card{animation:cfFadeUp .5s cubic-bezier(.22,.68,0,1.2) both}
-.cf-ring{animation:cfRingFill 1.4s cubic-bezier(.4,0,.2,1) .3s both}
-.cf-line{stroke-dasharray:${Math.ceil(lineLen+20)};animation:cfDrawLine 1.6s cubic-bezier(.4,0,.2,1) .6s both}
-.cf-bar{animation:cfBarGrow .8s cubic-bezier(.4,0,.2,1) both}
-.cf-num{animation:cfCountUp .4s ease both}
-.cf-dot{animation:cfFadeIn .3s ease both}
-.cf-chip{animation:cfSlideRight .4s ease both}
-</style>
-<div id="dash-content" style="height:100%;display:grid;grid-template-rows:36px 1fr 1fr 1fr;gap:14px;font-family:inherit">
-
-<!-- ── HEADER BAR ── -->
-<div style="display:flex;align-items:center;justify-content:space-between">
-  <div style="display:flex;align-items:center;gap:16px">
+  <!-- Header bar -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
     <div>
-      <span style="font-size:16px;font-weight:800;color:#0f172a">Business Diagnostic</span>
-      <span style="font-size:12px;color:#94a3b8;margin-left:10px">${totalBuyers} buyer${totalBuyers!==1?'s':''} · ${DB.invoices?DB.invoices.length:0} records · ${inrK(exposure)} exposure</span>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:3px">Business Intelligence</div>
+      <div style="font-size:20px;font-weight:900;color:var(--gray-900)">Cash Flow Dashboard</div>
     </div>
-    <div style="display:inline-flex;align-items:center;gap:5px;background:${statusBg};border:1px solid ${scoreCol}44;border-radius:100px;padding:3px 12px">
-      <div style="width:7px;height:7px;border-radius:50%;background:${scoreCol}"></div>
-      <span style="font-size:11px;font-weight:800;color:${scoreCol};letter-spacing:.06em">${healthLabel}</span>
-    </div>
-  </div>
-  <button onclick="cfiqShowOnboarding()" style="background:#6366f1;border:none;color:#fff;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><span>↑</span> Upload New File</button>
-</div>
-
-<!-- ══ ROW 1: KPI STRIP (4 stat chips) ══ -->
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;min-height:0">
-  ${[
-    {label:'BI Score',     val:score,          unit:'/100',              col:scoreCol,  bg:'linear-gradient(135deg,#1e293b,#0f172a)', sub:healthLabel,         icon:'◎'},
-    {label:'Outstanding',  val:inrK(exposure), unit:'',                  col:'#60a5fa',  bg:'linear-gradient(135deg,#eff6ff,#dbeafe)', sub:`${totalBuyers} buyer${totalBuyers!==1?'s':''}`, icon:'₹'},
-    {label:'High Risk',    val:highRisk,        unit:` of ${totalBuyers}`,col:'#f87171', bg:'linear-gradient(135deg,#fff1f2,#ffe4e6)', sub:'buyers at risk',     icon:'⚠'},
-    {label:'Avg Delay',    val:avgDelay,        unit:' days',             col:'#fb923c', bg:'linear-gradient(135deg,#fff7ed,#ffedd5)', sub:'payment lag',        icon:'⏱'},
-  ].map((k,i)=>`
-  <div class="cf-card cf-chip" style="background:${k.bg};border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;height:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.04);animation-delay:${i*0.08}s">
-    <div style="width:42px;height:42px;border-radius:12px;background:${k.col}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">${k.icon}</div>
-    <div style="min-width:0">
-      <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${k.bg.includes('1e293b')?'rgba(255,255,255,.45)':'#94a3b8'};margin-bottom:2px">${k.label}</div>
-      <div class="cf-num" style="font-size:22px;font-weight:900;color:${k.bg.includes('1e293b')?'#fff':k.col};line-height:1;animation-delay:${0.2+i*0.08}s">${k.val}<span style="font-size:13px;font-weight:600">${k.unit}</span></div>
-      <div style="font-size:10.5px;color:${k.bg.includes('1e293b')?'rgba(255,255,255,.4)':'#94a3b8'};margin-top:2px">${k.sub}</div>
-    </div>
-  </div>`).join('')}
-</div>
-
-<!-- ══ ROW 2: SCORE CARD + RISK BARS + CASH CHART ══ -->
-<div style="display:grid;grid-template-columns:220px 1fr 1fr;gap:14px;min-height:0">
-
-  <!-- Score ring -->
-  <div class="cf-card" style="background:linear-gradient(160deg,#0f172a,#1e293b);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;animation-delay:.32s">
-    <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px">Health Score</div>
-    <div style="position:relative;margin-bottom:12px">
-      <svg width="120" height="120" viewBox="0 0 184 184">
-        <circle cx="92" cy="92" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="14"/>
-        <circle class="cf-ring" cx="92" cy="92" r="${r}" fill="none" stroke="${scoreCol}" stroke-width="14"
-          stroke-dasharray="0 ${circ.toFixed(1)}" stroke-dashoffset="${(circ/4).toFixed(1)}"
-          stroke-linecap="round" style="filter:drop-shadow(0 0 10px ${scoreCol}aa)"/>
-      </svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <div style="font-size:32px;font-weight:900;color:#fff;line-height:1">${score}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.35)">out of 100</div>
-      </div>
-    </div>
-    <div style="background:${statusBg};border-radius:100px;padding:4px 14px;margin-bottom:14px">
-      <span style="font-size:11px;font-weight:900;color:${scoreCol}">${healthLabel}</span>
-    </div>
-    <div style="width:100%;display:flex;flex-direction:column;gap:6px">
-      ${[
-        {label:'Buyer Risk',key:'buyerRisk'},{label:'Cash Flow',key:'cashStress'},
-        {label:'Exposure',key:'exposureConcentration'},{label:'Collections',key:'collectionConfidence'}
-      ].map((item,idx)=>{
-        const raw=kd[item.key]; const lv=(typeof raw==='string'?raw:(raw||{}).level||'medium').toLowerCase();
-        const c=lvlC(lv);
-        const pct=lv==='low'?25:lv==='medium'?60:90;
-        return `<div class="cf-card" style="display:flex;align-items:center;gap:8px;animation-delay:${0.5+idx*0.1}s">
-          <div style="font-size:9.5px;color:rgba(255,255,255,.35);width:68px;flex-shrink:0">${item.label}</div>
-          <div style="flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden">
-            <div class="cf-bar" style="height:100%;--bar-w:${pct}%;width:${pct}%;background:${c};border-radius:2px;animation-delay:${0.7+idx*0.1}s"></div>
-          </div>
-          <div style="font-size:9px;font-weight:800;color:${c};width:36px;text-align:right">${lvlOpp(lv)}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>
-
-  <!-- Risk Breakdown -->
-  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;animation-delay:.4s">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Risk Breakdown</div>
-    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:14px">What's driving your score down?</div>
-    <div style="display:flex;align-items:center;gap:16px;height:calc(100% - 60px)">
-      <svg width="130" height="130" viewBox="0 0 200 200" style="flex-shrink:0">
-        ${donutPaths}
-        <circle cx="100" cy="100" r="46" fill="white"/>
-        <text x="100" y="96" text-anchor="middle" font-size="12" font-weight="800" fill="#1e293b">Risk</text>
-        <text x="100" y="110" text-anchor="middle" font-size="10" fill="#64748b">Mix</text>
-      </svg>
-      <div style="flex:1;display:flex;flex-direction:column;gap:9px;overflow:hidden">
-        ${drivers.map((drv,i)=>{
-          const pct=Math.round(weights[i]/total*100);
-          const scorePct=Math.min(100,drv.score||25);
-          const riskLbl=scorePct>=70?'High Risk':scorePct>=40?'Moderate':'Low';
-          const riskClr=scorePct>=70?drv.col:scorePct>=40?drv.col+'bb':'#10b981';
-          return `<div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span style="font-size:11px;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${drv.label}</span>
-              <span style="font-size:10px;font-weight:800;color:${riskClr};flex-shrink:0;margin-left:4px">${pct}%</span>
-            </div>
-            <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden">
-              <div class="cf-bar" style="height:100%;--bar-w:${pct}%;width:${pct}%;background:linear-gradient(90deg,${drv.col}88,${drv.col});border-radius:3px;animation-delay:${0.6+i*0.1}s"></div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-  </div>
-
-  <!-- Cash Stress Chart -->
-  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;animation-delay:.48s">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Cash Stress Forecast</div>
-    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px">90-day outlook</div>
-    <div style="font-size:11px;color:${stressLineCol};font-weight:600;margin-bottom:12px;padding:7px 11px;background:${stressAreaCol};border-radius:7px;line-height:1.4">${stressMsg}</div>
-    <svg width="100%" viewBox="0 0 ${W} ${H+20}" style="overflow:visible">
-      <rect x="${pad}" y="${yScale(40)}" width="${W-pad*2}" height="${yScale(100)-yScale(40)}" fill="rgba(16,185,129,.05)" rx="2"/>
-      <rect x="${pad}" y="${yScale(70)}" width="${W-pad*2}" height="${yScale(40)-yScale(70)}" fill="rgba(245,158,11,.05)" rx="2"/>
-      <rect x="${pad}" y="${pad}" width="${W-pad*2}" height="${yScale(70)-pad}" fill="rgba(239,68,68,.05)" rx="2"/>
-      <path d="${areaPath}" fill="${stressAreaCol}"/>
-      <path class="cf-line" d="${linePath}" fill="none" stroke="${stressLineCol}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      ${pts.map((p,pi)=>`
-        <circle class="cf-dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${stressLineCol}" stroke="white" stroke-width="2" style="animation-delay:${0.8+pi*0.12}s"/>
-        <text x="${p.x.toFixed(1)}" y="${(H+14).toFixed(1)}" text-anchor="middle" font-size="9" fill="#94a3b8">${p.d}</text>
-      `).join('')}
-      <text x="${(W-4).toFixed(1)}" y="${yScale(20).toFixed(1)}" text-anchor="end" font-size="8" fill="#ef4444" font-weight="700">CRIT</text>
-      <text x="${(W-4).toFixed(1)}" y="${yScale(55).toFixed(1)}" text-anchor="end" font-size="8" fill="#f59e0b" font-weight="700">WATCH</text>
-      <text x="${(W-4).toFixed(1)}" y="${yScale(85).toFixed(1)}" text-anchor="end" font-size="8" fill="#10b981" font-weight="700">OK</text>
-    </svg>
-  </div>
-</div>
-
-<!-- ══ ROW 3: TOP BUYERS + ACTIONS + EXPLORE WHY ══ -->
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;min-height:0">
-
-  <!-- Top Risk Buyers -->
-  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column;animation-delay:.56s">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Top Risk Buyers</div>
-    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Buyers needing action</div>
-    <div style="display:flex;flex-direction:column;gap:7px;flex:1;overflow:hidden">
-      ${topRiskBuyers.map((b,i)=>`
-      <div class="cf-card" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:${b.bg};border:1px solid ${b.col}28;flex-shrink:0;animation-delay:${0.65+i*0.08}s">
-        <div style="width:30px;height:30px;border-radius:50%;background:${b.col}22;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${riskDot(b.risk)}</div>
-        <div style="flex:1;min-width:0;overflow:hidden">
-          <div style="font-size:12px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.name}">${b.name}</div>
-          <div style="font-size:10px;font-weight:700;color:${b.col}">${riskLabel(b.risk)}${b.overdueCount>0?' · '+b.overdueCount+' overdue':''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:11.5px;font-weight:800;color:#334155">${inrK(b.outstanding)}</div>
-          <div style="font-size:9.5px;color:#94a3b8">${b.delay>0?b.delay+'d delay':'On time'}</div>
-        </div>
-      </div>`).join('')}
-    </div>
-  </div>
-
-  <!-- Recommended Actions -->
-  <div class="cf-card" style="background:linear-gradient(160deg,#faf5ff,#f5f3ff);border:1px solid #e9d5ff;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column;animation-delay:.64s">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7c3aed;margin-bottom:4px">Actions</div>
-    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Do these tomorrow morning</div>
-    <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden">
-      ${(actions.length ? actions.map((a,i)=>({t:a.action||a.insight||'Take action on overdue accounts',o:a.outcome||impacts[i]||'Reduced risk'})) : [
-        {t:'Follow up with highest overdue buyer',o:'Risk −12%'},
-        {t:'Reduce exposure to concentrated buyers',o:'Cash +₹6.4L'},
-        {t:'Prioritize 60+ day invoice collection',o:'Score +8 pts'},
-        {t:'Review credit terms for high-risk buyers',o:'Collect 15d earlier'},
-      ]).map((a,i)=>`
-      <div class="cf-card" style="background:#fff;border:1px solid #ede9fe;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;animation-delay:${0.72+i*0.08}s">
-        <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:11.5px;font-weight:600;color:#1e293b;margin-bottom:2px;line-height:1.3">${a.t}</div>
-          <span style="font-size:10px;font-weight:700;color:#059669;background:rgba(5,150,105,.08);border-radius:5px;padding:1px 7px">${a.o}</span>
-        </div>
-      </div>`).join('')}
-    </div>
-  </div>
-
-  <!-- Explore Why -->
-  <div class="cf-card" style="background:#fff;border:1px solid #e8edf2;border-radius:16px;padding:18px 20px;overflow:hidden;display:flex;flex-direction:column;animation-delay:.72s">
-    <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">Explore Why</div>
-    <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:12px">Drill into any signal</div>
-    <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow:hidden">
-      ${accordions.map((acc,accIdx)=>`
-      <div class="cf-card" style="border:1px solid #f1f5f9;border-radius:10px;overflow:hidden;flex-shrink:0;animation-delay:${0.8+accIdx*0.08}s">
-        <div onclick="(function(el){var b=document.getElementById('${acc.id}-body');var open=b.style.display!=='none';b.style.display=open?'none':'block';el.querySelector('.arr').style.transform=open?'rotate(0deg)':'rotate(90deg)'})(this)" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:#f8fafc;transition:background .15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:14px">${acc.icon}</span>
-            <span style="font-size:12px;font-weight:700;color:#334155">${acc.title}</span>
-          </div>
-          <span class="arr" style="font-size:10px;color:#94a3b8;transition:transform .2s;flex-shrink:0">▶</span>
-        </div>
-        <div id="${acc.id}-body" style="display:none;padding:10px 14px;font-size:11.5px;color:#64748b;line-height:1.6;border-top:1px solid #f1f5f9">${acc.body}</div>
-      </div>`).join('')}
-    </div>
-  </div>
-</div>
-
-</div>`;
-
-
-  const cashCard = d.cashPosition!=null
-    ? `<div class="kpi-card"><div class="kpi-icon purple"><svg width="18" height="18" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><rect x="1" y="5" width="14" height="9" rx="1.5"/><circle cx="8" cy="9.5" r="1.5" stroke-width="1.5"/></svg></div><div class="kpi-val">${inr(d.cashPosition)}</div><div class="kpi-label">Cash Position</div></div>`
-    : `<div class="kpi-card" style="opacity:.45"><div class="kpi-icon" style="background:var(--gray-100)"></div><div class="kpi-val" style="font-size:13px;color:var(--gray-400);font-weight:500">Backend only</div><div class="kpi-label">Cash Position</div></div>`;
-
-  return `<div class="page-wrap" id="dash-content">
-<div class="page-header"><div>
-  <h1 class="page-title">Business Intelligence Dashboard${srcBadge}</h1>
-  <p class="page-sub">Trade intelligence overview &nbsp;·&nbsp; Minimal input, maximum insight</p>
-</div>
-  <button class="btn btn-primary" onclick="AppState.set({page:'orderSimulator'});App.onStateChange()" style="display:flex;align-items:center;gap:7px">
-    <svg width="13" height="13" fill="none" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2.2"><circle cx="7" cy="7" r="5"/><circle cx="7" cy="7" r="2.5"/></svg>Run Decision Engine
-  </button>
-</div>
-
-<div class="kpi-grid">
-  <div class="kpi-card"><div class="kpi-icon blue"><svg width="18" height="18" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><rect x="1" y="4" width="14" height="10" rx="2"/><path d="M4 4V3a2 2 0 014 0v1M1 8h14"/></svg></div><div class="kpi-val">${inr(d.totalReceivables)}</div><div class="kpi-label">Active Order Value</div></div>
-  <div class="kpi-card"><div class="kpi-icon red"><svg width="18" height="18" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="8" r="6"/><path d="M8 5v4" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".75" fill="currentColor"/></svg></div><div class="kpi-val">${inr(d.overdueReceivables)}</div><div class="kpi-label">Overdue Receivables</div></div>
-  <div class="kpi-card"><div class="kpi-icon green"><svg width="18" height="18" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M3 8l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="kpi-val">${inr(d.paidThisMonth)}</div><div class="kpi-label">Collected This Month</div></div>
-  <div class="kpi-card"><div class="kpi-icon amber"><svg width="18" height="18" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M8 2l1.8 3.6L14 6.3l-3 2.9.7 4.1L8 11.2l-3.7 2.1.7-4.1-3-2.9 4.2-.7z"/></svg></div><div class="kpi-val">${inr(d.pendingValue)}</div><div class="kpi-label">Pending Clearance</div></div>
-  ${cashCard}
-</div>
-
-<div style="margin-top:22px;border-radius:14px;border:1px solid rgba(16,185,129,.2);background:linear-gradient(135deg,rgba(5,150,105,.04),rgba(2,132,199,.04));padding:18px 20px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981"></div>
-      <span style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-500)">Trade Intelligence — Portfolio Health</span>
-    </div>
-    <button onclick="AppState.set({page:'receivables'});App.onStateChange()" style="font-size:11.5px;color:#0284c7;background:none;border:none;cursor:pointer;font-weight:600">View Receivables →</button>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:12px 14px;border-top:3px solid #6366f1">
-      <div style="font-size:19px;font-weight:800;color:#4338ca">${d.totalInvoices}</div>
-      <div style="font-size:10.5px;color:var(--gray-500);margin-top:3px;font-weight:600">Total Trade Records</div>
-      <div style="font-size:10px;color:var(--gray-400);margin-top:1px">From uploaded data</div>
-    </div>
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:12px 14px;border-top:3px solid #ef4444">
-      <div style="font-size:19px;font-weight:800;color:#dc2626">${(d.disputedCount||0)+(d.overdueCount||0)}</div>
-      <div style="font-size:10.5px;color:var(--gray-500);margin-top:3px;font-weight:600">Overdue Accounts</div>
-      <div style="font-size:10px;color:#dc2626;margin-top:1px">${fmt((d.disputedValue||0)+(d.overdueValue||0))} at risk</div>
-    </div>
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:12px 14px;border-top:3px solid ${arCol}">
-      <div style="font-size:19px;font-weight:800;color:${arCol}">${d.acceptanceRate}%</div>
-      <div style="font-size:10.5px;color:var(--gray-500);margin-top:3px;font-weight:600">Collection Rate</div>
-      <div style="height:3px;background:var(--gray-100);border-radius:2px;margin-top:5px;overflow:hidden"><div style="width:${d.acceptanceRate}%;height:100%;background:${arCol}"></div></div>
-    </div>
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:12px 14px;border-top:3px solid ${ccCol}">
-      <div style="font-size:19px;font-weight:800;color:${ccCol}">${d.collectionConfidence}%</div>
-      <div style="font-size:10.5px;color:var(--gray-500);margin-top:3px;font-weight:600">Collection Confidence</div>
-      <div style="height:3px;background:var(--gray-100);border-radius:2px;margin-top:5px;overflow:hidden"><div style="width:${d.collectionConfidence}%;height:100%;background:${ccCol}"></div></div>
+      <span style="font-size:11.5px;color:var(--gray-400)">${totalBuyers} buyers · ${totalInvoices} invoices loaded</span>
+      <button onclick="cfiqShowOnboarding()" style="display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(99,102,241,.3)">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Upload Excel
+      </button>
     </div>
   </div>
-</div>
 
-<div style="margin-top:16px;border-radius:14px;border:1px solid rgba(99,102,241,.2);background:linear-gradient(135deg,rgba(99,102,241,.03),rgba(139,92,246,.03));padding:16px 20px">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#8b5cf6" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5L10 10" stroke-linecap="round"/></svg>
-    <span style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-500)">AI Insights — Trade Intelligence</span>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    ${(d.insights||[]).map(ins=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--white);border:1px solid var(--gray-100);border-radius:8px">
-      <span style="font-size:15px;flex-shrink:0;margin-top:1px">${ins.icon}</span>
-      <span style="font-size:12px;color:var(--gray-600);line-height:1.5">${ins.text}</span>
+  <!-- KPI Row -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px">
+    ${kpis.map(k=>`
+    <div style="background:var(--white);border:1px solid var(--gray-100);border-top:3px solid ${k.border};border-radius:12px;padding:16px 18px;position:relative;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="background:${k.bg};border-radius:10px;padding:8px">${k.icon}</div>
+        ${k.pill?`<span style="background:${k.pillCol}18;color:${k.pillCol};border-radius:100px;padding:3px 10px;font-size:10px;font-weight:800;letter-spacing:.04em">${k.pill}</span>`:''}
+      </div>
+      <div style="font-size:24px;font-weight:900;color:${k.col};letter-spacing:-.5px;line-height:1">${k.val}</div>
+      <div style="font-size:11px;font-weight:600;color:var(--gray-500);margin-top:6px">${k.label}</div>
+      <div style="font-size:10.5px;color:var(--gray-400);margin-top:3px">${k.sub}</div>
     </div>`).join('')}
   </div>
-</div>
 
-<div class="section-title" style="margin-top:22px">Recent Orders</div>
-<div class="table-wrap"><table class="data-table">
-  <thead><tr><th>Order ID</th><th>Buyer</th><th>Amount</th><th>Terms</th><th>Status</th><th>Date</th></tr></thead>
-  <tbody>
-  ${(d.recentOrders||[]).map(o=>`<tr>
-    <td><span class="mono">${o.id}</span></td>
-    <td>${o.buyerName||''}</td>
-    <td class="num">${inr(o.orderValue||0)}</td>
-    <td><span class="badge ${ttBadge(o.paymentTerms||o.tradeTerm||'')}">${o.paymentTerms||o.tradeTerm||''}</span></td>
-    <td><span class="${stCls(o.status)}">${o.status}</span></td>
-    <td>${o.orderDate||o.date||''}</td>
-  </tr>`).join('')}
-  </tbody>
-</table></div>
+  <!-- Hero + Actions Row -->
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+
+    <!-- Top 5 Cash Drainers -->
+    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:16px;overflow:hidden">
+      <div style="padding:20px 24px 16px;border-bottom:1px solid var(--gray-100)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:18px">🚨</span>
+          <span style="font-size:17px;font-weight:900;color:var(--gray-900)">Top Cash Drainers</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--gray-500)">Customers hurting your cash flow the most — sorted by payment delay</div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--gray-50)">
+            ${['Buyer','Exposure','Avg Delay','Contribution','Risk'].map(h=>`<th style="padding:10px 16px;text-align:left;font-size:10.5px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${drainers.length ? drainers.map((b,i)=>{
+            const risk = classifyRisk(b);
+            const rc = riskCol(risk);
+            const rb = risk==='High'?'rgba(239,68,68,.04)':'transparent';
+            const cc = contribCol(b.contrib);
+            return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer;transition:background .15s"
+              onmouseover="this.style.background='${risk==='High'?'rgba(239,68,68,.08)':'rgba(99,102,241,.04)'}'"
+              onmouseout="this.style.background='${rb}'"
+              onclick="window._brpState={buyerId:'${b.id}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
+              <td style="padding:14px 16px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:28px;height:28px;border-radius:8px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:${rc}">${(b.name||'?')[0]}</div>
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--gray-900)">${b.name}</div>
+                    <div style="font-size:10.5px;color:var(--gray-400)">${b.sector||b.industry||''}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="padding:14px 16px;font-size:14px;font-weight:800;color:var(--gray-900)">${fmt(b._exp||0)}</td>
+              <td style="padding:14px 16px">
+                <span style="font-size:13px;font-weight:700;color:${(b.avgDelay||0)>60?'#ef4444':(b.avgDelay||0)>30?'#f97316':'#10b981'}">${b.avgDelay||0} days</span>
+              </td>
+              <td style="padding:14px 16px">
+                <span style="display:inline-block;background:${cc}18;color:${cc};border-radius:100px;padding:3px 10px;font-size:11px;font-weight:800">${contribFmt(b.contrib)}</span>
+              </td>
+              <td style="padding:14px 16px">
+                <span style="display:inline-block;background:${rc}18;color:${rc};border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:800;letter-spacing:.04em">${risk}</span>
+              </td>
+            </tr>`;
+          }).join('') : `<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--gray-400);font-size:13px">No exposure data available</td></tr>`}
+        </tbody>
+      </table>
+
+      ${drainers.length ? `<div style="padding:12px 24px;border-top:1px solid var(--gray-100);background:var(--gray-50);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11.5px;color:var(--gray-500)">Top ${drainers.length} buyers · total: <strong style="color:var(--gray-800)">${fmt(totalDrainerExp)}</strong></span>
+        <button onclick="AppState.set({page:'buyerRiskProfiles'});App.onStateChange()" style="font-size:11.5px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700">View All Buyers →</button>
+      </div>` : ''}
+    </div>
+
+    <!-- Recommended Actions -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:13px;font-weight:800;color:var(--gray-900);padding:2px 0 8px">Recommended Actions</div>
+      ${drainers.filter(b=>classifyRisk(b)!=='Low').slice(0,3).map(b=>{
+        const risk = classifyRisk(b);
+        const rc = riskCol(risk);
+        const rb = riskBg(risk);
+        const acts = actionMap[risk]||actionMap['Medium'];
+        return `<div style="background:var(--white);border:1px solid ${rc}30;border-left:3px solid ${rc};border-radius:12px;padding:14px 16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:12px;font-weight:800;color:var(--gray-900)">${b.name}</div>
+            <span style="background:${rc}18;color:${rc};border-radius:100px;padding:2px 9px;font-size:9.5px;font-weight:800">${risk}</span>
+          </div>
+          <div style="font-size:11px;color:var(--gray-500);margin-bottom:8px">${fmt(b._exp||0)} · ${b.avgDelay||0} days delay</div>
+          ${acts.map(fn=>`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:6px">
+            <span style="color:${rc};font-size:13px;flex-shrink:0;margin-top:1px">⚠</span>
+            <span style="font-size:11.5px;color:var(--gray-700);line-height:1.45">${fn(b)}</span>
+          </div>`).join('')}
+        </div>`;
+      }).join('')}
+      ${!drainers.length?`<div style="background:var(--gray-50);border-radius:12px;padding:24px;text-align:center;color:var(--gray-400);font-size:12px">No actions required</div>`:''}
+    </div>
+
+  </div>
 </div>`;
 }
 
@@ -11646,14 +11372,11 @@ function _placeholderPage(title,subtitle,icon){
 /* --- New Pages object entries --- */
 (function(){
   const extras={
-    portfolioImpact:()=>_placeholderPage('Portfolio Impact','Analyse how orders affect your overall receivables portfolio','📊'),
     collections:()=>_placeholderPage('Collections','Track collection activities, follow-ups and recovery status','⏱️'),
-    paymentBehaviour:()=>_placeholderPage('Payment Behaviour','Buyer-level payment delay trends and historical behaviour','📈'),
     tradeRelationship:()=>_placeholderPage('Trade Relationship','Strength, tenure and transaction history with each buyer','🤝'),
     exposureAnalysis:()=>renderCashExposureMap(),
     buyerComparison:()=>_placeholderPage('Buyer Comparison','Side-by-side comparison of risk, terms and payment metrics','🔍'),
     riskReport:()=>_placeholderPage('Risk Report','Consolidated risk scoring, tier changes and early warnings','⚠️'),
-    scenarioAnalysis:()=>_placeholderPage('Scenario Analysis','Model the impact of late payments, defaults and volume shifts','🔬'),
     financingReadiness:()=>_placeholderPage('Financing Readiness','Invoice financing eligibility, anchor scores and lender readiness','🏦'),
   };
   Object.assign(Pages, extras);
@@ -11670,12 +11393,8 @@ const App = {
     if(renderer) main.innerHTML=renderer();
     else main.innerHTML=`<div class="page-wrap"><p>Page not found.</p></div>`;
 
-    if(s.page==='orderSimulator'&&window._oasState?.result){
-      setTimeout(()=>OASCharts.drawAll(window._oasState.result),80);
-    }
     if(s.page==='supplyMap'){setTimeout(()=>window.initSupplyMap&&window.initSupplyMap(),80);}
     if(s.page==='receivablesMap'){setTimeout(()=>window.initReceivablesMap&&window.initReceivablesMap(),80);}
-    if(s.page==='riskReports'){setTimeout(()=>window.initCashFlowForecast&&window.initCashFlowForecast(),80);}
     if(s.page==='exposureAnalysis'){setTimeout(()=>window.initCashExposureMap&&window.initCashExposureMap(),80);}
 
     // Inject recommended action card for relevant pages (from onboarding import data)
@@ -11689,12 +11408,10 @@ const App = {
     });
     // Auto-open the group containing the active page, close others
     const PAGE_GROUP={
-      orderSimulator:'ng-decision',portfolioImpact:'ng-decision',
-      buyerRiskProfiles:'ng-buyers',paymentBehaviour:'ng-buyers',exposureAnalysis:'ng-buyers',
-      riskReports:'ng-risk',alerts:'ng-risk',scenarioAnalysis:'ng-risk'
+      buyerRiskProfiles:'ng-buyers',exposureAnalysis:'ng-buyers',
     };
     const activeGroup=PAGE_GROUP[s.page];
-    ['ng-decision','ng-buyers','ng-risk'].forEach(gid=>{
+    ['ng-buyers'].forEach(gid=>{
       const el=document.getElementById(gid);
       if(!el)return;
       if(gid===activeGroup)el.classList.remove('ng-closed');
@@ -12157,6 +11874,7 @@ async function initDB(){
       }));
     }
 
+    DB._fromAPI = true;
     console.log('[CashFlowIQ] DB loaded — buyers:'+DB.buyers.length+' invoices:'+DB.invoices.length);
   } catch(e) {
     console.warn('[CashFlowIQ] initDB failed:', e.message);
@@ -12402,14 +12120,9 @@ function cfiqInjectRecommendedAction(page){
   const map = {
     buyerRiskProfiles: ra.buyerIntelligence,
     buyerComparison:   ra.buyerIntelligence,
-    paymentBehaviour:  ra.buyerIntelligence,
     receivables:       ra.receivables,
     collections:       ra.receivables,
-    riskReports:       ra.riskForecast,
-    scenarioAnalysis:  ra.riskForecast,
-    cashFlow:          ra.riskForecast,
     orderSimulator:    ra.decisionCenter,
-    portfolioImpact:   ra.decisionCenter,
   };
   const action = map[page];
   if(!action) return;
