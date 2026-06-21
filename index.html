@@ -11726,7 +11726,9 @@ async function initDB(){
     /* ── 1. Load invoices first (needed to compute buyer metrics) ── */
     let rawInvoices = [];
     if(invoicesRes.status==='fulfilled' && invoicesRes.value?.items){
-      rawInvoices = invoicesRes.value.items;
+      // Deduplicate by invoice ID — safety net in case DB has duplicates
+      const seenInv = new Set();
+      rawInvoices = invoicesRes.value.items.filter(i=>{ if(seenInv.has(i.id))return false; seenInv.add(i.id); return true; });
       DB.invoices = rawInvoices.map(i=>({
         id: i.id, buyerId: i.buyer_id, buyerName: i.buyer_name||'',
         amount: parseFloat(i.amount)||0, value: parseFloat(i.amount)||0,
@@ -11755,9 +11757,19 @@ async function initDB(){
 
     /* ── 3. Load buyers and compute ALL metrics from invoices ── */
     if(buyersRes.status==='fulfilled' && buyersRes.value?.items?.length){
-      const totalPortfolioOut = buyersRes.value.items.reduce((s,b)=>s+(parseFloat(b.outstanding)||0),0);
+      // Deduplicate buyers by name — keep highest outstanding (most recent upload)
+      const seenBuyer = new Map();
+      buyersRes.value.items.forEach(b=>{
+        const existing = seenBuyer.get(b.name);
+        if(!existing || (parseFloat(b.outstanding)||0) >= (parseFloat(existing.outstanding)||0)){
+          seenBuyer.set(b.name, b);
+        }
+      });
+      const uniqueBuyers = Array.from(seenBuyer.values());
 
-      DB.buyers = buyersRes.value.items.map(b=>{
+      const totalPortfolioOut = uniqueBuyers.reduce((s,b)=>s+(parseFloat(b.outstanding)||0),0);
+
+      DB.buyers = uniqueBuyers.map(b=>{
         const invs = buyerInvMap[b.id] || [];
         const outstanding = parseFloat(b.outstanding)||0;
 
