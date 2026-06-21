@@ -12496,7 +12496,7 @@ async function cfiqOnboardProcess(){
     const data = await res.json();
     clearInterval(stepTimer);
     // Mark all done
-    stepIds.forEach(id=>{ const el=document.getElementById(id); if(el) el.className='ob-proc-step done'; });
+    window.ob_galaxyStep && window.ob_galaxyStep(6);
     if(!res.ok) throw new Error(data.message||'Import failed');
     window._OB = data;
     localStorage.setItem('cfiq_ob', JSON.stringify(data));
