@@ -2070,24 +2070,192 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
     </div>
   </div>
 
-  <!-- ── STEP 2: Processing ── -->
-  <div id="ob-step-processing" style="display:none;max-width:520px;margin:0 auto;padding:80px 24px">
-    <div style="text-align:center;margin-bottom:40px">
-      <div style="width:56px;height:56px;background:#ede9fe;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        <svg width="28" height="28" viewBox="0 0 20 20" fill="#6366f1"><path d="M10 2L3 7v6l7 5 7-5V7L10 2zm0 2.3l5 3.6v4.6L10 15.6l-5-3.1V7.9l5-3.6z"/><circle cx="10" cy="10" r="2.5"/></svg>
-      </div>
-      <div style="font-size:18px;font-weight:800;color:#0f172a">Analyzing your business…</div>
-      <div style="font-size:13.5px;color:#64748b;margin-top:6px">This takes about 30 seconds</div>
+  <!-- ── STEP 2: Processing — Galaxy of Intelligence ── -->
+  <div id="ob-step-processing" style="display:none;position:fixed;inset:0;z-index:9999;background:#080d1a;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+    <canvas id="ob-galaxy-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+
+    <!-- Hidden legacy step anchors (kept for JS compatibility) -->
+    <div style="display:none">
+      <div id="obs-1"></div><div id="obs-2"></div><div id="obs-3"></div>
+      <div id="obs-4"></div><div id="obs-5"></div><div id="obs-6"></div>
     </div>
-    <div id="ob-proc-steps">
-      <div class="ob-proc-step" id="obs-1"><div class="ob-proc-dot"></div><span>Detecting columns &amp; parsing data</span></div>
-      <div class="ob-proc-step" id="obs-2"><div class="ob-proc-dot"></div><span>Mapping buyer names &amp; invoice history</span></div>
-      <div class="ob-proc-step" id="obs-3"><div class="ob-proc-dot"></div><span>Analyzing payment behaviour</span></div>
-      <div class="ob-proc-step" id="obs-4"><div class="ob-proc-dot"></div><span>Calculating buyer risk scores</span></div>
-      <div class="ob-proc-step" id="obs-5"><div class="ob-proc-dot"></div><span>Building cash flow forecast</span></div>
-      <div class="ob-proc-step" id="obs-6"><div class="ob-proc-dot"></div><span>Generating Business Intelligence Score</span></div>
+
+    <!-- Main layout -->
+    <div style="position:absolute;inset:0;display:flex;align-items:stretch">
+
+      <!-- ── Center: Galaxy clusters ── -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0 80px">
+        <svg id="ob-cluster-svg" viewBox="0 0 500 400" style="width:min(480px,55vw);height:auto;overflow:visible" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="gcore" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#818cf8" stop-opacity="0.9"/>
+              <stop offset="60%" stop-color="#4f46e5" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="gdone" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#34d399" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="glow2"><feGaussianBlur stdDeviation="6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+
+          <!-- Galaxy center glow -->
+          <circle id="ob-gx-core" cx="250" cy="195" r="0" fill="url(#gcore)" opacity="0" style="transition:all 1s ease"/>
+
+          <!-- Connection lines (drawn by JS) -->
+          <g id="ob-gx-lines"></g>
+
+          <!-- Cluster nodes -->
+          <g id="ob-gx-nodes">
+            <!-- Node 1: Buyer Mapping (top) -->
+            <g id="ob-gn-1" transform="translate(250,55)" opacity="0.3" style="transition:opacity .6s">
+              <circle r="28" fill="none" stroke="#4f46e5" stroke-width="1" opacity="0.4" class="ob-gn-ring"/>
+              <circle r="18" fill="none" stroke="#6366f1" stroke-width="1.5" opacity="0.6" class="ob-gn-ring2"/>
+              <circle r="9" fill="#4f46e5" opacity="0.9" filter="url(#glow)"/>
+              <circle r="4" fill="#a5b4fc"/>
+            </g>
+            <!-- Node 2: Invoice History (right-top) -->
+            <g id="ob-gn-2" transform="translate(410,120)" opacity="0.3" style="transition:opacity .6s">
+              <circle r="28" fill="none" stroke="#0891b2" stroke-width="1" opacity="0.4" class="ob-gn-ring"/>
+              <circle r="18" fill="none" stroke="#06b6d4" stroke-width="1.5" opacity="0.6" class="ob-gn-ring2"/>
+              <circle r="9" fill="#0891b2" opacity="0.9" filter="url(#glow)"/>
+              <circle r="4" fill="#67e8f9"/>
+            </g>
+            <!-- Node 3: Payment Behaviour (right-bottom) -->
+            <g id="ob-gn-3" transform="translate(410,270)" opacity="0.3" style="transition:opacity .6s">
+              <circle r="28" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.4" class="ob-gn-ring"/>
+              <circle r="18" fill="none" stroke="#8b5cf6" stroke-width="1.5" opacity="0.6" class="ob-gn-ring2"/>
+              <circle r="9" fill="#7c3aed" opacity="0.9" filter="url(#glow)"/>
+              <circle r="4" fill="#c4b5fd"/>
+            </g>
+            <!-- Node 4: Risk Analysis (bottom) -->
+            <g id="ob-gn-4" transform="translate(250,335)" opacity="0.3" style="transition:opacity .6s">
+              <circle r="28" fill="none" stroke="#dc2626" stroke-width="1" opacity="0.4" class="ob-gn-ring"/>
+              <circle r="18" fill="none" stroke="#ef4444" stroke-width="1.5" opacity="0.6" class="ob-gn-ring2"/>
+              <circle r="9" fill="#dc2626" opacity="0.9" filter="url(#glow)"/>
+              <circle r="4" fill="#fca5a5"/>
+            </g>
+            <!-- Node 5: Cash Flow (left-bottom) -->
+            <g id="ob-gn-5" transform="translate(90,270)" opacity="0.3" style="transition:opacity .6s">
+              <circle r="28" fill="none" stroke="#d97706" stroke-width="1" opacity="0.4" class="ob-gn-ring"/>
+              <circle r="18" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.6" class="ob-gn-ring2"/>
+              <circle r="9" fill="#d97706" opacity="0.9" filter="url(#glow)"/>
+              <circle r="4" fill="#fcd34d"/>
+            </g>
+            <!-- Node 6: BI Score (left-top) -->
+            <g id="ob-gn-6" transform="translate(90,120)" opacity="0.3" style="transition:opacity .6s">
+              <circle r="28" fill="none" stroke="#0d9488" stroke-width="1" opacity="0.4" class="ob-gn-ring"/>
+              <circle r="18" fill="none" stroke="#14b8a6" stroke-width="1.5" opacity="0.6" class="ob-gn-ring2"/>
+              <circle r="9" fill="#0d9488" opacity="0.9" filter="url(#glow)"/>
+              <circle r="4" fill="#5eead4"/>
+            </g>
+          </g>
+
+          <!-- Floating labels -->
+          <g id="ob-gx-labels" font-family="-apple-system,sans-serif" fill="rgba(255,255,255,0.7)" font-size="10" text-anchor="middle">
+            <text x="250" y="14" id="ob-gl-1" opacity="0.3">Buyer Mapping</text>
+            <text x="460" y="124" id="ob-gl-2" opacity="0.3" text-anchor="start">Invoice History</text>
+            <text x="460" y="274" id="ob-gl-3" opacity="0.3" text-anchor="start">Payment Behaviour</text>
+            <text x="250" y="382" id="ob-gl-4" opacity="0.3">Risk Analysis</text>
+            <text x="40" y="274" id="ob-gl-5" opacity="0.3" text-anchor="end">Cash Flow</text>
+            <text x="40" y="124" id="ob-gl-6" opacity="0.3" text-anchor="end">BI Score</text>
+          </g>
+
+          <!-- Particles layer -->
+          <g id="ob-gx-particles"></g>
+        </svg>
+
+        <!-- Stage title -->
+        <div id="ob-gx-stage-title" style="margin-top:16px;text-align:center">
+          <div id="ob-gx-stage-name" style="font-size:17px;font-weight:700;color:#e2e8f0;letter-spacing:.01em;transition:all .4s">Initialising…</div>
+          <div id="ob-gx-stage-sub" style="font-size:12px;color:rgba(148,163,184,.7);margin-top:5px;transition:all .4s">Preparing your analysis engine</div>
+        </div>
+      </div>
+
+      <!-- ── Right: Timeline ── -->
+      <div style="width:260px;padding:40px 24px;display:flex;flex-direction:column;justify-content:center;gap:4px;flex-shrink:0">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(99,102,241,.8);margin-bottom:16px">Analysis Pipeline</div>
+        <div id="ob-tl-1" class="ob-tl-item ob-tl-pending" data-stage="1">
+          <div class="ob-tl-dot"><div class="ob-tl-inner"></div></div>
+          <div class="ob-tl-content"><div class="ob-tl-title">Parsing Data</div><div class="ob-tl-desc">Detecting columns &amp; structure</div></div>
+        </div>
+        <div class="ob-tl-connector"></div>
+        <div id="ob-tl-2" class="ob-tl-item ob-tl-pending" data-stage="2">
+          <div class="ob-tl-dot"><div class="ob-tl-inner"></div></div>
+          <div class="ob-tl-content"><div class="ob-tl-title">Buyer Mapping</div><div class="ob-tl-desc">Linking names &amp; invoice history</div></div>
+        </div>
+        <div class="ob-tl-connector"></div>
+        <div id="ob-tl-3" class="ob-tl-item ob-tl-pending" data-stage="3">
+          <div class="ob-tl-dot"><div class="ob-tl-inner"></div></div>
+          <div class="ob-tl-content"><div class="ob-tl-title">Payment Analysis</div><div class="ob-tl-desc">Uncovering behaviour patterns</div></div>
+        </div>
+        <div class="ob-tl-connector"></div>
+        <div id="ob-tl-4" class="ob-tl-item ob-tl-pending" data-stage="4">
+          <div class="ob-tl-dot"><div class="ob-tl-inner"></div></div>
+          <div class="ob-tl-content"><div class="ob-tl-title">Risk Scoring</div><div class="ob-tl-desc">Calculating buyer risk scores</div></div>
+        </div>
+        <div class="ob-tl-connector"></div>
+        <div id="ob-tl-5" class="ob-tl-item ob-tl-pending" data-stage="5">
+          <div class="ob-tl-dot"><div class="ob-tl-inner"></div></div>
+          <div class="ob-tl-content"><div class="ob-tl-title">Cash Forecast</div><div class="ob-tl-desc">Building 90-day projection</div></div>
+        </div>
+        <div class="ob-tl-connector"></div>
+        <div id="ob-tl-6" class="ob-tl-item ob-tl-pending" data-stage="6">
+          <div class="ob-tl-dot"><div class="ob-tl-inner"></div></div>
+          <div class="ob-tl-content"><div class="ob-tl-title">Intelligence Score</div><div class="ob-tl-desc">Generating Business Intelligence</div></div>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="margin-top:28px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px">
+            <span style="font-size:10px;color:rgba(148,163,184,.6);font-weight:600">PROGRESS</span>
+            <span id="ob-pct" style="font-size:10px;color:#818cf8;font-weight:800">0%</span>
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
+            <div id="ob-prog-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#06b6d4,#34d399);border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1);position:relative">
+              <div style="position:absolute;right:0;top:50%;transform:translateY(-50%);width:6px;height:6px;background:#fff;border-radius:50%;box-shadow:0 0 6px #818cf8"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Bottom tagline ── -->
+    <div style="position:absolute;bottom:0;left:0;right:260px;padding:18px 40px;text-align:center">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(99,102,241,.6);margin-bottom:4px">Connecting data. Revealing trust.</div>
+      <div id="ob-rotating-sub" style="font-size:12px;color:rgba(148,163,184,.5);transition:opacity .4s">Mapping buyer relationships…</div>
     </div>
   </div>
+
+  <style>
+  /* Timeline */
+  .ob-tl-item{display:flex;align-items:flex-start;gap:12px;padding:8px 0;position:relative}
+  .ob-tl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid rgba(255,255,255,.1);transition:all .5s;position:relative}
+  .ob-tl-inner{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .5s}
+  .ob-tl-content{padding-top:4px}
+  .ob-tl-title{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.4);transition:all .4s;line-height:1.3}
+  .ob-tl-desc{font-size:10.5px;color:rgba(148,163,184,.35);transition:all .4s;margin-top:2px}
+  .ob-tl-connector{width:2px;height:14px;background:rgba(255,255,255,.06);margin-left:15px;border-radius:1px}
+
+  .ob-tl-item.ob-tl-active .ob-tl-dot{border-color:#6366f1;box-shadow:0 0 0 4px rgba(99,102,241,.2),0 0 16px rgba(99,102,241,.4)}
+  .ob-tl-item.ob-tl-active .ob-tl-inner{background:#6366f1;box-shadow:0 0 8px #6366f1;animation:ob-pulse-ring 1.4s ease infinite}
+  .ob-tl-item.ob-tl-active .ob-tl-title{color:#e2e8f0;font-size:13px}
+  .ob-tl-item.ob-tl-active .ob-tl-desc{color:rgba(148,163,184,.7)}
+
+  .ob-tl-item.ob-tl-done .ob-tl-dot{border-color:#34d399;box-shadow:0 0 10px rgba(52,211,153,.3)}
+  .ob-tl-item.ob-tl-done .ob-tl-inner{background:#34d399;box-shadow:0 0 6px #34d399}
+  .ob-tl-item.ob-tl-done .ob-tl-title{color:rgba(52,211,153,.9)}
+  .ob-tl-item.ob-tl-done .ob-tl-desc{color:rgba(52,211,153,.5)}
+
+  /* Node ring rotation */
+  .ob-gn-ring{transform-origin:center;animation:ob-ring-spin 8s linear infinite}
+  .ob-gn-ring2{transform-origin:center;animation:ob-ring-spin 5s linear infinite reverse}
+
+  @keyframes ob-ring-spin{to{transform:rotate(360deg)}}
+  @keyframes ob-pulse-ring{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+  @keyframes ob-node-flash{0%{r:9;opacity:.9}50%{r:22;opacity:.3}100%{r:9;opacity:.9}}
+  </style>
 
   <!-- ── STEP 3: BI Results ── -->
   <div id="ob-step-results" style="display:none;max-width:700px;margin:0 auto;padding:48px 24px 64px">
@@ -10609,6 +10777,239 @@ window.cfiqToggleGroup=function(id){
   if(el) el.classList.toggle('ng-closed');
 };
 
+/* ═══════════════════════════════════════════════════════════
+   GALAXY PROCESSING ANIMATION
+═══════════════════════════════════════════════════════════ */
+(function(){
+  var _raf=null, _stars=[], _particles=[], _stage=0, _subTimer=null, _flashTimer=null;
+
+  var NODES=[
+    null, // 1-indexed
+    {x:250,y:55,  color:'#6366f1',glow:'rgba(99,102,241,.6)'},
+    {x:410,y:120, color:'#06b6d4',glow:'rgba(6,182,212,.6)'},
+    {x:410,y:270, color:'#8b5cf6',glow:'rgba(139,92,246,.6)'},
+    {x:250,y:335, color:'#ef4444',glow:'rgba(239,68,68,.6)'},
+    {x:90, y:270, color:'#f59e0b',glow:'rgba(245,158,11,.6)'},
+    {x:90, y:120, color:'#14b8a6',glow:'rgba(20,184,166,.6)'},
+  ];
+
+  var STAGES=[
+    {title:'Parsing Data',       sub:'Detecting columns & structure',    node:1},
+    {title:'Buyer Mapping',      sub:'Linking invoice history',           node:2},
+    {title:'Payment Analysis',   sub:'Uncovering behaviour patterns',     node:3},
+    {title:'Risk Scoring',       sub:'Calculating buyer risk scores',     node:4},
+    {title:'Cash Forecast',      sub:'Building 90-day projection',        node:5},
+    {title:'Intelligence Score', sub:'Converging into business insight',  node:6},
+  ];
+
+  var SUBS=['Mapping buyer relationships…','Understanding payment patterns…',
+    'Building your intelligence…','Finding hidden risks…',
+    'Connecting the dots…','Turning invoices into insights…'];
+
+  function initCanvas(){
+    var c=document.getElementById('ob-galaxy-canvas');
+    if(!c)return;
+    c.width=window.innerWidth; c.height=window.innerHeight;
+    var ctx=c.getContext('2d');
+    _stars=[];
+    for(var i=0;i<260;i++){
+      _stars.push({
+        x:Math.random()*c.width, y:Math.random()*c.height,
+        r:Math.random()*1.4+0.2, a:Math.random(),
+        da:(Math.random()-0.5)*0.008, speed:Math.random()*0.15+0.05
+      });
+    }
+    return {c,ctx};
+  }
+
+  function drawBg(ctx,W,H,t){
+    ctx.clearRect(0,0,W,H);
+    // Deep space gradient
+    var bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.8);
+    bg.addColorStop(0,'#0d1530'); bg.addColorStop(0.5,'#080d1a'); bg.addColorStop(1,'#04060f');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    // Subtle galaxy glow
+    var gg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.min(W,H)*0.45);
+    gg.addColorStop(0,'rgba(99,102,241,0.06)');
+    gg.addColorStop(0.5,'rgba(6,182,212,0.03)');
+    gg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
+    // Stars
+    _stars.forEach(function(s){
+      s.a+=s.da; if(s.a>1||s.a<0.1)s.da*=-1;
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,'+s.a.toFixed(2)+')';
+      ctx.fill();
+      s.y-=s.speed; if(s.y<-2){s.y=H+2;s.x=Math.random()*W;}
+    });
+    // Moving nebula blobs
+    var nb=[
+      {x:W*0.2,y:H*0.3,r:W*0.25,c:'rgba(99,102,241,0.04)'},
+      {x:W*0.8,y:H*0.7,r:W*0.2, c:'rgba(6,182,212,0.03)'},
+      {x:W*0.5,y:H*0.5,r:W*0.15,c:'rgba(139,92,246,0.03)'},
+    ];
+    nb.forEach(function(n){
+      var ng=ctx.createRadialGradient(n.x+Math.sin(t*0.0004)*20,n.y+Math.cos(t*0.0003)*15,0,n.x,n.y,n.r);
+      ng.addColorStop(0,n.c); ng.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=ng; ctx.fillRect(0,0,W,H);
+    });
+  }
+
+  function drawParticles(ctx){
+    _particles=_particles.filter(function(p){
+      p.x+=p.vx; p.y+=p.vy; p.life-=1; p.a=p.life/p.maxLife;
+      if(p.life<=0)return false;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.a,0,Math.PI*2);
+      ctx.fillStyle='rgba('+p.rgb+','+p.a.toFixed(2)+')';
+      ctx.fill();
+      return true;
+    });
+  }
+
+  function spawnParticle(sx,sy,tx,ty,rgb){
+    var t=Math.random(), mx=sx+(tx-sx)*t, my=sy+(ty-sy)*t;
+    var life=Math.floor(Math.random()*40+30);
+    var angle=Math.atan2(ty-sy,tx-sx)+( Math.random()-0.5)*0.5;
+    var speed=Math.random()*1.2+0.4;
+    _particles.push({x:mx,y:my,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:Math.random()*2+1,life,maxLife:life,a:1,rgb});
+  }
+
+  function getSVGOffset(){
+    var svg=document.getElementById('ob-cluster-svg');
+    if(!svg)return{ox:0,oy:0,sc:1};
+    var rect=svg.getBoundingClientRect();
+    var vb=svg.viewBox.baseVal;
+    return{ox:rect.left,oy:rect.top,sc:rect.width/vb.width,sy:rect.height/vb.height};
+  }
+
+  function nodeToCanvas(ni){
+    var n=NODES[ni]; if(!n)return{x:0,y:0};
+    var o=getSVGOffset();
+    return{x:o.ox+n.x*o.sc, y:o.oy+n.y*(o.sy||o.sc)};
+  }
+
+  function tick(t,ctx,W,H){
+    drawBg(ctx,W,H,t);
+    // Spawn particles between active nodes
+    if(_stage>=2){
+      for(var i=1;i<_stage;i++){
+        var next=i%6+1;
+        var a=nodeToCanvas(i), b=nodeToCanvas(next);
+        if(Math.random()<0.25){
+          var rgb=NODES[i].color.replace('#','').match(/../g).map(function(h){return parseInt(h,16)}).join(',');
+          spawnParticle(a.x,a.y,b.x,b.y,rgb);
+        }
+        // Also toward center
+        var cx=W/2, cy=H/2;
+        if(Math.random()<0.1) spawnParticle(a.x,a.y,cx,cy,'148,163,184');
+      }
+    }
+    drawParticles(ctx);
+    _raf=requestAnimationFrame(function(t2){tick(t2,ctx,W,H);});
+  }
+
+  function setStage(n){
+    _stage=n;
+    // Update SVG node opacity
+    for(var i=1;i<=6;i++){
+      var el=document.getElementById('ob-gn-'+i);
+      var lb=document.getElementById('ob-gl-'+i);
+      if(el){
+        if(i<n){ el.style.opacity='1'; el.style.filter='drop-shadow(0 0 10px '+NODES[i].color+')'; }
+        else if(i===n){ el.style.opacity='1'; el.style.filter='drop-shadow(0 0 20px '+NODES[i].color+') drop-shadow(0 0 40px '+NODES[i].color+')'; }
+        else{ el.style.opacity='0.2'; el.style.filter='none'; }
+      }
+      if(lb){ lb.style.opacity = i<=n ? '0.85' : '0.2'; lb.style.fill = i<n?'rgba(52,211,153,.85)':i===n?'rgba(255,255,255,.9)':'rgba(255,255,255,.3)'; }
+    }
+    // Draw connection lines in SVG
+    var linesG=document.getElementById('ob-gx-lines'); if(!linesG)return;
+    linesG.innerHTML='';
+    var pairs=[[1,2],[2,3],[3,4],[4,5],[5,6],[6,1]];
+    pairs.forEach(function(p){
+      if(p[0]<n && p[1]<=n){
+        var a=NODES[p[0]], b=NODES[p[1]];
+        var line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',a.x); line.setAttribute('y1',a.y);
+        line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+        line.setAttribute('stroke',NODES[p[0]].color); line.setAttribute('stroke-width','1');
+        line.setAttribute('stroke-opacity','0.5'); line.setAttribute('stroke-dasharray','4 4');
+        linesG.appendChild(line);
+        // Animate dash offset
+        line.style.animation='ob-dash-flow 2s linear infinite';
+      }
+    });
+    // Add CSS for dash flow if needed
+    if(!document.getElementById('ob-dash-style')){
+      var s=document.createElement('style'); s.id='ob-dash-style';
+      s.textContent='@keyframes ob-dash-flow{to{stroke-dashoffset:-16}}';
+      document.head.appendChild(s);
+    }
+    linesG.querySelectorAll('line').forEach(function(l){l.style.strokeDashoffset='0';});
+
+    // Stage title
+    if(n>=1 && n<=6){
+      var st=STAGES[n-1];
+      var tn=document.getElementById('ob-gx-stage-name');
+      var ts=document.getElementById('ob-gx-stage-sub');
+      if(tn){ tn.style.opacity='0'; setTimeout(function(){if(tn){tn.textContent=st.title;tn.style.opacity='1';}},200); }
+      if(ts){ ts.style.opacity='0'; setTimeout(function(){if(ts){ts.textContent=st.sub;ts.style.opacity='1';}},350); }
+    }
+
+    // Timeline
+    for(var j=1;j<=6;j++){
+      var tl=document.getElementById('ob-tl-'+j);
+      if(!tl)continue;
+      tl.className='ob-tl-item '+(j<n?'ob-tl-done':j===n?'ob-tl-active':'ob-tl-pending');
+    }
+
+    // Progress bar
+    var pct=Math.round((n-1)/6*100);
+    var pb=document.getElementById('ob-prog-bar'), pc=document.getElementById('ob-pct');
+    if(pb)pb.style.width=pct+'%';
+    if(pc)pc.textContent=pct+'%';
+
+    // Core glow at final stage
+    if(n===6){
+      var core=document.getElementById('ob-gx-core');
+      if(core){ core.setAttribute('r','80'); core.setAttribute('opacity','0.6'); }
+    }
+  }
+
+  function startSubtitleRotation(){
+    var i=0;
+    var el=document.getElementById('ob-rotating-sub');
+    _subTimer=setInterval(function(){
+      if(!el)return;
+      el.style.opacity='0';
+      setTimeout(function(){
+        i=(i+1)%SUBS.length;
+        if(el){el.textContent=SUBS[i];el.style.opacity='1';}
+      },300);
+    },2800);
+  }
+
+  // Public init — called when processing screen shown
+  window.ob_galaxyStart=function(){
+    _stage=0; _particles=[];
+    var cc=initCanvas(); if(!cc)return;
+    if(_raf){cancelAnimationFrame(_raf);_raf=null;}
+    if(_subTimer){clearInterval(_subTimer);_subTimer=null;}
+    _raf=requestAnimationFrame(function(t){tick(t,cc.ctx,cc.c.width,cc.c.height);});
+    startSubtitleRotation();
+    setStage(1);
+  };
+
+  // Called per step
+  window.ob_galaxyStep=function(n){ setStage(n); };
+
+  // Stop animation
+  window.ob_galaxyStop=function(){
+    if(_raf){cancelAnimationFrame(_raf);_raf=null;}
+    if(_subTimer){clearInterval(_subTimer);_subTimer=null;}
+    _particles=[];
+  };
+})();
+
 (function initNavHover(){
   // Run after DOM is ready (called inline below, but also safe to re-run)
   const COLLAPSE_DELAY = 200; // ms before closing after cursor leaves
@@ -12021,8 +12422,14 @@ function cfiqShowOnboarding(){
 }
 function cfiqOnboardGoStep(step){
   ['upload','processing','results'].forEach(s=>{
-    document.getElementById('ob-step-'+s).style.display = s===step ? '' : 'none';
+    const el=document.getElementById('ob-step-'+s);
+    if(el) el.style.display = s===step ? '' : 'none';
   });
+  if(step==='processing'){
+    setTimeout(function(){ window.ob_galaxyStart && window.ob_galaxyStart(); }, 80);
+  } else {
+    window.ob_galaxyStop && window.ob_galaxyStop();
+  }
 }
 function cfiqOnboardDragOver(e){
   e.preventDefault();
@@ -12057,23 +12464,11 @@ async function cfiqOnboardProcess(){
   document.getElementById('ob-error').style.display = 'none';
   cfiqOnboardGoStep('processing');
 
-  // Animate processing steps sequentially
-  const stepIds = ['obs-1','obs-2','obs-3','obs-4','obs-5','obs-6'];
-  stepIds.forEach(id => {
-    const el = document.getElementById(id);
-    if(el){ el.className='ob-proc-step'; }
-  });
+  // Galaxy stage progression
   let stepIdx = 0;
   function advanceStep(){
-    if(stepIdx > 0 && stepIdx <= stepIds.length){
-      const prev = document.getElementById(stepIds[stepIdx-1]);
-      if(prev) prev.className = 'ob-proc-step done';
-    }
-    if(stepIdx < stepIds.length){
-      const cur = document.getElementById(stepIds[stepIdx]);
-      if(cur) cur.className = 'ob-proc-step active';
-      stepIdx++;
-    }
+    stepIdx++;
+    if(stepIdx <= 6) window.ob_galaxyStep && window.ob_galaxyStep(stepIdx);
   }
   advanceStep();
   const stepTimer = setInterval(advanceStep, 1200);
