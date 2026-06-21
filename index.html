@@ -11274,7 +11274,18 @@ window.initCashExposureMap = function(){
     var validStates = aggState.filter(function(g){return g.name!=='Unknown';});
     drawFlat(validStates.length ? validStates : [], 'State');
   } else {
-    draw();
+    /* All Exposure — use grouped draw() if there is sector diversity,
+       else fall back to flat individual buyer tiles */
+    var uniqueSectors = {};
+    BUYERS.forEach(function(b){ uniqueSectors[b.industry]=1; });
+    var sectorCount = Object.keys(uniqueSectors).length;
+    if(sectorCount <= 1){
+      /* No sector data — show individual buyer tiles flat */
+      var flatBuyers = BUYERS.map(function(b){ return Object.assign({},b,{value:b.outstanding}); });
+      drawFlat(flatBuyers, 'Buyer');
+    } else {
+      draw();
+    }
   }
 
   if(window._cemRO) window._cemRO.disconnect();
