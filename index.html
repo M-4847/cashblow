@@ -5436,7 +5436,9 @@ function _renderBusinessDashboard(){
   const today = new Date(); today.setHours(0,0,0,0);
   const overdueInvs = invoices.filter(i=>!i.paidDate&&i.status!=='Paid'&&i.dueDate&&new Date(i.dueDate)<today);
   const overdueAmt = overdueInvs.reduce((s,i)=>s+i.amount,0);
-  const overdueRatio = totalExp>0?Math.round((overdueAmt/totalExp)*100):0;
+  // Cap at totalExp — overdue can never exceed total outstanding
+  const overdueAmtCapped = Math.min(overdueAmt, totalExp||overdueAmt);
+  const overdueRatio = totalExp>0?Math.min(100,Math.round((overdueAmtCapped/totalExp)*100)):0;
   const highRiskBuyers = buyers.filter(b=>classifyRisk(b)==='High');
   const avgDelay = buyers.length ? Math.round(buyers.reduce((s,b)=>s+(b.avgDelay||0),0)/buyers.length) : 0;
 
@@ -5533,7 +5535,7 @@ function _renderBusinessDashboard(){
     },
     {
       icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
-      label:'Overdue Exposure', val:fmt(overdueAmt),
+      label:'Overdue Exposure', val:fmt(overdueAmtCapped),
       sub:`${overdueRatio}% of portfolio overdue`,
       col:'#ef4444', bg:'rgba(239,68,68,.08)', border:'#ef4444',
     },
@@ -12025,6 +12027,16 @@ async function cfiqOnboardProcess(){
   const stepTimer = setInterval(advanceStep, 1200);
 
   try{
+    /* ── Step 0: clear ALL existing data first, verify it worked ── */
+    if(API.isConfigured()){
+      const clr = await fetch((window.CFIQ_API_BASE||'')+'/api/company/clear', {
+        method:'POST', headers:{'Authorization':'Bearer '+(API.getToken()||'')}
+      });
+      const clrData = await clr.json();
+      console.log('[upload] clear result:', clrData);
+      if(!clr.ok) throw new Error('Failed to clear old data: ' + (clrData.message||''));
+    }
+
     const fd = new FormData();
     fd.append('file', _obFile);
     fd.append('source', 'Excel Import');

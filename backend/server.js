@@ -219,6 +219,26 @@ function toDate(v) {
   return isNaN(d2.getTime()) ? null : d2;
 }
 
+// POST /api/company/clear — wipe all import data for this company
+app.post('/api/company/clear', auth, async (req, res) => {
+  const cid = req.user.companyId;
+  if (!cid) return res.status(400).json({ message: 'No company ID in session' });
+  try {
+    const sub = `SELECT id FROM buyers WHERE company_id IS NOT DISTINCT FROM $1`;
+    const r1 = await db.query(`DELETE FROM collections WHERE buyer_id IN (${sub})`, [cid]);
+    const r2 = await db.query(`DELETE FROM receivables WHERE buyer_id IN (${sub})`, [cid]);
+    const r3 = await db.query(`DELETE FROM invoices    WHERE buyer_id IN (${sub})`, [cid]);
+    try { await db.query(`DELETE FROM alerts WHERE company_id IS NOT DISTINCT FROM $1`, [cid]); } catch(_){}
+    const r4 = await db.query(`DELETE FROM buyers WHERE company_id IS NOT DISTINCT FROM $1`, [cid]);
+    const msg = `Cleared: ${r4.rowCount} buyers, ${r3.rowCount} invoices, ${r2.rowCount} receivables, ${r1.rowCount} collections`;
+    console.log('[clear]', cid, msg);
+    res.json({ cleared: true, message: msg, buyers: r4.rowCount, invoices: r3.rowCount });
+  } catch(e) {
+    console.error('[clear] error:', e.message);
+    res.status(500).json({ message: 'Clear failed: ' + e.message });
+  }
+});
+
 // POST /api/onboarding/import
 // Multipart upload (field "file") — parses a Tally / Busy / Vyapar / generic Excel
 // ledger or receivables export, auto-detects columns, computes risk + cash-flow
