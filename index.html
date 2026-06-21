@@ -516,10 +516,11 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 
 /* -- Buyer Risk Profiles Module -- */
 .brp-full{max-width:none!important;width:100%!important}
-.brp-tab-bar{display:flex;gap:4px;background:var(--gray-100);padding:4px;border-radius:10px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none}
+.brp-tab-bar{display:flex;gap:2px;background:#1e293b;padding:5px;border-radius:12px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .brp-tab-bar::-webkit-scrollbar{display:none}
-.brp-tab{padding:7px 16px;border:none;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--gray-500);background:transparent;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
-.brp-tab.active{background:var(--white);color:var(--gray-900);font-weight:600;box-shadow:0 1px 5px rgba(0,0,0,.12)}
+.brp-tab{padding:8px 18px;border:none;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.55);background:transparent;transition:all .18s;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;letter-spacing:.01em}
+.brp-tab:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.08)}
+.brp-tab.active{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(99,102,241,.4)}
 .brp-stat{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:14px 16px}
 .brp-stat-val{font-size:20px;font-weight:800;letter-spacing:-.5px}
 .brp-stat-lbl{font-size:11px;color:var(--gray-500);margin-top:2px;font-weight:500}
