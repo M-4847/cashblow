@@ -226,6 +226,10 @@ function toDate(v) {
 app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
   const cid = req.user.companyId;
+
+  // companyId null means DELETE WHERE company_id=$1 matches nothing — guard explicitly
+  if (!cid) return res.status(400).json({ message: 'Company ID not found in session. Please log out and log in again.' });
+
   try {
     const wb = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
     const ws = wb.Sheets[wb.SheetNames[0]];
@@ -234,17 +238,20 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
 
     const headers = Object.keys(rows[0]);
     const map = detectColumns(headers);
+    console.log('[import] company:', cid, '| rows:', rows.length, '| detected columns:', map);
     if (!map.buyer) return res.status(400).json({ message: 'Could not detect a buyer/customer/party name column', headers });
     if (!map.outstanding && !map.amount) return res.status(400).json({ message: 'Could not detect an amount/outstanding column', headers });
 
-    /* ── Wipe all previous data for this company before fresh import ── */
-    // All tables have company_id — delete in FK-safe order (children first)
-    await db.query(`DELETE FROM collections WHERE company_id=$1`, [cid]);
-    await db.query(`DELETE FROM receivables WHERE company_id=$1`, [cid]);
-    await db.query(`DELETE FROM invoices    WHERE company_id=$1`, [cid]);
-    try{ await db.query(`DELETE FROM alerts  WHERE company_id=$1`, [cid]); }catch(_){}
-    await db.query(`DELETE FROM buyers      WHERE company_id=$1`, [cid]);
-    console.log('[import] cleared old data for company', cid);
+    /* ── Wipe ALL previous data for this company — use IS NOT DISTINCT FROM for NULL safety ── */
+    const del = async (tbl) => {
+      const r = await db.query(`DELETE FROM ${tbl} WHERE company_id IS NOT DISTINCT FROM $1`, [cid]);
+      console.log(`[import] deleted ${r.rowCount} rows from ${tbl}`);
+    };
+    await del('collections');
+    await del('receivables');
+    await del('invoices');
+    try { await del('alerts'); } catch(_){}
+    await del('buyers');
 
     const today = new Date();
     const buyerAgg = new Map(); // buyerName -> { outstanding, invoices, overdueCount, totalDelay, maxDelay, sector, state }
