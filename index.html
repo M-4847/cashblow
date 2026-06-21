@@ -10854,6 +10854,26 @@ window.initCashExposureMap = function(){
     return el;
   }
 
+  /* Infer sector from buyer name when Excel sector column is missing */
+  function inferSector(name, fallback){
+    if(fallback && fallback!=='Services' && fallback!=='Other' && fallback!=='Unknown') return fallback;
+    var n=(name||'').toLowerCase();
+    if(/auto|motor|gear|vehicle|transport|wheel/.test(n)) return 'Automotive';
+    if(/textile|fabric|garment|cloth|cotton|weav/.test(n)) return 'Textiles';
+    if(/pharma|medic|health|hospital|drug|biotech/.test(n)) return 'Healthcare';
+    if(/steel|metal|iron|alumin|copper|alloy|casting|forge/.test(n)) return 'Metals';
+    if(/chemical|polymer|plastic|petro|rubber/.test(n)) return 'Chemicals';
+    if(/food|agro|agri|grain|rice|wheat|farm/.test(n)) return 'Agriculture';
+    if(/tech|software|digital|system|electron|semiconductor/.test(n)) return 'Technology';
+    if(/cable|wire|power|energy|electric/.test(n)) return 'Electronics';
+    if(/construct|infra|cement|building|real estate/.test(n)) return 'Construction';
+    if(/pump|machine|tool|equipment|instrument|manufactur|engineer|component|bearing|precision/.test(n)) return 'Manufacturing';
+    if(/trading|trader|merchant|commerce|distrib|wholesale/.test(n)) return 'Trading';
+    if(/export|import/.test(n)) return 'Exports';
+    if(/packaging|pack/.test(n)) return 'Packaging';
+    return fallback||'Industrial';
+  }
+
   function draw(){
     var W=wrap.clientWidth, H=wrap.clientHeight;
     if(!W||!H) return;
@@ -10863,16 +10883,19 @@ window.initCashExposureMap = function(){
 
     var OUTER_GAP=3, SECTOR_GAP=2, TILE_GAP=1, LABEL_H=20;
 
-    /* ── Group buyers by sector ── */
+    /* ── Group buyers by their actual sector (rawSector or inferred from name) ── */
     var groupMap={};
     BUYERS.forEach(function(b){
-      if(!groupMap[b.industry]) groupMap[b.industry]={key:b.industry,buyers:[],total:0};
-      groupMap[b.industry].buyers.push(b);
-      groupMap[b.industry].total+=b.outstanding;
+      var sec = inferSector(b.name, b.rawSector||b.industry);
+      if(!groupMap[sec]) groupMap[sec]={key:sec,buyers:[],total:0};
+      groupMap[sec].buyers.push(b);
+      groupMap[sec].total+=b.outstanding;
     });
-    var sectors=SECTOR_ORDER.filter(function(s){return groupMap[s];}).map(function(s){
-      return Object.assign({value:groupMap[s].total},groupMap[s]);
-    });
+    /* Sort sectors by total outstanding descending */
+    var sectors=Object.values(groupMap)
+      .filter(function(g){return g.total>0;})
+      .sort(function(a,b){return b.total-a.total;})
+      .map(function(g){return Object.assign({value:g.total},g);});
 
     /* ── Squarify sectors into full canvas ── */
     var secRects=squarify(sectors,OUTER_GAP,OUTER_GAP,W-OUTER_GAP*2,H-OUTER_GAP*2);
