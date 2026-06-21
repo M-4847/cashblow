@@ -12027,14 +12027,15 @@ async function cfiqOnboardProcess(){
   const stepTimer = setInterval(advanceStep, 1200);
 
   try{
-    /* ── Step 0: clear ALL existing data first, verify it worked ── */
+    /* ── Step 0: clear old data (non-blocking — import also clears inside transaction) ── */
     if(API.isConfigured()){
-      const clr = await fetch((window.CFIQ_API_BASE||'')+'/api/company/clear', {
-        method:'POST', headers:{'Authorization':'Bearer '+(API.getToken()||'')}
-      });
-      const clrData = await clr.json();
-      console.log('[upload] clear result:', clrData);
-      if(!clr.ok) throw new Error('Failed to clear old data: ' + (clrData.message||''));
+      try{
+        const clr = await fetch((window.CFIQ_API_BASE||'')+'/api/company/clear', {
+          method:'POST', headers:{'Authorization':'Bearer '+(API.getToken()||'')}
+        });
+        const clrData = await clr.json();
+        console.log('[upload] clear result:', clrData);
+      }catch(e){ console.warn('[upload] pre-clear skipped:', e.message); }
     }
 
     const fd = new FormData();
