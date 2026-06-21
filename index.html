@@ -5602,7 +5602,7 @@ function _renderBusinessDashboard(){
             return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer;transition:background .15s"
               onmouseover="this.style.background='${risk==='High'?'rgba(239,68,68,.08)':'rgba(99,102,241,.04)'}'"
               onmouseout="this.style.background='${rb}'"
-              onclick="window._brpState={buyerId:'${b.id}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
+              onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
               <td style="padding:14px 16px">
                 <div style="display:flex;align-items:center;gap:10px">
                   <div style="width:28px;height:28px;border-radius:8px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:${rc}">${(b.name||'?')[0]}</div>
@@ -8600,8 +8600,18 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
 
     /* -- PROFILE VIEW -- */
     if (st.buyerId) {
-      const p = BRPEngine.profile(st.buyerId);
-      if (!p) return `<div class="page-wrap"><p style="color:var(--gray-500);padding:40px">Buyer not found.</p></div>`;
+      // If stored buyerId is stale (after re-upload), try matching by name
+      let resolvedId = st.buyerId;
+      if(!DB.buyers.find(b=>b.id===resolvedId) && st.buyerName){
+        const byName = DB.buyers.find(b=>b.name===st.buyerName);
+        if(byName) resolvedId = byName.id;
+      }
+      const p = BRPEngine.profile(resolvedId);
+      if (!p){
+        // Stale ID — go back to list
+        st.buyerId = null; st.buyerName = null;
+        return Pages.buyerRiskProfiles();
+      }
       const b=p.buyer, cat=p.category, rec=p.rec;
       const catBg = cat.cls==='risk-excellent'?'#f0fdf4':cat.cls==='risk-stable'?'#eff6ff':cat.cls==='risk-watchlist'?'#fffbeb':cat.cls==='risk-critical'?'#fef2f2':'#fff7ed';
       const limitLabel = p.creditLimit===0 ? '₹0 — Advance Only' : inr(p.creditLimit);
