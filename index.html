@@ -10748,8 +10748,8 @@ window.CEM_PALETTE = {
 window.initCashExposureMap = function(){
   /* ── Build buyers from live DB data if available, else use demo ── */
   var BUYERS;
-  var liveBuyers = (typeof DB !== 'undefined') && DB.buyers && DB.buyers.length > 0
-    && DB.buyers.some(function(b){ return (b.currentExposure||0) > 0; });
+  // Use real API data if initDB() ran — don't require currentExposure > 0
+  var liveBuyers = DB._fromAPI === true && DB.buyers && DB.buyers.length > 0;
 
   if(liveBuyers){
     /* Map raw industry/sector to CEM sector categories */
@@ -10780,20 +10780,25 @@ window.initCashExposureMap = function(){
       var d = new Date(); d.setDate(d.getDate() + Math.max(1, delay||14));
       return d.getDate()+' '+ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getFullYear();
     }
-    var totalExp = DB.buyers.reduce(function(s,b){ return s + (b.currentExposure||0); }, 0);
+    // Build invoice total per buyer as fallback when currentExposure=0
+    var invTotalByBuyer = {};
+    if(DB.invoices) DB.invoices.forEach(function(i){ invTotalByBuyer[i.buyerId]=(invTotalByBuyer[i.buyerId]||0)+i.amount; });
+    var effExp = function(b){ return (b.currentExposure||0) > 0 ? (b.currentExposure||0) : (invTotalByBuyer[b.id]||0); };
+    var totalExp = DB.buyers.reduce(function(s,b){ return s + effExp(b); }, 0);
     BUYERS = DB.buyers
-      .filter(function(b){ return (b.currentExposure||0) > 0; })
+      .filter(function(b){ return effExp(b) > 0; })
       .map(function(b){
+        var expAmt = effExp(b);
         var risk = cemRisk(b.riskScore||50);
         var short = b.name.split(' ').slice(0,2).join(' ');
         return {
           name: b.name,
           short: short,
-          outstanding: b.currentExposure||0,
+          outstanding: expAmt,
           delay: b.avgDelay||0,
           risk: risk,
           riskScore: b.riskScore||50,
-          share: totalExp > 0 ? Math.round((b.currentExposure/totalExp)*1000)/10 : 0,
+          share: totalExp > 0 ? Math.round((expAmt/totalExp)*1000)/10 : 0,
           industry: cemSector(b.industry||b.sector||''),
           rawSector: (b.sector||b.industry||b.cluster||'').trim() || 'Other',
           state: (b.state||b.cluster||b.location||'').trim() || 'Unknown',
