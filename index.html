@@ -10795,8 +10795,8 @@ window.initCashExposureMap = function(){
           riskScore: b.riskScore||50,
           share: totalExp > 0 ? Math.round((b.currentExposure/totalExp)*1000)/10 : 0,
           industry: cemSector(b.industry||b.sector||''),
-          rawSector: (b.sector||b.industry||'').trim() || 'Other',
-          state: (b.state||b.location||'').trim() || 'Unknown',
+          rawSector: (b.sector||b.industry||b.cluster||'').trim() || 'Other',
+          state: (b.state||b.cluster||b.location||'').trim() || 'Unknown',
           action: cemAction(risk, b.avgDelay||0),
           collect: cemCollect(b.avgDelay||14),
         };
@@ -11267,10 +11267,12 @@ window.initCashExposureMap = function(){
   var view = window._cemView || 'all';
   if(view==='sector'){
     var aggSector = buildAggregated('rawSector');
-    drawFlat(aggSector, 'Sector');
+    var validSectors = aggSector.filter(function(g){return g.name!=='Other'&&g.name!=='Unknown';});
+    drawFlat(validSectors.length ? aggSector : [], 'Sector');
   } else if(view==='state'){
     var aggState = buildAggregated('state');
-    drawFlat(aggState, 'State');
+    var validStates = aggState.filter(function(g){return g.name!=='Unknown';});
+    drawFlat(validStates.length ? validStates : [], 'State');
   } else {
     draw();
   }
