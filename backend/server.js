@@ -242,16 +242,16 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
     if (!map.buyer) return res.status(400).json({ message: 'Could not detect a buyer/customer/party name column', headers });
     if (!map.outstanding && !map.amount) return res.status(400).json({ message: 'Could not detect an amount/outstanding column', headers });
 
-    /* ── Wipe ALL previous data for this company — use IS NOT DISTINCT FROM for NULL safety ── */
-    const del = async (tbl) => {
-      const r = await db.query(`DELETE FROM ${tbl} WHERE company_id IS NOT DISTINCT FROM $1`, [cid]);
-      console.log(`[import] deleted ${r.rowCount} rows from ${tbl}`);
-    };
-    await del('collections');
-    await del('receivables');
-    await del('invoices');
-    try { await del('alerts'); } catch(_){}
-    await del('buyers');
+    /* ── Wipe ALL previous data for this company ──
+       receivables + collections have NO company_id column — use buyer_id subquery.
+       buyers + invoices + alerts DO have company_id — delete directly. ── */
+    const buyerIdSub = `SELECT id FROM buyers WHERE company_id IS NOT DISTINCT FROM $1`;
+    const c1 = await db.query(`DELETE FROM collections WHERE buyer_id IN (${buyerIdSub})`, [cid]);
+    const c2 = await db.query(`DELETE FROM receivables WHERE buyer_id IN (${buyerIdSub})`, [cid]);
+    const c3 = await db.query(`DELETE FROM invoices    WHERE buyer_id IN (${buyerIdSub})`, [cid]);
+    try { await db.query(`DELETE FROM alerts WHERE company_id IS NOT DISTINCT FROM $1`, [cid]); } catch(_){}
+    const c4 = await db.query(`DELETE FROM buyers WHERE company_id IS NOT DISTINCT FROM $1`, [cid]);
+    console.log(`[import] cleared: ${c1.rowCount} collections, ${c2.rowCount} receivables, ${c3.rowCount} invoices, ${c4.rowCount} buyers`);
 
     const today = new Date();
     const buyerAgg = new Map(); // buyerName -> { outstanding, invoices, overdueCount, totalDelay, maxDelay, sector, state }
