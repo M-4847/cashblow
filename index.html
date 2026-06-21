@@ -12169,8 +12169,8 @@ async function initDB(){
   if(!API.isConfigured()) return;
   try {
     const [buyersRes, invoicesRes, ordersRes, receivablesRes, alertsRes] = await Promise.allSettled([
-      API.get('/api/buyers?limit=500'),
-      API.get('/api/invoices?limit=500'),
+      API.get('/api/buyers?limit=2000'),
+      API.get('/api/invoices?limit=5000'),
       API.get('/api/orders?limit=500'),
       API.get('/api/receivables'),
       API.get('/api/alerts?limit=200'),
