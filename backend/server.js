@@ -226,32 +226,33 @@ function toDate(v) {
 app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
   const cid = req.user.companyId;
+  if (!cid) return res.status(400).json({ message: 'Company ID missing — please log out and log back in.' });
 
-  // companyId null means DELETE WHERE company_id=$1 matches nothing — guard explicitly
-  if (!cid) return res.status(400).json({ message: 'Company ID not found in session. Please log out and log in again.' });
-
+  // Use a dedicated client so we can run everything in one transaction
+  const client = await db.connect();
   try {
     const wb = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-    if (!rows.length) return res.status(400).json({ message: 'The file has no data rows' });
+    if (!rows.length) { client.release(); return res.status(400).json({ message: 'File has no data rows' }); }
 
     const headers = Object.keys(rows[0]);
     const map = detectColumns(headers);
-    console.log('[import] company:', cid, '| rows:', rows.length, '| detected columns:', map);
-    if (!map.buyer) return res.status(400).json({ message: 'Could not detect a buyer/customer/party name column', headers });
-    if (!map.outstanding && !map.amount) return res.status(400).json({ message: 'Could not detect an amount/outstanding column', headers });
+    console.log('[import] cid:', cid, 'rows:', rows.length, 'cols:', JSON.stringify(map));
+    if (!map.buyer) { client.release(); return res.status(400).json({ message: 'Cannot find buyer name column', headers }); }
+    if (!map.outstanding && !map.amount) { client.release(); return res.status(400).json({ message: 'Cannot find amount column', headers }); }
 
-    /* ── Wipe ALL previous data for this company ──
-       receivables + collections have NO company_id column — use buyer_id subquery.
-       buyers + invoices + alerts DO have company_id — delete directly. ── */
-    const buyerIdSub = `SELECT id FROM buyers WHERE company_id IS NOT DISTINCT FROM $1`;
-    const c1 = await db.query(`DELETE FROM collections WHERE buyer_id IN (${buyerIdSub})`, [cid]);
-    const c2 = await db.query(`DELETE FROM receivables WHERE buyer_id IN (${buyerIdSub})`, [cid]);
-    const c3 = await db.query(`DELETE FROM invoices    WHERE buyer_id IN (${buyerIdSub})`, [cid]);
-    try { await db.query(`DELETE FROM alerts WHERE company_id IS NOT DISTINCT FROM $1`, [cid]); } catch(_){}
-    const c4 = await db.query(`DELETE FROM buyers WHERE company_id IS NOT DISTINCT FROM $1`, [cid]);
-    console.log(`[import] cleared: ${c1.rowCount} collections, ${c2.rowCount} receivables, ${c3.rowCount} invoices, ${c4.rowCount} buyers`);
+    await client.query('BEGIN');
+
+    /* ── Step 1: wipe all existing data for this company ── */
+    // collections and receivables have no company_id — delete via buyer_id
+    const sub = `SELECT id FROM buyers WHERE company_id IS NOT DISTINCT FROM $1`;
+    await client.query(`DELETE FROM collections WHERE buyer_id IN (${sub})`, [cid]);
+    await client.query(`DELETE FROM receivables WHERE buyer_id IN (${sub})`, [cid]);
+    await client.query(`DELETE FROM invoices    WHERE buyer_id IN (${sub})`, [cid]);
+    await client.query(`DELETE FROM buyers      WHERE company_id IS NOT DISTINCT FROM $1`, [cid]);
+    try { await client.query(`DELETE FROM alerts WHERE company_id IS NOT DISTINCT FROM $1`, [cid]); } catch(_){}
+    console.log('[import] old data wiped for company', cid);
 
     const today = new Date();
     const buyerAgg = new Map(); // buyerName -> { outstanding, invoices, overdueCount, totalDelay, maxDelay, sector, state }
@@ -359,7 +360,7 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
       const buyerId = genId('BUY');
       const code = (name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() || 'GEN').padEnd(3, 'X');
 
-      await db.query(
+      await client.query(
         `INSERT INTO buyers (id, company_id, name, code, industry, cluster, trade_term, risk_score, credit_limit, outstanding)
          VALUES ($1,$2,$3,$4,$5,$6,'Credit',$7,$8,$9)`,
         [buyerId, cid, name, code, agg.sector||null, agg.state||null, riskScore, Math.round(agg.outstanding * 1.5), agg.outstanding]
@@ -369,18 +370,18 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
         const invId = genId('INV');
         const isPaidInv = inv.isPaid || false;
         const status = isPaidInv ? 'Paid' : (inv.daysOverdue > 0 ? 'Overdue' : 'Pending');
-        await db.query(
+        await client.query(
           `INSERT INTO invoices (id, buyer_id, buyer_name, amount, issued_date, due_date, paid_date, trade_term, status, company_id)
            VALUES ($1,$2,$3,$4,$5,$6,$7,'Credit',$8,$9)`,
           [invId, buyerId, name, inv.amount, inv.issued || inv.due, inv.due, inv.paymentDate||null, status, cid]
         );
         const recId = genId('REC');
-        await db.query(
+        await client.query(
           `INSERT INTO receivables (id, buyer_id, buyer_name, invoice_id, amount, due_date, days_overdue, status, company_id)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
           [recId, buyerId, name, invId, inv.amount, inv.due, inv.daysOverdue, status, cid]
         );
-        await db.query(
+        await client.query(
           `INSERT INTO collections (id, buyer_id, invoice_id, receivable_id, amount, scheduled_date, status, collection_confidence, delay_days, company_id)
            VALUES (gen_random_uuid(),$1,$2,$3,$4,$5,'Pending',$6,$7,$8)`,
           [buyerId, invId, recId, inv.amount, inv.due, collectionConfidence, inv.daysOverdue, cid]
@@ -503,12 +504,16 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
     };
 
     for (const b of highRiskBuyers) {
-      await db.query(
+      await client.query(
         `INSERT INTO alerts (type, severity, title, message, buyer_id, company_id)
          VALUES ('risk','high',$1,$2,$3,$4)`,
         [`High risk buyer: ${b.name}`, `Risk score ${b.riskScore}/100 — ${fmt(b.outstanding)} outstanding with ${Math.round(b.avgDelay)} day avg delay`, b.id, cid]
       );
     }
+
+    /* ── Step 3: commit the transaction ── */
+    await client.query('COMMIT');
+    console.log('[import] committed:', buyersOut.length, 'buyers,', totalInvoices, 'invoices');
 
     res.json({
       source: req.body.source || 'Generic Excel',
@@ -529,8 +534,11 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
         totalInvoices,
       },
     });
+    client.release();
   } catch (err) {
-    console.error(err);
+    try { await client.query('ROLLBACK'); } catch(_){}
+    client.release();
+    console.error('[import] FAILED:', err.message);
     res.status(500).json({ message: 'Import failed: ' + err.message });
   }
 });
