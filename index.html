@@ -5832,7 +5832,7 @@ function _renderBusinessDashboard(){
           const punctual=[...buyers]
             .map(b=>{
               const t=avgTiming(b);
-              const exp=effExp(b);
+              const exp=effectiveExp(b);
               const contrib=grandTotal>0?Math.round((exp/grandTotal)*1000)/10:0;
               return {...b,_exp:exp,contrib,_timing:t};
             })
