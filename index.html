@@ -246,7 +246,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 [data-theme='dark'] .so-cancel:hover{background:var(--gray-700)}
 
 /* -- MAIN -- */
-.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;overflow-x:hidden;padding:20px 24px;background:#f0f4f8;box-sizing:border-box}
+.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;overflow-x:hidden;padding:20px 24px;background:#F8FAFC;box-sizing:border-box}
 .main.main-locked{overflow:hidden}
 
 /* -- BUTTONS -- */
@@ -5671,43 +5671,43 @@ function _renderBusinessDashboard(){
     ],
   };
 
-  const riskCol = r => r==='High'?'#ef4444':r==='Medium'?'#f97316':'#10b981';
-  const riskBg  = r => r==='High'?'#fef2f2':r==='Medium'?'#fff7ed':'#f0fdf4';
-  const contribCol = c => c>=15?'#ef4444':c>=10?'#f97316':c>=7?'#f59e0b':'#6366f1';
+  // "Problems should shout. Everything else whispers."
+  const riskCol = r => r==='High'?'#EF4444':r==='Medium'?'#F59E0B':'#10B981';
+  const riskBg  = r => r==='High'?'#FEF2F2':r==='Medium'?'#FFFBEB':'#F0FDF4';
+  const delayCol = d => d<=30?'#10B981':d<=60?'#F59E0B':d<=90?'#F97316':'#EF4444';
 
-
-  // ── KPI cards data ──
+  // ── KPI cards ── 80% neutral, only problems in red
   const kpis = [
     {
-      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#6366f1" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 014 0" stroke-linecap="round"/><circle cx="12" cy="14" r="2" fill="#6366f1" stroke="none"/></svg>`,
-      label:'Total Receivables Exposure', val:fmt(totalExp),
-      sub:`${totalBuyers} buyer${totalBuyers!==1?'s':''} · ${totalInvoices} invoice${totalInvoices!==1?'s':''}`,
-      col:'#6366f1', bg:'rgba(99,102,241,.08)', border:'#6366f1',
+      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#4F46E5" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 014 0" stroke-linecap="round"/><circle cx="12" cy="14" r="2" fill="#4F46E5" stroke="none"/></svg>`,
+      label:'Total Receivables', val:fmt(totalExp),
+      sub:`${totalBuyers} buyers · ${totalInvoices} invoices`,
+      col:'#0F172A', valCol:'#4F46E5', bg:'#EEF2FF', border:'#4F46E5',
     },
     {
-      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="${healthCol}" stroke-width="1.8"><path d="M12 21C12 21 4 15 4 9a8 8 0 0116 0c0 6-8 12-8 12z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="${healthCol}" stroke-width="1.8"><path d="M12 21C12 21 4 15 4 9a8 8 0 0116 0c0 6-8 12-8 12z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round"/></svg>`,
       label:'Cash Health Score', val:`${healthScore}/100`,
       pill:healthLabel, pillCol:healthCol,
       sub:'Overall business health',
-      col:healthCol, bg:`${healthCol}14`, border:healthCol,
+      col:'#0F172A', valCol:healthCol, bg:healthScore>=70?'#ECFDF5':healthScore>=40?'#FFFBEB':'#FEF2F2', border:healthCol,
     },
     {
-      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#f97316" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-linecap="round"/></svg>`,
-      label:'Top Risk Buyers', val:`${highRiskBuyers.length} Buyer${highRiskBuyers.length!==1?'s':''}`,
-      sub:`Driving ${highRiskPct}% of delayed receivables`,
-      col:'#f97316', bg:'rgba(249,115,22,.08)', border:'#f97316',
+      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round"/></svg>`,
+      label:'High Risk Buyers', val:`${highRiskBuyers.length}`,
+      sub:`${highRiskPct}% of delayed receivables`,
+      col:'#0F172A', valCol:'#B45309', bg:'#FFFBEB', border:'#F59E0B',
     },
     {
-      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3"/></svg>`,
+      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3" stroke-linecap="round"/></svg>`,
       label:'Concentration Risk', val:`${concPct}%`,
-      sub:'Exposure in Top 3 buyers',
-      col:'#f59e0b', bg:'rgba(245,158,11,.08)', border:'#f59e0b',
+      sub:'Top 3 buyers exposure',
+      col:'#0F172A', valCol:'#92400E', bg:'#FFFBEB', border:'#F59E0B',
     },
     {
-      icon:`<svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
+      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#EF4444" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
       label:'Overdue Exposure', val:fmt(overdueAmtCapped),
-      sub:`${overdueRatio}% of portfolio overdue`,
-      col:'#ef4444', bg:'rgba(239,68,68,.08)', border:'#ef4444',
+      sub:`${overdueRatio}% of portfolio`,
+      col:'#0F172A', valCol:'#EF4444', bg:'#FEF2F2', border:'#EF4444',
     },
   ];
 
@@ -5739,16 +5739,14 @@ function _renderBusinessDashboard(){
   <!-- KPI Row -->
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;flex-shrink:0">
     ${kpis.map(k=>`
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-top:3px solid ${k.border};border-radius:10px;padding:12px 14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="background:${k.bg};border-radius:8px;padding:6px;flex-shrink:0">${k.icon.replace('width="22" height="22"','width="16" height="16"')}</div>
-          <div style="font-size:20px;font-weight:900;color:${k.col};letter-spacing:-.5px;line-height:1">${k.val}</div>
-        </div>
-        ${k.pill?`<span style="background:${k.pillCol}18;color:${k.pillCol};border-radius:100px;padding:2px 7px;font-size:9px;font-weight:800">${k.pill}</span>`:''}
+    <div style="background:#fff;border:1px solid #E2E8F0;border-top:3px solid ${k.border};border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="background:${k.bg};border-radius:8px;padding:7px">${k.icon}</div>
+        ${k.pill?`<span style="background:${k.pillCol}18;color:${k.pillCol};border-radius:100px;padding:2px 8px;font-size:9px;font-weight:700">${k.pill}</span>`:''}
       </div>
-      <div style="font-size:10.5px;font-weight:600;color:var(--gray-500)">${k.label}</div>
-      <div style="font-size:10px;color:var(--gray-400);margin-top:1px">${k.sub}</div>
+      <div style="font-size:22px;font-weight:700;color:${k.valCol||k.col};letter-spacing:-.5px;line-height:1;margin-bottom:4px">${k.val}</div>
+      <div style="font-size:11px;font-weight:600;color:#64748B">${k.label}</div>
+      <div style="font-size:10px;color:#94A3B8;margin-top:2px">${k.sub}</div>
     </div>`).join('')}
   </div>
 
@@ -5781,29 +5779,30 @@ function _renderBusinessDashboard(){
           </tr></thead>
           <tbody>
             ${drainers.slice(0,5).map((b,i)=>{
-              const risk=classifyRisk(b),rc=riskCol(risk),rb=risk==='High'?'rgba(239,68,68,.04)':'transparent',cc=contribCol(b.contrib);
-              return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer"
-                onmouseover="this.style.background='rgba(239,68,68,.07)'"
-                onmouseout="this.style.background='${rb}'"
+              const risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#F8FAFC';
+              const dc=delayCol(b.avgDelay||0);
+              return `<tr style="border-top:1px solid #E2E8F0;background:${rowBg};cursor:pointer;transition:background .1s"
+                onmouseover="this.style.background='#F1F5F9'"
+                onmouseout="this.style.background='${rowBg}'"
                 onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-                <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
-                <td style="padding:7px 10px">
-                  <div style="display:flex;align-items:center;gap:7px">
-                    <div style="width:20px;height:20px;border-radius:5px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:${rc};flex-shrink:0">${(b.name||'?')[0]}</div>
-                    <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
+                <td style="padding:8px 8px;text-align:center;font-size:10px;color:#94A3B8;font-weight:600">${i+1}</td>
+                <td style="padding:8px 10px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:22px;height:22px;border-radius:6px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#4F46E5;flex-shrink:0">${(b.name||'?')[0]}</div>
+                    <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
                   </div>
                 </td>
-                <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
-                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#ef4444;white-space:nowrap">${b.avgDelay||0}d</td>
-                <td style="padding:7px 10px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:2px 7px;font-size:10px;font-weight:800">${contribFmt(b.contrib)}</span></td>
-                <td style="padding:7px 10px"><span style="background:${rc}18;color:${rc};border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${risk}</span></td>
+                <td style="padding:8px 10px;font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap">${fmt(b._exp||0)}</td>
+                <td style="padding:8px 10px;font-size:12px;font-weight:700;color:${dc};white-space:nowrap">${b.avgDelay||0}d</td>
+                <td style="padding:8px 10px"><span style="background:#EEF2FF;color:#4F46E5;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700">${contribFmt(b.contrib)}</span></td>
+                <td style="padding:8px 10px"><span style="background:${riskBg(risk)};color:${rc};border-radius:6px;padding:2px 8px;font-size:9.5px;font-weight:700">${risk}</span></td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
-        <div style="padding:7px 14px;border-top:1px solid var(--gray-100);background:#fff5f5;display:flex;justify-content:space-between">
-          <span style="font-size:10px;color:#f87171;font-weight:600">Top 5 of ${totalBuyers} buyers · ${fmt(totalDrainerExp)}</span>
-          <span style="font-size:10px;color:#ef4444;font-weight:700">${overdueCount} overdue invoices</span>
+        <div style="padding:7px 14px;border-top:1px solid #E2E8F0;background:#F8FAFC;display:flex;justify-content:space-between">
+          <span style="font-size:10px;color:#64748B;font-weight:600">Top 5 of ${totalBuyers} buyers · ${fmt(totalDrainerExp)}</span>
+          <span style="font-size:10px;color:${overdueCount>0?'#EF4444':'#10B981'};font-weight:700">${overdueCount} overdue invoices</span>
         </div>
       </div>
 
@@ -5886,18 +5885,18 @@ function _renderBusinessDashboard(){
         })()}
       </div>
 
-      <!-- Portfolio Metrics (always visible) -->
-      <div style="padding:10px 14px;border-top:1px solid var(--gray-100)">
-        <div style="font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Portfolio Metrics</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+      <!-- Portfolio Metrics -->
+      <div style="padding:10px 14px;border-top:1px solid #E2E8F0">
+        <div style="font-size:9.5px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Portfolio Metrics</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
           ${[
-            {l:'Avg Delay',v:avgDelay+'d',c:'#6366f1'},
-            {l:'On-Time %',v:onTimePctAvg+'%',c:'#10b981'},
-            {l:'Overdue',v:fmt(overdueAmtCapped),c:'#ef4444'},
-            {l:'Total Inv.',v:totalInvoices,c:'#f59e0b'},
-          ].map(m=>`<div style="background:var(--gray-50);border-radius:8px;padding:8px;text-align:center">
-            <div style="font-size:14px;font-weight:800;color:${m.c}">${m.v}</div>
-            <div style="font-size:9.5px;color:var(--gray-400);margin-top:2px">${m.l}</div>
+            {l:'Avg Delay',v:avgDelay+'d',c:'#4F46E5',bg:'#EEF2FF'},
+            {l:'On-Time %',v:onTimePctAvg+'%',c:'#10B981',bg:'#ECFDF5'},
+            {l:'Overdue',v:fmt(overdueAmtCapped),c:'#EF4444',bg:'#FEF2F2'},
+            {l:'Invoices',v:totalInvoices,c:'#7C3AED',bg:'#F5F3FF'},
+          ].map(m=>`<div style="background:${m.bg};border-radius:8px;padding:8px;text-align:center;border:1px solid ${m.c}18">
+            <div style="font-size:13px;font-weight:700;color:${m.c}">${m.v}</div>
+            <div style="font-size:9px;color:#64748B;margin-top:2px;font-weight:500">${m.l}</div>
           </div>`).join('')}
         </div>
       </div>
@@ -5905,79 +5904,78 @@ function _renderBusinessDashboard(){
 
 
     <!-- COL 2: Recommended Actions (internal scroll) -->
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:100%">
-      <div style="padding:10px 14px 8px;border-bottom:1px solid var(--gray-100);flex-shrink:0">
-        <div style="font-size:13px;font-weight:800;color:var(--gray-900)">Recommended Actions</div>
-        <div style="font-size:10px;color:var(--gray-400);margin-top:1px">Priority follow-ups</div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:100%;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+      <div style="padding:10px 14px 8px;border-bottom:1px solid #E2E8F0;flex-shrink:0">
+        <div style="font-size:12px;font-weight:700;color:#0F172A">Recommended Actions</div>
+        <div style="font-size:10px;color:#94A3B8;margin-top:1px">Priority follow-ups</div>
       </div>
 
-      <!-- Cards list — full internal scroll, no collapse needed -->
-      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#e2e8f0 transparent">
+      <!-- Cards list — full internal scroll -->
+      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:5px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#E2E8F0 transparent">
         ${drainers.filter(b=>classifyRisk(b)!=='Low').map(b=>{
           const risk=classifyRisk(b),rc=riskCol(risk),acts=actionMap[risk]||actionMap['Medium'];
-          return `<div style="border:1px solid ${rc}25;border-left:3px solid ${rc};border-radius:8px;padding:8px 10px;background:${rc}05;flex-shrink:0">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div style="font-size:11px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${b.name}</div>
-              <span style="background:${rc}18;color:${rc};border-radius:100px;padding:1px 6px;font-size:8.5px;font-weight:800;flex-shrink:0">${risk}</span>
+          return `<div style="background:#fff;border:1px solid #E2E8F0;border-left:3px solid ${rc};border-radius:8px;padding:8px 10px;flex-shrink:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+              <div style="font-size:11px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">${b.name}</div>
+              <span style="background:${riskBg(risk)};color:${rc};border-radius:6px;padding:1px 7px;font-size:8.5px;font-weight:700;flex-shrink:0">${risk}</span>
             </div>
-            <div style="font-size:9.5px;color:var(--gray-500);margin-bottom:4px">${fmt(b._exp||0)} · ${b.avgDelay||0}d delay</div>
+            <div style="font-size:9.5px;color:#64748B;margin-bottom:4px">${fmt(b._exp||0)} · ${b.avgDelay||0}d delay</div>
             ${acts.slice(0,2).map(fn=>`<div style="display:flex;gap:4px;margin-bottom:2px">
-              <span style="color:${rc};font-size:10px;flex-shrink:0">⚠</span>
-              <span style="font-size:10px;color:var(--gray-700);line-height:1.35">${fn(b)}</span>
+              <span style="color:${rc};font-size:10px;flex-shrink:0;margin-top:1px">→</span>
+              <span style="font-size:10px;color:#475569;line-height:1.4">${fn(b)}</span>
             </div>`).join('')}
           </div>`;
         }).join('')}
       </div>
-
     </div>
 
-    <!-- COL 3: Risk Breakdown + Quick Stats -->
+    <!-- COL 3: Risk Breakdown + Portfolio Health -->
     <div style="display:flex;flex-direction:column;gap:10px">
 
-      <!-- Risk Distribution -->
-      <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:12px 14px">
-        <div style="font-size:12px;font-weight:800;color:var(--gray-900);margin-bottom:10px">Risk Distribution</div>
+      <!-- Risk Distribution — thin bars only, no boxes -->
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+        <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:12px">Risk Distribution</div>
         ${[
-          {l:'High Risk',n:highCount,c:'#ef4444',bg:'rgba(239,68,68,.1)'},
-          {l:'Medium Risk',n:medCount,c:'#f97316',bg:'rgba(249,115,22,.1)'},
-          {l:'Low Risk',n:lowCount,c:'#10b981',bg:'rgba(16,185,129,.1)'},
+          {l:'High Risk',n:highCount,c:'#EF4444'},
+          {l:'Medium Risk',n:medCount,c:'#F59E0B'},
+          {l:'Low Risk',n:lowCount,c:'#10B981'},
         ].map(r=>`
-        <div style="margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-            <span style="font-size:10.5px;font-weight:600;color:var(--gray-700)">${r.l}</span>
-            <span style="font-size:10.5px;font-weight:800;color:${r.c}">${r.n} buyers</span>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10.5px;font-weight:500;color:#64748B">${r.l}</span>
+            <span style="font-size:10.5px;font-weight:700;color:#0F172A">${r.n}</span>
           </div>
-          <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${totalBuyers>0?Math.round(r.n/totalBuyers*100):0}%;background:${r.c};border-radius:3px"></div>
+          <div style="height:4px;background:#F1F5F9;border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${totalBuyers>0?Math.round(r.n/totalBuyers*100):0}%;background:${r.c};border-radius:2px;transition:width .6s ease"></div>
           </div>
         </div>`).join('')}
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #F1F5F9">
           ${[
-            {l:'High',v:highCount,c:'#ef4444'},
-            {l:'Med',v:medCount,c:'#f97316'},
-            {l:'Low',v:lowCount,c:'#10b981'},
-          ].map(r=>`<div style="background:${r.c}10;border-radius:7px;padding:6px;text-align:center">
-            <div style="font-size:16px;font-weight:900;color:${r.c}">${r.v}</div>
-            <div style="font-size:9px;color:var(--gray-500);margin-top:1px">${r.l}</div>
+            {l:'High',v:highCount,c:'#EF4444',bg:'#FEF2F2'},
+            {l:'Med',v:medCount,c:'#92400E',bg:'#FFFBEB'},
+            {l:'Low',v:lowCount,c:'#065F46',bg:'#ECFDF5'},
+          ].map(r=>`<div style="background:${r.bg};border-radius:8px;padding:7px;text-align:center">
+            <div style="font-size:17px;font-weight:700;color:${r.c}">${r.v}</div>
+            <div style="font-size:9px;color:#64748B;margin-top:1px;font-weight:500">${r.l}</div>
           </div>`).join('')}
         </div>
       </div>
 
-      <!-- Portfolio Health -->
-      <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:12px 14px">
-        <div style="font-size:12px;font-weight:800;color:var(--gray-900);margin-bottom:10px">Portfolio Health</div>
+      <!-- Portfolio Health — thin bars, muted labels -->
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+        <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:12px">Portfolio Health</div>
         ${[
           {l:'Cash Health Score',v:healthScore+'/100',bar:healthScore,c:healthCol},
-          {l:'On-Time Rate',v:onTimePctAvg+'%',bar:onTimePctAvg,c:'#10b981'},
-          {l:'Concentration Risk',v:concPct+'%',bar:Math.min(concPct,100),c:'#f59e0b'},
-          {l:'Overdue Ratio',v:overdueRatio+'%',bar:Math.min(overdueRatio,100),c:'#ef4444'},
+          {l:'On-Time Rate',v:onTimePctAvg+'%',bar:onTimePctAvg,c:'#10B981'},
+          {l:'Concentration Risk',v:concPct+'%',bar:Math.min(concPct,100),c:'#F59E0B'},
+          {l:'Overdue Ratio',v:overdueRatio+'%',bar:Math.min(overdueRatio,100),c:'#EF4444'},
         ].map(m=>`
-        <div style="margin-bottom:7px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-            <span style="font-size:10px;color:var(--gray-600)">${m.l}</span>
-            <span style="font-size:10px;font-weight:800;color:${m.c}">${m.v}</span>
+        <div style="margin-bottom:9px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="font-size:10px;color:#64748B;font-weight:500">${m.l}</span>
+            <span style="font-size:10px;font-weight:700;color:#0F172A">${m.v}</span>
           </div>
-          <div style="height:4px;background:var(--gray-100);border-radius:2px;overflow:hidden">
+          <div style="height:3px;background:#F1F5F9;border-radius:2px;overflow:hidden">
             <div style="height:100%;width:${m.bar}%;background:${m.c};border-radius:2px"></div>
           </div>
         </div>`).join('')}
@@ -11002,12 +11000,12 @@ function renderDisciplineScore(){
     cells.push({d, ds, entry, isToday, isFuture});
   }
 
-  // Color per cell
+  // GitHub-style: green=uploaded, grey=no upload, red=high risk, future=very light
   function cellColor(cell){
     if(!cell) return 'transparent';
-    if(cell.isFuture) return 'rgba(148,163,184,.12)';
-    if(cell.entry) return cell.entry.risk==='high'?'#ef4444':'#22c55e';
-    return '#f59e0b';
+    if(cell.isFuture) return '#F1F5F9';
+    if(cell.entry) return cell.entry.risk==='high'?'#EF4444':'#22C55E';
+    return '#E2E8F0'; // light grey — no upload (not alarming)
   }
 
   // Build rows (weeks)
@@ -11016,59 +11014,57 @@ function renderDisciplineScore(){
 
   const DAY_LABELS=['M','T','W','T','F','S','S'];
 
-  return `<div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:14px 16px">
+  return `<div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div>
-        <div style="font-size:12px;font-weight:800;color:var(--gray-900)">Business Discipline</div>
-        <div style="font-size:10px;color:var(--gray-400);margin-top:1px">Upload consistency</div>
+        <div style="font-size:12px;font-weight:700;color:#0F172A">Business Discipline</div>
+        <div style="font-size:10px;color:#94A3B8;margin-top:1px">Upload consistency</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:20px;font-weight:900;color:${scoreCol};line-height:1">${score}</div>
-        <div style="font-size:9px;font-weight:700;color:${scoreCol}">${scoreLabel}</div>
+        <div style="font-size:20px;font-weight:700;color:${scoreCol};line-height:1">${score}</div>
+        <div style="font-size:9px;font-weight:600;color:${scoreCol}">${scoreLabel}</div>
       </div>
     </div>
 
     <!-- Month label -->
-    <div style="font-size:10px;font-weight:700;color:var(--gray-500);margin-bottom:6px">${monthName}</div>
+    <div style="font-size:10px;font-weight:600;color:#64748B;margin-bottom:6px">${monthName}</div>
 
     <!-- Day headers -->
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px">
-      ${DAY_LABELS.map(l=>`<div style="text-align:center;font-size:8.5px;font-weight:700;color:var(--gray-400)">${l}</div>`).join('')}
+      ${DAY_LABELS.map(l=>`<div style="text-align:center;font-size:8px;font-weight:600;color:#CBD5E1">${l}</div>`).join('')}
     </div>
 
-    <!-- Calendar grid -->
+    <!-- Calendar grid — GitHub style -->
     ${rows.map(row=>`
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">
       ${row.map(cell=>{
         if(!cell) return `<div></div>`;
         const col=cellColor(cell);
-        const border=cell.isToday?`2px solid ${scoreCol}`:'2px solid transparent';
+        const border=cell.isToday?`2px solid #4F46E5`:'2px solid transparent';
         const title=cell.entry?`title="Uploaded · ${cell.entry.buyers||''} buyers"`:cell.isFuture?'':' title="No upload"';
-        return `<div ${title} style="width:100%;aspect-ratio:1;background:${col};border-radius:3px;border:${border};cursor:${cell.entry?'default':'default'};position:relative">
-          ${cell.isToday?`<div style="position:absolute;inset:0;border-radius:2px;background:rgba(255,255,255,.25)"></div>`:''}
-        </div>`;
+        return `<div ${title} style="width:100%;aspect-ratio:1;background:${col};border-radius:3px;border:${border}"></div>`;
       }).join('')}
     </div>`).join('')}
 
     <!-- Legend -->
-    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
-      ${[['#22c55e','Uploaded'],['#f59e0b','No upload'],['#ef4444','High risk']].map(([c,l])=>
-        `<div style="display:flex;align-items:center;gap:4px">
-          <div style="width:8px;height:8px;border-radius:2px;background:${c}"></div>
-          <span style="font-size:9px;color:var(--gray-400)">${l}</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+      ${[['#22C55E','Uploaded'],['#E2E8F0','No upload'],['#EF4444','High risk'],['#4F46E5','Today']].map(([c,l])=>
+        `<div style="display:flex;align-items:center;gap:3px">
+          <div style="width:8px;height:8px;border-radius:2px;background:${c};${c==='#4F46E5'?'border:2px solid #4F46E5;background:transparent':''}"></div>
+          <span style="font-size:8.5px;color:#94A3B8">${l}</span>
         </div>`).join('')}
     </div>
 
     <!-- Stats row -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
-      <div style="background:var(--gray-50);border-radius:7px;padding:7px 10px">
-        <div style="font-size:14px;font-weight:800;color:var(--gray-900)">${consistency}%</div>
-        <div style="font-size:9.5px;color:var(--gray-400);margin-top:1px">This month</div>
+      <div style="background:#F8FAFC;border-radius:8px;padding:7px 10px;border:1px solid #E2E8F0">
+        <div style="font-size:14px;font-weight:700;color:#0F172A">${consistency}%</div>
+        <div style="font-size:9px;color:#94A3B8;margin-top:1px">This month</div>
       </div>
-      <div style="background:var(--gray-50);border-radius:7px;padding:7px 10px">
-        <div style="font-size:14px;font-weight:800;color:${streak>=5?'#22c55e':streak>=2?'#f59e0b':'#ef4444'}">${streak}d 🔥</div>
-        <div style="font-size:9.5px;color:var(--gray-400);margin-top:1px">Streak</div>
+      <div style="background:#F8FAFC;border-radius:8px;padding:7px 10px;border:1px solid #E2E8F0">
+        <div style="font-size:14px;font-weight:700;color:${streak>=5?'#10B981':streak>=2?'#F59E0B':'#64748B'}">${streak}d 🔥</div>
+        <div style="font-size:9px;color:#94A3B8;margin-top:1px">Streak</div>
       </div>
     </div>
   </div>`;
