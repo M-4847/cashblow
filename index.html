@@ -2427,6 +2427,27 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
   </div>
 </div>
 
+<!-- ── Manual Entry Clear Confirmation Modal ── -->
+<div id="me-confirm-overlay" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,.2);animation:me-pop .25s cubic-bezier(.34,1.28,.64,1)">
+    <div style="width:52px;height:52px;background:#FEF2F2;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#EF4444" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:17px;font-weight:800;color:#0F172A;margin-bottom:8px">Switch to Manual Entry?</div>
+      <div style="font-size:13px;color:#64748B;line-height:1.6">You have <strong id="me-confirm-count" style="color:#0F172A">0 buyers</strong> loaded from Excel.<br>Switching will <strong style="color:#EF4444">clear all existing data</strong> so you can start fresh with manual entries.</div>
+    </div>
+    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#92400E">
+      💡 You can always re-upload your Excel file later to restore the data.
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('me-confirm-overlay').style.display='none'" style="flex:1;padding:11px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-weight:600;color:#64748B;background:#fff;cursor:pointer">Keep Excel Data</button>
+      <button onclick="window.addBuyerClearAndOpen()" id="me-confirm-btn" style="flex:1;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;background:#EF4444;cursor:pointer;box-shadow:0 3px 8px rgba(239,68,68,.3)">Clear &amp; Start Manual</button>
+    </div>
+  </div>
+</div>
+<style>@keyframes me-pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}</style>
+
 <!-- -------- APP WRAPPER -------- -->
 <div id="cfiq-app">
 
@@ -5874,7 +5895,7 @@ function _renderBusinessDashboard(){
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span style="font-size:11px;color:#94A3B8">${totalBuyers} buyers · ${totalInvoices} invoices</span>
-      <button onclick="window.addBuyerOpen()" style="display:flex;align-items:center;gap:6px;background:#fff;color:#4F46E5;border:1.5px solid #C7D2FE;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#fff'">
+      <button onclick="window.addBuyerOpenWithClear()" style="display:flex;align-items:center;gap:6px;background:#fff;color:#4F46E5;border:1.5px solid #C7D2FE;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#fff'">
         <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.5"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
         Manual Entry
       </button>
@@ -11508,6 +11529,45 @@ function renderPreview(r){
     </div>`).join('')}
   `;
 }
+
+window.addBuyerOpenWithClear=function(){
+  // If Excel data exists, ask for confirmation first
+  const hasData = DB._fromAPI && DB.buyers && DB.buyers.length > 0;
+  if(hasData){
+    document.getElementById('me-confirm-count').textContent = DB.buyers.length+' buyer'+(DB.buyers.length!==1?'s':'');
+    const ov=document.getElementById('me-confirm-overlay');
+    ov.style.display='flex';
+  } else {
+    window.addBuyerOpen();
+  }
+};
+
+window.addBuyerClearAndOpen=async function(){
+  const btn=document.getElementById('me-confirm-btn');
+  if(btn){btn.textContent='Clearing…';btn.disabled=true;}
+  try{
+    // Clear server data
+    if(API.isConfigured()){
+      await fetch((window.CFIQ_API_BASE||'')+'/api/company/clear',{
+        method:'POST',headers:{'Authorization':'Bearer '+(API.getToken()||'')}
+      });
+    }
+    // Clear local DB
+    DB.buyers=[];DB.invoices=[];DB.receivables=[];DB.orders=[];DB.alerts=[];
+    DB.paymentHistory={};DB._fromAPI=false;
+    // Close confirm modal
+    document.getElementById('me-confirm-overlay').style.display='none';
+    if(btn){btn.textContent='Clear & Start Manual';btn.disabled=false;}
+    // Re-render dashboard to show empty state
+    App.onStateChange();
+    Toast.show('Data cleared — ready for manual entry','info',2500);
+    // Open drawer after brief delay
+    setTimeout(()=>window.addBuyerOpen(),300);
+  }catch(e){
+    Toast.show('Clear failed: '+e.message,'error',3000);
+    if(btn){btn.textContent='Clear & Start Manual';btn.disabled=false;}
+  }
+};
 
 window.addBuyerOpen=function(){
   document.getElementById('add-buyer-overlay').style.display='block';
