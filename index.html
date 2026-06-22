@@ -142,8 +142,11 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 .sidebar-logo:hover{background:rgba(255,255,255,.04)}
 
 /* ── Dashboard Responsive Layout ── */
-/* Recommended Actions column: always scrolls internally, never causes page scroll */
-#dash-col2{height:100%;overflow:hidden;display:flex;flex-direction:column}
+/* Header + KPIs stay fixed. Grid area scrolls if content taller than viewport. */
+#dash-content{overflow:hidden!important}
+#dash-grid{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:#E2E8F0 transparent}
+/* Recommended Actions scrolls internally within its column */
+#dash-col2{display:flex;flex-direction:column;overflow:hidden}
 #rec-actions-list{flex:1;overflow-y:auto;min-height:0}
 /* Laptop (≤1440px): shrink columns */
 @media(max-width:1440px){
