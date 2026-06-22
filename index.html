@@ -5750,8 +5750,8 @@ function _renderBusinessDashboard(){
     </div>`).join('')}
   </div>
 
-  <!-- ── Main 3-column grid ── -->
-  <div style="display:grid;grid-template-columns:1fr 260px 220px;gap:10px;align-items:start">
+  <!-- ── Main 4-column grid ── -->
+  <div style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:start">
 
     <!-- COL 1: Top Cash Drainers -->
     <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
@@ -5888,6 +5888,10 @@ function _renderBusinessDashboard(){
       </div>
 
     </div>
+
+    <!-- COL 4: Business Discipline Score -->
+    ${renderDisciplineScore()}
+
   </div>
 
 </div>`;
@@ -10857,6 +10861,123 @@ window.tablePage=function(p,bid){TableState.page=p;renderPaymentTable(bid);};
 /* ----------------------------------------
    Nav group — hover-expand + click fallback
 ---------------------------------------- */
+/* ── Business Discipline Score Widget ─────────────────────────── */
+function renderDisciplineScore(){
+  const log = JSON.parse(localStorage.getItem('cfiq_upload_log')||'[]');
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const monthName = now.toLocaleString('default',{month:'long'})+' '+y;
+
+  // Build day map for current month
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const dayMap = {};
+  log.forEach(d=>{ dayMap[d.date] = d; });
+
+  // First day of month (0=Sun..6=Sat), shift to Mon=0
+  const firstDay = new Date(y,m,1).getDay();
+  const startOffset = (firstDay+6)%7; // Mon-based
+
+  // Compute stats
+  const todayStr = now.toISOString().slice(0,10);
+  let uploadCount=0, streak=0, streakActive=true;
+  for(let d=daysInMonth;d>=1;d--){
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(dayMap[ds]) uploadCount++;
+    if(streakActive){
+      if(ds<=todayStr){
+        if(dayMap[ds]) streak++;
+        else if(ds<todayStr) streakActive=false;
+      }
+    }
+  }
+  const consistency = Math.round((uploadCount/Math.min(now.getDate(),daysInMonth))*100);
+  const score = Math.min(100, Math.round(consistency*0.6 + Math.min(streak*10,40)));
+  const scoreCol = score>=80?'#22c55e':score>=50?'#f59e0b':'#ef4444';
+  const scoreLabel = score>=80?'Excellent':score>=50?'Good':'Needs Work';
+
+  // Build calendar grid cells
+  const cells = [];
+  for(let i=0;i<startOffset;i++) cells.push(null); // empty padding
+  for(let d=1;d<=daysInMonth;d++){
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entry = dayMap[ds];
+    const isToday = ds===todayStr;
+    const isFuture = ds>todayStr;
+    cells.push({d, ds, entry, isToday, isFuture});
+  }
+
+  // Color per cell
+  function cellColor(cell){
+    if(!cell) return 'transparent';
+    if(cell.isFuture) return 'rgba(148,163,184,.12)';
+    if(cell.entry) return cell.entry.risk==='high'?'#ef4444':'#22c55e';
+    return '#f59e0b';
+  }
+
+  // Build rows (weeks)
+  const rows=[];
+  for(let i=0;i<cells.length;i+=7) rows.push(cells.slice(i,i+7));
+
+  const DAY_LABELS=['M','T','W','T','F','S','S'];
+
+  return `<div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:14px 16px">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:12px;font-weight:800;color:var(--gray-900)">Business Discipline</div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:1px">Upload consistency</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:900;color:${scoreCol};line-height:1">${score}</div>
+        <div style="font-size:9px;font-weight:700;color:${scoreCol}">${scoreLabel}</div>
+      </div>
+    </div>
+
+    <!-- Month label -->
+    <div style="font-size:10px;font-weight:700;color:var(--gray-500);margin-bottom:6px">${monthName}</div>
+
+    <!-- Day headers -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px">
+      ${DAY_LABELS.map(l=>`<div style="text-align:center;font-size:8.5px;font-weight:700;color:var(--gray-400)">${l}</div>`).join('')}
+    </div>
+
+    <!-- Calendar grid -->
+    ${rows.map(row=>`
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">
+      ${row.map(cell=>{
+        if(!cell) return `<div></div>`;
+        const col=cellColor(cell);
+        const border=cell.isToday?`2px solid ${scoreCol}`:'2px solid transparent';
+        const title=cell.entry?`title="Uploaded · ${cell.entry.buyers||''} buyers"`:cell.isFuture?'':' title="No upload"';
+        return `<div ${title} style="width:100%;aspect-ratio:1;background:${col};border-radius:3px;border:${border};cursor:${cell.entry?'default':'default'};position:relative">
+          ${cell.isToday?`<div style="position:absolute;inset:0;border-radius:2px;background:rgba(255,255,255,.25)"></div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`).join('')}
+
+    <!-- Legend -->
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+      ${[['#22c55e','Uploaded'],['#f59e0b','No upload'],['#ef4444','High risk']].map(([c,l])=>
+        `<div style="display:flex;align-items:center;gap:4px">
+          <div style="width:8px;height:8px;border-radius:2px;background:${c}"></div>
+          <span style="font-size:9px;color:var(--gray-400)">${l}</span>
+        </div>`).join('')}
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
+      <div style="background:var(--gray-50);border-radius:7px;padding:7px 10px">
+        <div style="font-size:14px;font-weight:800;color:var(--gray-900)">${consistency}%</div>
+        <div style="font-size:9.5px;color:var(--gray-400);margin-top:1px">This month</div>
+      </div>
+      <div style="background:var(--gray-50);border-radius:7px;padding:7px 10px">
+        <div style="font-size:14px;font-weight:800;color:${streak>=5?'#22c55e':streak>=2?'#f59e0b':'#ef4444'}">${streak}d 🔥</div>
+        <div style="font-size:9.5px;color:var(--gray-400);margin-top:1px">Streak</div>
+      </div>
+    </div>
+  </div>`;
+}
+
 window.cfiqToggleGroup=function(id){
   const el=document.getElementById(id);
   if(el) el.classList.toggle('ng-closed');
@@ -12585,6 +12706,12 @@ async function cfiqOnboardProcess(){
     if(!res.ok) throw new Error(data.message||'Import failed');
     window._OB = data;
     localStorage.setItem('cfiq_ob', JSON.stringify(data));
+    // Track upload date for Business Discipline Score
+    const _today = new Date().toISOString().slice(0,10);
+    const _riskLevel = (data.summary?.highRiskBuyers||0) > 3 ? 'high' : 'low';
+    const _dates = JSON.parse(localStorage.getItem('cfiq_upload_log')||'[]');
+    if(!_dates.find(d=>d.date===_today)) _dates.push({date:_today, risk:_riskLevel, buyers:data.summary?.buyersAnalyzed||0});
+    localStorage.setItem('cfiq_upload_log', JSON.stringify(_dates.slice(-90)));
     await initDB();
     // Force all pages to re-render with fresh DB data
     App.onStateChange();
