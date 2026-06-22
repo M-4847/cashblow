@@ -5761,7 +5761,7 @@ function _renderBusinessDashboard(){
           <span style="font-size:13px;font-weight:800;color:var(--gray-900)">Top Cash Drainers</span>
           <span style="font-size:10px;color:var(--gray-400)">· sorted by delay</span>
         </div>
-        <button onclick="AppState.set({page:'buyerRiskProfiles'});App.onStateChange()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700">View All →</button>
+        <button onclick="AppState.set({page:'allDrainers'});App.onStateChange()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700">View All →</button>
       </div>
       <table style="width:100%;border-collapse:collapse">
         <thead><tr style="background:var(--gray-50)">
@@ -11944,6 +11944,165 @@ window.initCashExposureMap = function(){
   window._cemRO.observe(wrap);
 };
 
+function renderAllDrainers(){
+  const buyers = DB.buyers||[];
+  const invoices = DB.invoices||[];
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Build invoice totals per buyer (same logic as dashboard)
+  const invTotalByBuyer={}, overdueByBuyer={};
+  invoices.forEach(i=>{
+    invTotalByBuyer[i.buyerId]=(invTotalByBuyer[i.buyerId]||0)+i.amount;
+    if(!i.paidDate&&i.status!=='Paid'&&i.dueDate&&new Date(i.dueDate)<today)
+      overdueByBuyer[i.buyerId]=(overdueByBuyer[i.buyerId]||0)+1;
+  });
+  const effExp=b=>(b.currentExposure||0)>0?(b.currentExposure||0):(invTotalByBuyer[b.id]||0);
+  const grandTotal=buyers.reduce((s,b)=>s+effExp(b),0);
+
+  const classifyRisk=b=>b.riskScore<45?'High':b.riskScore<70?'Medium':'Low';
+  const riskCol=r=>r==='High'?'#ef4444':r==='Medium'?'#f97316':'#10b981';
+  const fmt=v=>v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1e3?'₹'+(v/1e3).toFixed(0)+'K':'₹'+Math.round(v);
+  const contribFmt=c=>c<0.1?'<0.1%':c+'%';
+
+  // State
+  const st=window._adState=window._adState||{sort:'delay',dir:-1,search:'',risk:'All'};
+
+  // Build rows
+  let rows=buyers.map(b=>{
+    const exp=effExp(b);
+    const contrib=grandTotal>0?Math.round((exp/grandTotal)*1000)/10:0;
+    const overdueInvCount=overdueByBuyer[b.id]||0;
+    return{...b,_exp:exp,contrib,overdueInvCount};
+  }).filter(b=>b._exp>0||(b.avgDelay||0)>0);
+
+  // Apply risk filter
+  if(st.risk!=='All') rows=rows.filter(b=>classifyRisk(b)===st.risk);
+
+  // Apply search
+  if(st.search){
+    const q=st.search.toLowerCase();
+    rows=rows.filter(b=>b.name.toLowerCase().includes(q)||(b.sector||b.industry||'').toLowerCase().includes(q));
+  }
+
+  // Sort
+  rows.sort((a,b)=>{
+    const v=st.sort==='delay'?(b.avgDelay||0)-(a.avgDelay||0)
+      :st.sort==='exposure'?b._exp-a._exp
+      :st.sort==='contrib'?b.contrib-a.contrib
+      :st.sort==='risk'?(b.riskScore||50)-(a.riskScore||50)
+      :st.sort==='name'?a.name.localeCompare(b.name):0;
+    return st.dir*v;
+  });
+
+  const totalOverdueInv=rows.reduce((s,b)=>s+(b.overdueInvCount||0),0);
+  const totalExp=rows.reduce((s,b)=>s+b._exp,0);
+
+  function sortBtn(col,label){
+    const active=st.sort===col;
+    const arrow=active?(st.dir===-1?'↓':'↑'):'';
+    return `<th onclick="window._adState.sort='${col}';window._adState.dir=window._adState.sort==='${col}'?window._adState.dir*-1:-1;window._adState.sort='${col}';AppState.set({page:'allDrainers'})" style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:${active?'#6366f1':'var(--gray-400)'};text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;cursor:pointer;user-select:none">${label} ${arrow}</th>`;
+  }
+
+  return `<div class="page-wrap" style="max-width:none;padding:20px 24px">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <button onclick="AppState.set({page:'dashboard'});App.onStateChange()" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gray-500);background:none;border:none;cursor:pointer;margin-bottom:4px">
+        <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5" stroke-linecap="round"/></svg>Back to Dashboard
+      </button>
+      <h1 style="font-size:20px;font-weight:900;color:var(--gray-900);margin:0;display:flex;align-items:center;gap:8px">
+        🚨 All Cash Drainers
+        <span style="font-size:13px;font-weight:600;color:var(--gray-400)">${rows.length} buyers · ${fmt(totalExp)} exposure · ${totalOverdueInv} overdue invoices</span>
+      </h1>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <!-- Search -->
+      <input type="text" placeholder="Search buyer or sector…" value="${st.search}"
+        oninput="window._adState.search=this.value;AppState.set({page:'allDrainers'})"
+        style="padding:7px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:12px;width:200px;outline:none;color:var(--gray-900)">
+      <!-- Risk filter -->
+      ${['All','High','Medium','Low'].map(r=>`
+        <button onclick="window._adState.risk='${r}';AppState.set({page:'allDrainers'})"
+          style="padding:5px 12px;border:1px solid ${st.risk===r?riskCol(r)||'#6366f1':'var(--gray-200)'};border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:${st.risk===r?(riskCol(r)||'#6366f1')+'18':'var(--white)'};color:${st.risk===r?riskCol(r)||'#6366f1':'var(--gray-500)'}">${r}</button>`).join('')}
+    </div>
+  </div>
+
+  <!-- Summary KPIs -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+    ${[
+      {l:'Total Exposure',v:fmt(totalExp),c:'#6366f1'},
+      {l:'Overdue Invoices',v:totalOverdueInv,c:'#ef4444'},
+      {l:'High Risk Buyers',v:rows.filter(b=>classifyRisk(b)==='High').length,c:'#f97316'},
+      {l:'Avg Delay',v:Math.round(rows.reduce((s,b)=>s+(b.avgDelay||0),0)/Math.max(rows.length,1))+'d',c:'#f59e0b'},
+    ].map(k=>`<div style="background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:12px 16px">
+      <div style="font-size:20px;font-weight:900;color:${k.c}">${k.v}</div>
+      <div style="font-size:11px;color:var(--gray-500);margin-top:3px">${k.l}</div>
+    </div>`).join('')}
+  </div>
+
+  <!-- Main table -->
+  <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:var(--gray-50);border-bottom:2px solid var(--gray-100)">
+        <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-400);width:40px">#</th>
+        ${sortBtn('name','Buyer')}
+        ${sortBtn('exposure','Exposure')}
+        ${sortBtn('delay','Avg Delay')}
+        <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">Overdue Inv.</th>
+        ${sortBtn('contrib','Contribution')}
+        ${sortBtn('risk','Risk Score')}
+        <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">Risk</th>
+      </tr></thead>
+      <tbody>
+        ${rows.length ? rows.map((b,i)=>{
+          const risk=classifyRisk(b),rc=riskCol(risk),rb=risk==='High'?'rgba(239,68,68,.03)':'transparent';
+          const cc=b.contrib>=15?'#ef4444':b.contrib>=10?'#f97316':b.contrib>=5?'#f59e0b':'#6366f1';
+          const delayCol=(b.avgDelay||0)>60?'#ef4444':(b.avgDelay||0)>30?'#f97316':'#10b981';
+          return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer;transition:background .12s"
+            onmouseover="this.style.background='${risk==='High'?'rgba(239,68,68,.06)':'rgba(99,102,241,.04)'}'"
+            onmouseout="this.style.background='${rb}'"
+            onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
+            <td style="padding:9px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--gray-400)">${i+1}</td>
+            <td style="padding:9px 12px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:28px;height:28px;border-radius:7px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:${rc};flex-shrink:0">${(b.name||'?')[0]}</div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--gray-900)">${b.name}</div>
+                  <div style="font-size:10px;color:var(--gray-400)">${b.sector||b.industry||b.cluster||'—'}</div>
+                </div>
+              </div>
+            </td>
+            <td style="padding:9px 12px;font-size:13px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
+            <td style="padding:9px 12px">
+              <span style="font-size:13px;font-weight:700;color:${delayCol}">${b.avgDelay||0} days</span>
+            </td>
+            <td style="padding:9px 12px">
+              ${b.overdueInvCount>0
+                ?`<span style="background:#fef2f2;color:#ef4444;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700">${b.overdueInvCount} overdue</span>`
+                :`<span style="color:#10b981;font-size:11px;font-weight:600">✓ None</span>`}
+            </td>
+            <td style="padding:9px 12px">
+              <span style="background:${cc}18;color:${cc};border-radius:100px;padding:3px 10px;font-size:11px;font-weight:800">${contribFmt(b.contrib)}</span>
+            </td>
+            <td style="padding:9px 12px;font-size:12px;font-weight:700;color:var(--gray-600)">${b.riskScore||'—'}/100</td>
+            <td style="padding:9px 12px">
+              <span style="background:${rc}18;color:${rc};border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:800;letter-spacing:.04em">${risk}</span>
+            </td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="8" style="padding:48px;text-align:center;color:var(--gray-400);font-size:14px">No buyers found</td></tr>`}
+      </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div style="padding:10px 16px;border-top:1px solid var(--gray-100);background:var(--gray-50);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11.5px;color:var(--gray-500)">${rows.length} buyers · total exposure <strong style="color:var(--gray-800)">${fmt(totalExp)}</strong></span>
+      <span style="font-size:11.5px;color:${totalOverdueInv>0?'#ef4444':'#10b981'};font-weight:700">${totalOverdueInv} overdue invoice${totalOverdueInv!==1?'s':''}</span>
+    </div>
+  </div>
+</div>`;
+}
+
 function renderCashExposureMap(){
   var inrFmt = function(v){return v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v;};
   var PAL = window.CEM_PALETTE;
@@ -12036,6 +12195,7 @@ function _placeholderPage(title,subtitle,icon){
     collections:()=>_placeholderPage('Collections','Track collection activities, follow-ups and recovery status','⏱️'),
     tradeRelationship:()=>_placeholderPage('Trade Relationship','Strength, tenure and transaction history with each buyer','🤝'),
     exposureAnalysis:()=>renderCashExposureMap(),
+    allDrainers:()=>renderAllDrainers(),
     buyerComparison:()=>_placeholderPage('Buyer Comparison','Side-by-side comparison of risk, terms and payment metrics','🔍'),
     riskReport:()=>_placeholderPage('Risk Report','Consolidated risk scoring, tier changes and early warnings','⚠️'),
     financingReadiness:()=>_placeholderPage('Financing Readiness','Invoice financing eligibility, anchor scores and lender readiness','🏦'),
