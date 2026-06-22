@@ -2322,7 +2322,7 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
     <div style="margin:8px 8px 2px">
       <button class="nav-item nav-standalone" data-page="dashboard" style="margin:0;width:100%;font-weight:600;font-size:12.5px">
         <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5z"/></svg></span>
-        Intelligence Hub
+        Dashboard
       </button>
     </div>
 
@@ -5724,14 +5724,13 @@ function _renderBusinessDashboard(){
   <!-- Header bar -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <div>
-      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:3px">Business Intelligence</div>
       <div style="font-size:20px;font-weight:900;color:var(--gray-900)">Cash Flow Dashboard</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <span style="font-size:11.5px;color:var(--gray-400)">${totalBuyers} buyers · ${totalInvoices} invoices loaded</span>
       <button onclick="cfiqShowOnboarding()" style="display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(99,102,241,.3)">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Upload Excel
+        Upload
       </button>
     </div>
   </div>
@@ -5740,12 +5739,14 @@ function _renderBusinessDashboard(){
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px">
     ${kpis.map(k=>`
     <div style="background:var(--white);border:1px solid var(--gray-100);border-top:3px solid ${k.border};border-radius:10px;padding:12px 14px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div style="background:${k.bg};border-radius:8px;padding:6px">${k.icon.replace('width="22" height="22"','width="16" height="16"')}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="background:${k.bg};border-radius:8px;padding:6px;flex-shrink:0">${k.icon.replace('width="22" height="22"','width="16" height="16"')}</div>
+          <div style="font-size:20px;font-weight:900;color:${k.col};letter-spacing:-.5px;line-height:1">${k.val}</div>
+        </div>
         ${k.pill?`<span style="background:${k.pillCol}18;color:${k.pillCol};border-radius:100px;padding:2px 7px;font-size:9px;font-weight:800">${k.pill}</span>`:''}
       </div>
-      <div style="font-size:20px;font-weight:900;color:${k.col};letter-spacing:-.5px;line-height:1">${k.val}</div>
-      <div style="font-size:10.5px;font-weight:600;color:var(--gray-500);margin-top:4px">${k.label}</div>
+      <div style="font-size:10.5px;font-weight:600;color:var(--gray-500)">${k.label}</div>
       <div style="font-size:10px;color:var(--gray-400);margin-top:1px">${k.sub}</div>
     </div>`).join('')}
   </div>
