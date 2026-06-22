@@ -5846,7 +5846,7 @@ function _renderBusinessDashboard(){
 
           return `<table style="width:100%;border-collapse:collapse">
             <thead><tr style="background:#f0fdf4">
-              ${['#','Buyer','Exposure','Paid Before/On','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
+              ${['#','Buyer','Exposure','Avg. Early','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
             </tr></thead>
             <tbody>
               ${punctual.map((b,i)=>{
