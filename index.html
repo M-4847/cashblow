@@ -5754,48 +5754,98 @@ function _renderBusinessDashboard(){
   <!-- ── Main 4-column grid ── -->
   <div style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:start">
 
-    <!-- COL 1: Top Cash Drainers -->
+    <!-- COL 1: Top Delayed / Top Punctual Buyers (dual tab) -->
     <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
-      <div style="padding:10px 14px 8px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="font-size:14px">🚨</span>
-          <span style="font-size:13px;font-weight:800;color:var(--gray-900)">Top Cash Drainers</span>
-          <span style="font-size:10px;color:var(--gray-400)">· sorted by delay</span>
+
+      <!-- Tab toggle bar -->
+      <div style="padding:10px 12px 8px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="background:#f1f5f9;border-radius:10px;padding:3px;display:flex;gap:2px;flex:1;max-width:340px">
+          <button id="tdb-tab-delayed" onclick="window._tdbTab='delayed';window._tdbSwitch()"
+            style="flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;box-shadow:0 2px 6px rgba(239,68,68,.3)">
+            🚨 Top Delayed
+          </button>
+          <button id="tdb-tab-punctual" onclick="window._tdbTab='punctual';window._tdbSwitch()"
+            style="flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--gray-500)">
+            ✅ Top Punctual
+          </button>
         </div>
-        <button onclick="AppState.set({page:'allDrainers'});App.onStateChange()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700">View All →</button>
-      </div>
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr style="background:var(--gray-50)">
-          ${['#','Buyer','Exposure','Delay','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
-        </tr></thead>
-        <tbody>
-          ${drainers.slice(0,5).map((b,i)=>{
-            const risk=classifyRisk(b),rc=riskCol(risk),rb=risk==='High'?'rgba(239,68,68,.04)':'transparent',cc=contribCol(b.contrib);
-            return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer"
-              onmouseover="this.style.background='${risk==='High'?'rgba(239,68,68,.07)':'rgba(99,102,241,.04)'}'"
-              onmouseout="this.style.background='${rb}'"
-              onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-              <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
-              <td style="padding:7px 10px">
-                <div style="display:flex;align-items:center;gap:7px">
-                  <div style="width:20px;height:20px;border-radius:5px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:${rc};flex-shrink:0">${(b.name||'?')[0]}</div>
-                  <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${b.name}</div>
-                </div>
-              </td>
-              <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
-              <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${(b.avgDelay||0)>60?'#ef4444':(b.avgDelay||0)>30?'#f97316':'#10b981'};white-space:nowrap">${b.avgDelay||0}d</td>
-              <td style="padding:7px 10px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:2px 7px;font-size:10px;font-weight:800">${contribFmt(b.contrib)}</span></td>
-              <td style="padding:7px 10px"><span style="background:${rc}18;color:${rc};border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${risk}</span></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-      <div style="padding:8px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:10.5px;color:var(--gray-500)">Top 5 of ${totalBuyers} buyers · <strong style="color:var(--gray-700)">${fmt(totalDrainerExp)}</strong></span>
-        <span style="font-size:10px;color:var(--gray-400)">${overdueCount} overdue invoices</span>
+        <button id="tdb-view-all" onclick="AppState.set({page:'allDrainers'});App.onStateChange()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700;white-space:nowrap">View All →</button>
       </div>
 
-      <!-- Portfolio stats below drainers -->
+      <!-- Delayed buyers panel -->
+      <div id="tdb-panel-delayed" style="transition:opacity .25s,transform .25s;opacity:1;transform:translateX(0)">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#fff5f5">
+            ${['#','Buyer','Exposure','Delay','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
+          </tr></thead>
+          <tbody>
+            ${drainers.slice(0,5).map((b,i)=>{
+              const risk=classifyRisk(b),rc=riskCol(risk),rb=risk==='High'?'rgba(239,68,68,.04)':'transparent',cc=contribCol(b.contrib);
+              return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer"
+                onmouseover="this.style.background='rgba(239,68,68,.07)'"
+                onmouseout="this.style.background='${rb}'"
+                onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
+                <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
+                <td style="padding:7px 10px">
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <div style="width:20px;height:20px;border-radius:5px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:${rc};flex-shrink:0">${(b.name||'?')[0]}</div>
+                    <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
+                  </div>
+                </td>
+                <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
+                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#ef4444;white-space:nowrap">${b.avgDelay||0}d</td>
+                <td style="padding:7px 10px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:2px 7px;font-size:10px;font-weight:800">${contribFmt(b.contrib)}</span></td>
+                <td style="padding:7px 10px"><span style="background:${rc}18;color:${rc};border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${risk}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        <div style="padding:7px 14px;border-top:1px solid var(--gray-100);background:#fff5f5;display:flex;justify-content:space-between">
+          <span style="font-size:10px;color:#f87171;font-weight:600">Top 5 of ${totalBuyers} buyers · ${fmt(totalDrainerExp)}</span>
+          <span style="font-size:10px;color:#ef4444;font-weight:700">${overdueCount} overdue invoices</span>
+        </div>
+      </div>
+
+      <!-- Punctual buyers panel (hidden initially) -->
+      <div id="tdb-panel-punctual" style="display:none;transition:opacity .25s,transform .25s;opacity:0;transform:translateX(20px)">
+        ${(()=>{
+          const punctual=[...buyers]
+            .filter(b=>(b.onTimePct||0)>=80||(b.avgDelay||0)<=5)
+            .map(b=>({...b,_exp:effExp(b),contrib:grandTotal>0?Math.round((effExp(b)/grandTotal)*1000)/10:0}))
+            .sort((a,b2)=>(b2.onTimePct||0)-(a.onTimePct||0)||(a.avgDelay||0)-(b2.avgDelay||0))
+            .slice(0,5);
+          if(!punctual.length) return `<div style="padding:32px;text-align:center;color:var(--gray-400);font-size:12px">No punctual buyers found yet</div>`;
+          return `<table style="width:100%;border-collapse:collapse">
+            <thead><tr style="background:#f0fdf4">
+              ${['#','Buyer','Exposure','On-Time','Delay','Score'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#22c55e;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
+            </tr></thead>
+            <tbody>
+              ${punctual.map((b,i)=>`<tr style="border-top:1px solid var(--gray-100);cursor:pointer"
+                onmouseover="this.style.background='rgba(34,197,94,.06)'"
+                onmouseout="this.style.background='transparent'"
+                onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
+                <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
+                <td style="padding:7px 10px">
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <div style="width:20px;height:20px;border-radius:5px;background:#22c55e18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#22c55e;flex-shrink:0">${(b.name||'?')[0]}</div>
+                    <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
+                  </div>
+                </td>
+                <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
+                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#22c55e;white-space:nowrap">${b.onTimePct||100}%</td>
+                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${(b.avgDelay||0)===0?'#22c55e':'#10b981'};white-space:nowrap">${b.avgDelay||0}d</td>
+                <td style="padding:7px 10px"><span style="background:#22c55e18;color:#22c55e;border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${b.riskScore||100}/100</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+          <div style="padding:7px 14px;border-top:1px solid var(--gray-100);background:#f0fdf4;display:flex;justify-content:space-between">
+            <span style="font-size:10px;color:#22c55e;font-weight:600">Top ${punctual.length} punctual buyers</span>
+            <span style="font-size:10px;color:#16a34a;font-weight:700">✓ Reliable payers</span>
+          </div>`;
+        })()}
+      </div>
+
+      <!-- Portfolio Metrics (always visible) -->
       <div style="padding:10px 14px;border-top:1px solid var(--gray-100)">
         <div style="font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Portfolio Metrics</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
@@ -5811,6 +5861,7 @@ function _renderBusinessDashboard(){
         </div>
       </div>
     </div>
+
 
     <!-- COL 2: Recommended Actions (collapsible) -->
     <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
@@ -11004,6 +11055,33 @@ function renderDisciplineScore(){
     </div>
   </div>`;
 }
+
+/* ── Top Delayed / Punctual tab switcher ── */
+window._tdbTab = 'delayed';
+window._tdbSwitch = function(){
+  var t=window._tdbTab;
+  var dp=document.getElementById('tdb-panel-delayed');
+  var pp=document.getElementById('tdb-panel-punctual');
+  var td=document.getElementById('tdb-tab-delayed');
+  var tp=document.getElementById('tdb-tab-punctual');
+  var va=document.getElementById('tdb-view-all');
+  if(!dp||!pp) return;
+  if(t==='delayed'){
+    pp.style.display='none'; dp.style.display='';
+    dp.style.opacity='0'; dp.style.transform='translateX(-12px)';
+    requestAnimationFrame(function(){ dp.style.opacity='1'; dp.style.transform='translateX(0)'; });
+    td.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;box-shadow:0 2px 6px rgba(239,68,68,.3)';
+    tp.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--gray-500)';
+    if(va) va.style.display='';
+  } else {
+    dp.style.display='none'; pp.style.display='';
+    pp.style.opacity='0'; pp.style.transform='translateX(12px)';
+    requestAnimationFrame(function(){ pp.style.opacity='1'; pp.style.transform='translateX(0)'; });
+    tp.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 2px 6px rgba(34,197,94,.3)';
+    td.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--gray-500)';
+    if(va) va.style.display='none';
+  }
+};
 
 window.cfiqToggleGroup=function(id){
   const el=document.getElementById(id);
