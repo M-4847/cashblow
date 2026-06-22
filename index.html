@@ -5812,16 +5812,18 @@ function _renderBusinessDashboard(){
       </div>
     </div>
 
-    <!-- COL 2: Recommended Actions -->
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
-      <div style="padding:10px 14px 8px;border-bottom:1px solid var(--gray-100)">
+    <!-- COL 2: Recommended Actions (collapsible) -->
+    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:10px 14px 8px;border-bottom:1px solid var(--gray-100);flex-shrink:0">
         <div style="font-size:13px;font-weight:800;color:var(--gray-900)">Recommended Actions</div>
         <div style="font-size:10px;color:var(--gray-400);margin-top:1px">Priority follow-ups</div>
       </div>
-      <div style="padding:8px;display:flex;flex-direction:column;gap:6px">
-        ${drainers.filter(b=>classifyRisk(b)!=='Low').slice(0,5).map(b=>{
+
+      <!-- Cards list — collapsed by default (shows 2) -->
+      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:6px;overflow:hidden;max-height:220px;transition:max-height .35s cubic-bezier(.4,0,.2,1)">
+        ${drainers.filter(b=>classifyRisk(b)!=='Low').map(b=>{
           const risk=classifyRisk(b),rc=riskCol(risk),acts=actionMap[risk]||actionMap['Medium'];
-          return `<div style="border:1px solid ${rc}25;border-left:3px solid ${rc};border-radius:8px;padding:8px 10px;background:${rc}05">
+          return `<div style="border:1px solid ${rc}25;border-left:3px solid ${rc};border-radius:8px;padding:8px 10px;background:${rc}05;flex-shrink:0">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
               <div style="font-size:11px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${b.name}</div>
               <span style="background:${rc}18;color:${rc};border-radius:100px;padding:1px 6px;font-size:8.5px;font-weight:800;flex-shrink:0">${risk}</span>
@@ -5833,6 +5835,30 @@ function _renderBusinessDashboard(){
             </div>`).join('')}
           </div>`;
         }).join('')}
+      </div>
+
+      <!-- Fade overlay + toggle button -->
+      <div style="position:relative;flex-shrink:0">
+        <div id="rec-actions-fade" style="height:28px;background:linear-gradient(to bottom,rgba(255,255,255,0),var(--white));margin-top:-28px;pointer-events:none;position:relative;z-index:1"></div>
+        <div style="padding:6px 10px 8px;display:flex;justify-content:flex-end;border-top:1px solid var(--gray-100)">
+          <button id="rec-actions-btn" onclick="(function(){
+            const list=document.getElementById('rec-actions-list');
+            const fade=document.getElementById('rec-actions-fade');
+            const btn=document.getElementById('rec-actions-btn');
+            const expanded=list.style.maxHeight==='none'||parseInt(list.style.maxHeight)>400;
+            if(expanded){
+              list.style.maxHeight='220px';
+              fade.style.display='block';
+              btn.textContent='+ View More';
+            } else {
+              list.style.maxHeight=list.scrollHeight+'px';
+              fade.style.display='none';
+              btn.textContent='− View Less';
+            }
+          })()" style="font-size:10.5px;font-weight:700;color:#6366f1;background:none;border:none;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:3px">
+            + View More
+          </button>
+        </div>
       </div>
     </div>
 
