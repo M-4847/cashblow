@@ -8,21 +8,26 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --blue-700:#1d4ed8;--blue-600:#2563eb;--blue-500:#3b82f6;--blue-400:#60a5fa;
-  --blue-100:#dbeafe;--blue-50:#eff6ff;
-  --green-700:#15803d;--green-600:#16a34a;--green-100:#dcfce7;--green-50:#f0fdf4;
-  --red-700:#b91c1c;--red-600:#dc2626;--red-100:#fee2e2;--red-50:#fef2f2;
-  --amber-600:#d97706;--amber-100:#fef3c7;--amber-50:#fffbeb;
-  --orange-600:#ea580c;--orange-100:#ffedd5;--orange-50:#fff7ed;
-  --purple-600:#7c3aed;--purple-100:#ede9fe;
-  --gray-900:#0f172a;--gray-800:#1e293b;--gray-700:#334155;--gray-600:#475569;
-  --gray-500:#64748b;--gray-400:#94a3b8;--gray-300:#cbd5e1;--gray-200:#e2e8f0;
-  --gray-100:#f1f5f9;--gray-50:#f8fafc;--white:#ffffff;
+  /* Stripe Design System */
+  --stripe-primary:#635BFF;--stripe-primary-dark:#5A54E8;--stripe-primary-light:#7A73FF;
+  --stripe-text:#0A2540;--stripe-text-muted:#6B7280;--stripe-border:#E6EBF1;
+  --stripe-bg:#F6F9FC;--stripe-card:#FFFFFF;
+  /* Legacy aliases (kept for component compatibility) */
+  --blue-700:#1d4ed8;--blue-600:#635BFF;--blue-500:#7A73FF;--blue-400:#9B97FF;
+  --blue-100:#EEF2FF;--blue-50:#F5F3FF;
+  --green-700:#15803d;--green-600:#16a34a;--green-100:#D1FAE5;--green-50:#ECFDF5;
+  --red-700:#b91c1c;--red-600:#EF4444;--red-100:#FEE2E2;--red-50:#FEF2F2;
+  --amber-600:#F59E0B;--amber-100:#FEF3C7;--amber-50:#FFFBEB;
+  --orange-600:#F97316;--orange-100:#FFEDD5;--orange-50:#FFF7ED;
+  --purple-600:#635BFF;--purple-100:#EEF2FF;
+  --gray-900:#0A2540;--gray-800:#1e293b;--gray-700:#334155;--gray-600:#6B7280;
+  --gray-500:#6B7280;--gray-400:#9CA3AF;--gray-300:#D1D5DB;--gray-200:#E6EBF1;
+  --gray-100:#F6F9FC;--gray-50:#F9FAFB;--white:#ffffff;
   --sidebar-w:232px;--topbar-h:56px;
-  --r-sm:6px;--r-md:10px;--r-lg:14px;
-  --sh-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
-  --sh-md:0 4px 12px rgba(15,23,42,.08),0 1px 3px rgba(15,23,42,.05);
-  --sh-lg:0 10px 30px rgba(15,23,42,.10),0 2px 6px rgba(15,23,42,.06);
+  --r-sm:8px;--r-md:12px;--r-lg:16px;
+  --sh-sm:0 1px 4px rgba(10,37,64,.06),0 1px 2px rgba(10,37,64,.04);
+  --sh-md:0 4px 16px rgba(10,37,64,.08),0 1px 4px rgba(10,37,64,.05);
+  --sh-lg:0 12px 32px rgba(10,37,64,.10),0 2px 8px rgba(10,37,64,.06);
 }
 /* -- DARK MODE -- */
 [data-theme="dark"]{
@@ -80,7 +85,7 @@
 [data-theme="dark"] .ndot{border-color:var(--white)}
 [data-theme="dark"] canvas{filter:none}
 
-html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--stripe-bg);color:var(--stripe-text);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
 
 /* -- SIDEBAR -- */
 /* ═══ DARK NAVY SIDEBAR — Money.ex style ═══ */
@@ -102,12 +107,12 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 .nav-item:hover .ni{opacity:.9}
 .ni-wrap{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:7px;flex-shrink:0;transition:background .15s}
 .ni{width:14px;height:14px;flex-shrink:0;transition:all .15s;opacity:.5}
-/* All active states — uniform blue */
+/* All active states — Stripe indigo gradient */
 .nav-item.active,.ng-dash .nav-item.active,.nav-standalone.active,
 .ng-decision .nav-item.active,.ng-receivables .nav-item.active,
 .ng-buyers .nav-item.active,.ng-risk .nav-item.active{
-  background:var(--sidebar-active);color:#fff;font-weight:600;
-  box-shadow:0 4px 12px rgba(59,130,246,.3)}
+  background:linear-gradient(135deg,#635BFF,#7A73FF);color:#fff;font-weight:600;
+  box-shadow:0 4px 14px rgba(99,91,255,.35)}
 .nav-item.active .ni,.nav-item.active .ni-wrap .ni{opacity:1;color:#fff!important}
 .nav-item.active .ni-wrap{background:rgba(255,255,255,.15)}
 /* All hover states — uniform subtle */
@@ -272,7 +277,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 [data-theme='dark'] .so-cancel:hover{background:var(--gray-700)}
 
 /* -- MAIN -- */
-.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;overflow-x:hidden;padding:20px 24px;background:#F8FAFC;box-sizing:border-box}
+.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;overflow-x:hidden;padding:20px 24px;background:var(--stripe-bg);box-sizing:border-box}
 .main.main-locked{overflow:hidden}
 
 /* -- BUTTONS -- */
@@ -5882,43 +5887,50 @@ function _renderBusinessDashboard(){
     ],
   };
 
-  // "Problems should shout. Everything else whispers."
+  // Stripe Design System — problems shout, everything else whispers
   const riskCol = r => r==='High'?'#EF4444':r==='Medium'?'#F59E0B':'#10B981';
   const riskBg  = r => r==='High'?'#FEF2F2':r==='Medium'?'#FFFBEB':'#F0FDF4';
   const delayCol = d => d<=30?'#10B981':d<=60?'#F59E0B':d<=90?'#F97316':'#EF4444';
+  // Stripe pill badge helper
+  const riskPill = r => `<span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.02em;background:${riskBg(r)};color:${riskCol(r)}">${r}</span>`;
 
-  // ── KPI cards ── 80% neutral, only problems in red
+  // ── Stripe-style KPI cards — accent dot, no colored border except overdue
   const kpis = [
     {
-      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#4F46E5" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 014 0" stroke-linecap="round"/><circle cx="12" cy="14" r="2" fill="#4F46E5" stroke="none"/></svg>`,
+      dot:'#635BFF',
+      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#635BFF" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="3"/><circle cx="12" cy="14" r="2" fill="#635BFF" stroke="none"/></svg>`,
       label:'Total Receivables', val:fmt(totalExp),
       sub:`${totalBuyers} buyers · ${totalInvoices} invoices`,
-      col:'#0F172A', valCol:'#4F46E5', bg:'#EEF2FF', border:'#4F46E5',
+      valCol:'#635BFF', bg:'rgba(99,91,255,.06)',
     },
     {
-      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="${healthCol}" stroke-width="1.8"><path d="M12 21C12 21 4 15 4 9a8 8 0 0116 0c0 6-8 12-8 12z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round"/></svg>`,
+      dot:healthCol,
+      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="${healthCol}" stroke-width="2"><path d="M12 21C12 21 4 15 4 9a8 8 0 0116 0c0 6-8 12-8 12z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round"/></svg>`,
       label:'Cash Health Score', val:`${healthScore}/100`,
       pill:healthLabel, pillCol:healthCol,
       sub:'Overall business health',
-      col:'#0F172A', valCol:healthCol, bg:healthScore>=70?'#ECFDF5':healthScore>=40?'#FFFBEB':'#FEF2F2', border:healthCol,
+      valCol:healthCol, bg:healthScore>=70?'rgba(16,185,129,.06)':healthScore>=40?'rgba(245,158,11,.06)':'rgba(239,68,68,.06)',
     },
     {
-      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round"/></svg>`,
-      label:'High Risk Buyers', val:`${highRiskBuyers.length}`,
+      dot:'#F59E0B',
+      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round"/></svg>`,
+      label:'High Risk Buyers', val:highRiskBuyers.length,
       sub:`${highRiskPct}% of delayed receivables`,
-      col:'#0F172A', valCol:'#B45309', bg:'#FFFBEB', border:'#F59E0B',
+      valCol:'#92400E', bg:'rgba(245,158,11,.06)',
     },
     {
-      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3" stroke-linecap="round"/></svg>`,
+      dot:'#F59E0B',
+      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3" stroke-linecap="round"/></svg>`,
       label:'Concentration Risk', val:`${concPct}%`,
       sub:'Top 3 buyers exposure',
-      col:'#0F172A', valCol:'#92400E', bg:'#FFFBEB', border:'#F59E0B',
+      valCol:'#92400E', bg:'rgba(245,158,11,.06)',
     },
     {
-      icon:`<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#EF4444" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
+      dot:'#EF4444', danger:true,
+      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#EF4444" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
       label:'Overdue Exposure', val:fmt(overdueAmtCapped),
-      sub:`${overdueRatio}% of portfolio`,
-      col:'#0F172A', valCol:'#EF4444', bg:'#FEF2F2', border:'#EF4444',
+      sub:`${overdueRatio}% of portfolio overdue`,
+      valCol:'#EF4444', bg:'rgba(239,68,68,.06)',
     },
   ];
 
@@ -5931,37 +5943,38 @@ function _renderBusinessDashboard(){
   const riskBar = (count,total,col) => total>0?`<div style="height:100%;width:${Math.round(count/total*100)}%;background:${col};border-radius:2px"></div>`:'';
 
   return `
-<div id="dash-content" style="padding:14px 18px;width:100%;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden">
+<div id="dash-content" style="padding:14px 20px;width:100%;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;font-family:'Inter',-apple-system,sans-serif">
 
-  <!-- Header bar -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+  <!-- Stripe-style header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div>
-      <div style="font-size:20px;font-weight:900;color:var(--gray-900)">Cash Flow Dashboard</div>
+      <div style="font-size:18px;font-weight:700;color:#0A2540;letter-spacing:-.02em">Cash Flow Dashboard</div>
+      <div style="font-size:11.5px;color:#6B7280;margin-top:1px;font-weight:400">${totalBuyers} buyers · ${totalInvoices} invoices loaded</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:11px;color:#94A3B8">${totalBuyers} buyers · ${totalInvoices} invoices</span>
-      <button onclick="window.addBuyerOpenWithClear()" style="display:flex;align-items:center;gap:6px;background:#fff;color:#4F46E5;border:1.5px solid #C7D2FE;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#fff'">
+      <button onclick="window.addBuyerOpenWithClear()" style="display:flex;align-items:center;gap:6px;background:#fff;color:#6B7280;border:1.5px solid #E6EBF1;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;box-shadow:0 1px 3px rgba(10,37,64,.05)" onmouseover="this.style.borderColor='#635BFF';this.style.color='#635BFF'" onmouseout="this.style.borderColor='#E6EBF1';this.style.color='#6B7280'">
         <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.5"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
         Manual Entry
       </button>
-      <button onclick="cfiqShowOnboarding()" style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#4F46E5,#6366F1);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(79,70,229,.25)">
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round"/></svg>
+      <button onclick="cfiqShowOnboarding()" style="display:flex;align-items:center;gap:6px;background:#635BFF;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(99,91,255,.35);transition:all .15s" onmouseover="this.style.background='#5A54E8'" onmouseout="this.style.background='#635BFF'">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round"/></svg>
         Upload
       </button>
     </div>
   </div>
 
-  <!-- KPI Row -->
+  <!-- KPI Row — Stripe card style: accent dot, white card, no colored border -->
   <div id="dash-kpi" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;flex-shrink:0">
     ${kpis.map(k=>`
-    <div style="background:#fff;border:1px solid #E2E8F0;border-top:3px solid ${k.border};border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="background:${k.bg};border-radius:8px;padding:7px">${k.icon}</div>
-        ${k.pill?`<span style="background:${k.pillCol}18;color:${k.pillCol};border-radius:100px;padding:2px 8px;font-size:9px;font-weight:700">${k.pill}</span>`:''}
+    <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(10,37,64,.05);position:relative;overflow:hidden;transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 4px 16px rgba(10,37,64,.1)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(10,37,64,.05)'">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${k.dot};border-radius:16px 16px 0 0;opacity:${k.danger?1:.6}"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:4px">
+        <div style="width:32px;height:32px;border-radius:10px;background:${k.bg};display:flex;align-items:center;justify-content:center">${k.icon}</div>
+        ${k.pill?`<span style="background:${k.pillCol}15;color:${k.pillCol};border-radius:20px;padding:2px 8px;font-size:9.5px;font-weight:600;letter-spacing:.02em">${k.pill}</span>`:''}
       </div>
-      <div style="font-size:22px;font-weight:700;color:${k.valCol||k.col};letter-spacing:-.5px;line-height:1;margin-bottom:4px">${k.val}</div>
-      <div style="font-size:11px;font-weight:600;color:#64748B">${k.label}</div>
-      <div style="font-size:10px;color:#94A3B8;margin-top:2px">${k.sub}</div>
+      <div style="font-size:21px;font-weight:700;color:#0A2540;letter-spacing:-.4px;line-height:1.1;margin-bottom:5px">${k.val}</div>
+      <div style="font-size:11px;font-weight:500;color:#6B7280;letter-spacing:-.01em">${k.label}</div>
+      <div style="font-size:10.5px;color:#9CA3AF;margin-top:2px">${k.sub}</div>
     </div>`).join('')}
   </div>
 
@@ -5969,41 +5982,41 @@ function _renderBusinessDashboard(){
   <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:stretch;flex:1;min-height:0;overflow:hidden">
 
     <!-- COL 1: Top Delayed / Top Punctual Buyers (dual tab) -->
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
+    <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(10,37,64,.05)">
 
-      <!-- Tab toggle bar -->
-      <div style="padding:10px 12px 8px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <div style="background:#f1f5f9;border-radius:10px;padding:3px;display:flex;gap:2px;flex:1;max-width:340px">
+      <!-- Stripe segmented control tab bar -->
+      <div style="padding:10px 14px 9px;border-bottom:1px solid #E6EBF1;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff">
+        <div style="background:#F6F9FC;border:1px solid #E6EBF1;border-radius:10px;padding:3px;display:flex;gap:1px;flex:1;max-width:300px">
           <button id="tdb-tab-delayed" onclick="window._tdbTab='delayed';window._tdbSwitch()"
-            style="flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;box-shadow:0 2px 6px rgba(239,68,68,.3)">
+            style="flex:1;padding:5px 10px;border:none;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .18s;background:#635BFF;color:#fff;box-shadow:0 2px 8px rgba(99,91,255,.3);letter-spacing:-.01em">
             Top Delayed
           </button>
           <button id="tdb-tab-punctual" onclick="window._tdbTab='punctual';window._tdbSwitch()"
-            style="flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--gray-500)">
+            style="flex:1;padding:5px 10px;border:none;border-radius:7px;font-size:11.5px;font-weight:500;cursor:pointer;transition:all .18s;background:transparent;color:#6B7280;letter-spacing:-.01em">
             Top Punctual
           </button>
         </div>
-        <button id="tdb-view-all" onclick="AppState.set({page:'allDrainers'});App.onStateChange()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700;white-space:nowrap">View All →</button>
+        <button id="tdb-view-all" onclick="AppState.set({page:'allDrainers'});App.onStateChange()" style="font-size:11px;color:#635BFF;background:none;border:none;cursor:pointer;font-weight:600;white-space:nowrap;letter-spacing:-.01em">View All →</button>
       </div>
 
       <!-- Delayed buyers panel -->
       <div id="tdb-panel-delayed" style="transition:opacity .25s,transform .25s;opacity:1;transform:translateX(0)">
         <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:#fff5f5">
-            ${['#','Buyer','Exposure','Delay','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
+          <thead><tr style="background:#F9FAFB">
+            ${['#','Buyer','Exposure','Delay','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
           </tr></thead>
           <tbody>
             ${drainers.slice(0,5).map((b,i)=>{
-              const risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#F8FAFC';
+              const risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#F9FAFB';
               const dc=delayCol(b.avgDelay||0);
-              return `<tr style="border-top:1px solid #E2E8F0;background:${rowBg};cursor:pointer;transition:background .1s"
-                onmouseover="this.style.background='#F1F5F9'"
+              return `<tr style="border-top:1px solid #E6EBF1;background:${rowBg};cursor:pointer;transition:background .12s"
+                onmouseover="this.style.background='#EEF2FF'"
                 onmouseout="this.style.background='${rowBg}'"
                 onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-                <td style="padding:8px 8px;text-align:center;font-size:10px;color:#94A3B8;font-weight:600">${i+1}</td>
+                <td style="padding:8px 8px;text-align:center;font-size:10px;color:#9CA3AF;font-weight:500">${i+1}</td>
                 <td style="padding:8px 10px">
                   <div style="display:flex;align-items:center;gap:8px">
-                    <div style="width:22px;height:22px;border-radius:6px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#4F46E5;flex-shrink:0">${(b.name||'?')[0]}</div>
+                    <div style="width:24px;height:24px;border-radius:8px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#635BFF;flex-shrink:0">${(b.name||'?')[0]}</div>
                     <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
                   </div>
                 </td>
@@ -6015,17 +6028,15 @@ function _renderBusinessDashboard(){
             }).join('')}
           </tbody>
         </table>
-        <div style="padding:7px 14px;border-top:1px solid #E2E8F0;background:#F8FAFC;display:flex;justify-content:space-between">
-          <span style="font-size:10px;color:#64748B;font-weight:600">Top 5 of ${totalBuyers} buyers · ${fmt(totalDrainerExp)}</span>
-          <span style="font-size:10px;color:${overdueCount>0?'#EF4444':'#10B981'};font-weight:700">${overdueCount} overdue invoices</span>
+        <div style="padding:8px 14px 10px;border-top:1px solid #E6EBF1;background:#F9FAFB;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:10px;color:#6B7280;font-weight:500">Top 5 of ${totalBuyers} buyers · ${fmt(totalDrainerExp)}</span>
+          <span style="font-size:10px;color:${overdueCount>0?'#EF4444':'#10B981'};font-weight:600">${overdueCount} overdue</span>
         </div>
       </div>
 
       <!-- Punctual buyers panel (hidden initially) -->
       <div id="tdb-panel-punctual" style="display:none;transition:opacity .25s,transform .25s;opacity:0;transform:translateX(20px)">
         ${(()=>{
-          /* Compute avg payment timing per buyer from real invoices:
-             negative = paid early, 0 = on due date, positive = paid late */
           const buyerTimings={};
           invoices.forEach(inv=>{
             if(!inv.paidDate||!inv.dueDate) return;
@@ -6033,165 +6044,124 @@ function _renderBusinessDashboard(){
             if(!buyerTimings[inv.buyerId]) buyerTimings[inv.buyerId]=[];
             buyerTimings[inv.buyerId].push(t);
           });
-          const avgTiming=b=>{
-            const ts=buyerTimings[b.id]||[];
-            if(!ts.length) return 0;
-            return Math.round(ts.reduce((s,t)=>s+t,0)/ts.length);
-          };
-          const timingLabel=t=>{
-            if(t<0) return {txt:Math.abs(t)+'d early',col:'#22c55e'};
-            if(t===0) return {txt:'On time',col:'#10b981'};
-            return {txt:t+'d late',col:'#f59e0b'};
-          };
-          /* Sort ALL buyers by best payment timing (most early first) */
-          const punctual=[...buyers]
-            .map(b=>{
-              const t=avgTiming(b);
-              const exp=effectiveExp(b);
-              const contrib=grandTotal>0?Math.round((exp/grandTotal)*1000)/10:0;
-              return {...b,_exp:exp,contrib,_timing:t};
-            })
-            .sort((a,b2)=>a._timing-b2._timing||(b2.onTimePct||0)-(a.onTimePct||0))
-            .slice(0,5);
-
-          const contribCol2=c=>c>=15?'#ef4444':c>=10?'#f97316':c>=5?'#f59e0b':'#6366f1';
-          const classifyRisk2=b=>b.riskScore<45?'High':b.riskScore<70?'Medium':'Low';
-          const riskCol2=r=>r==='High'?'#ef4444':r==='Medium'?'#f97316':'#10b981';
-
+          const avgTiming=b=>{const ts=buyerTimings[b.id]||[];return ts.length?Math.round(ts.reduce((s,t)=>s+t,0)/ts.length):0;};
+          const timingLabel=t=>t<0?{txt:Math.abs(t)+'d early',col:'#10B981'}:t===0?{txt:'On time',col:'#10B981'}:{txt:t+'d late',col:'#F59E0B'};
+          const punctual=[...buyers].map(b=>{const t=avgTiming(b);const exp=effectiveExp(b);return{...b,_exp:exp,contrib:grandTotal>0?Math.round((exp/grandTotal)*1000)/10:0,_timing:t};}).sort((a,b2)=>a._timing-b2._timing||(b2.onTimePct||0)-(a.onTimePct||0)).slice(0,5);
           return `<table style="width:100%;border-collapse:collapse">
-            <thead><tr style="background:#f0fdf4">
-              ${['#','Buyer','Exposure','Avg. Early','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
+            <thead><tr style="background:#F9FAFB">
+              ${['#','Buyer','Exposure','Avg. Early','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
             </tr></thead>
             <tbody>
               ${punctual.map((b,i)=>{
-                const tl=timingLabel(b._timing);
-                const risk=classifyRisk2(b),rc=riskCol2(risk);
-                const cc=contribCol2(b.contrib);
-                return `<tr style="border-top:1px solid var(--gray-100);background:rgba(34,197,94,.02);cursor:pointer"
-                  onmouseover="this.style.background='rgba(34,197,94,.07)'"
-                  onmouseout="this.style.background='rgba(34,197,94,.02)'"
+                const tl=timingLabel(b._timing),risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#F9FAFB';
+                return `<tr style="border-top:1px solid #E6EBF1;background:${rowBg};cursor:pointer;transition:background .12s"
+                  onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='${rowBg}'"
                   onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-                  <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
-                  <td style="padding:7px 10px">
-                    <div style="display:flex;align-items:center;gap:7px">
-                      <div style="width:20px;height:20px;border-radius:5px;background:#22c55e18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#22c55e;flex-shrink:0">${(b.name||'?')[0]}</div>
-                      <div>
-                        <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px">${b.name}</div>
-                        <div style="font-size:9.5px;color:var(--gray-400)">${b.sector||b.industry||''}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
-                  <td style="padding:7px 10px">
-                    <span style="display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:${tl.col}">
-                      ${b._timing<=0?'✓':''} ${tl.txt}
-                    </span>
-                  </td>
-                  <td style="padding:7px 10px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:2px 7px;font-size:10px;font-weight:800">${b.contrib<0.1?'<0.1%':b.contrib+'%'}</span></td>
-                  <td style="padding:7px 10px"><span style="background:${rc}18;color:${rc};border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${risk}</span></td>
+                  <td style="padding:8px 8px;text-align:center;font-size:10px;color:#9CA3AF;font-weight:500">${i+1}</td>
+                  <td style="padding:8px 10px"><div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:24px;height:24px;border-radius:8px;background:#ECFDF5;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#10B981">${(b.name||'?')[0]}</div>
+                    <div style="font-size:12px;font-weight:500;color:#0A2540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${b.name}</div>
+                  </div></td>
+                  <td style="padding:8px 10px;font-size:12px;font-weight:600;color:#0A2540;white-space:nowrap">${fmt(b._exp||0)}</td>
+                  <td style="padding:8px 10px"><span style="font-size:11.5px;font-weight:600;color:${tl.col}">${b._timing<=0?'✓ ':''} ${tl.txt}</span></td>
+                  <td style="padding:8px 10px"><span style="background:#EEF2FF;color:#635BFF;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600">${b.contrib<0.1?'<0.1%':b.contrib+'%'}</span></td>
+                  <td style="padding:8px 10px">${riskPill(risk)}</td>
                 </tr>`;
               }).join('')}
             </tbody>
           </table>
-          <div style="padding:7px 14px;border-top:1px solid var(--gray-100);background:#f0fdf4;display:flex;justify-content:space-between">
-            <span style="font-size:10px;color:#22c55e;font-weight:600">Top 5 of ${buyers.length} buyers · sorted by payment timing</span>
-            <span style="font-size:10px;color:#16a34a;font-weight:700">✓ Best payers first</span>
+          <div style="padding:8px 14px 10px;border-top:1px solid #E6EBF1;background:#F9FAFB;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;color:#6B7280;font-weight:500">Sorted by payment timing</span>
+            <span style="font-size:10px;color:#10B981;font-weight:600">✓ Best payers first</span>
           </div>`;
         })()}
       </div>
 
-      <!-- Portfolio Metrics -->
-      <div style="padding:10px 14px;border-top:1px solid #E2E8F0">
-        <div style="font-size:9.5px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Portfolio Metrics</div>
+      <!-- Portfolio Metrics — Stripe pastel cards -->
+      <div style="padding:10px 14px;border-top:1px solid #E6EBF1">
+        <div style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px">Portfolio Metrics</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
           ${[
-            {l:'Avg Delay',v:avgDelay+'d',c:'#4F46E5',bg:'#EEF2FF'},
-            {l:'On-Time %',v:onTimePctAvg+'%',c:'#10B981',bg:'#ECFDF5'},
-            {l:'Overdue',v:fmt(overdueAmtCapped),c:'#EF4444',bg:'#FEF2F2'},
-            {l:'Invoices',v:totalInvoices,c:'#7C3AED',bg:'#F5F3FF'},
-          ].map(m=>`<div style="background:${m.bg};border-radius:8px;padding:8px;text-align:center;border:1px solid ${m.c}18">
-            <div style="font-size:13px;font-weight:700;color:${m.c}">${m.v}</div>
-            <div style="font-size:9px;color:#64748B;margin-top:2px;font-weight:500">${m.l}</div>
+            {l:'Avg Delay',v:avgDelay+'d',c:'#635BFF',bg:'rgba(99,91,255,.07)'},
+            {l:'On-Time %',v:onTimePctAvg+'%',c:'#10B981',bg:'rgba(16,185,129,.07)'},
+            {l:'Overdue',v:fmt(overdueAmtCapped),c:'#EF4444',bg:'rgba(239,68,68,.07)'},
+            {l:'Invoices',v:totalInvoices,c:'#635BFF',bg:'rgba(99,91,255,.05)'},
+          ].map(m=>`<div style="background:${m.bg};border-radius:10px;padding:8px;text-align:center">
+            <div style="font-size:13px;font-weight:700;color:${m.c};letter-spacing:-.02em">${m.v}</div>
+            <div style="font-size:9px;color:#6B7280;margin-top:2px;font-weight:500">${m.l}</div>
           </div>`).join('')}
         </div>
       </div>
     </div>
 
 
-    <!-- COL 2: Recommended Actions (internal scroll) -->
-    <div id="dash-col2" style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:100%;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-      <div style="padding:10px 14px 8px;border-bottom:1px solid #E2E8F0;flex-shrink:0">
-        <div style="font-size:12px;font-weight:700;color:#0F172A">Recommended Actions</div>
-        <div style="font-size:10px;color:#94A3B8;margin-top:1px">Priority follow-ups</div>
+    <!-- COL 2: Recommended Actions — Stripe issue-card style -->
+    <div id="dash-col2" style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;height:100%;box-shadow:0 1px 4px rgba(10,37,64,.05)">
+      <div style="padding:12px 14px 10px;border-bottom:1px solid #E6EBF1;flex-shrink:0">
+        <div style="font-size:12px;font-weight:600;color:#0A2540;letter-spacing:-.02em">Recommended Actions</div>
+        <div style="font-size:10.5px;color:#6B7280;margin-top:1px;font-weight:400">Priority follow-ups</div>
       </div>
-
-      <!-- Cards list — full internal scroll -->
-      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:5px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#E2E8F0 transparent">
+      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#E6EBF1 transparent">
         ${drainers.filter(b=>classifyRisk(b)!=='Low').map(b=>{
           const risk=classifyRisk(b),rc=riskCol(risk),acts=actionMap[risk]||actionMap['Medium'];
-          return `<div style="background:#fff;border:1px solid #E2E8F0;border-left:3px solid ${rc};border-radius:8px;padding:8px 10px;flex-shrink:0">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
-              <div style="font-size:11px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">${b.name}</div>
-              <span style="background:${riskBg(risk)};color:${rc};border-radius:6px;padding:1px 7px;font-size:8.5px;font-weight:700;flex-shrink:0">${risk}</span>
+          return `<div style="background:#fff;border:1px solid #E6EBF1;border-left:3px solid ${rc};border-radius:10px;padding:10px 12px;flex-shrink:0;transition:box-shadow .15s;cursor:default" onmouseover="this.style.boxShadow='0 4px 12px rgba(10,37,64,.1)'" onmouseout="this.style.boxShadow='none'">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div style="font-size:11px;font-weight:600;color:#0A2540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:145px;letter-spacing:-.01em">${b.name}</div>
+              ${riskPill(risk)}
             </div>
-            <div style="font-size:9.5px;color:#64748B;margin-bottom:4px">${fmt(b._exp||0)} · ${b.avgDelay||0}d delay</div>
-            ${acts.slice(0,2).map(fn=>`<div style="display:flex;gap:4px;margin-bottom:2px">
-              <span style="color:${rc};font-size:10px;flex-shrink:0;margin-top:1px">→</span>
-              <span style="font-size:10px;color:#475569;line-height:1.4">${fn(b)}</span>
+            <div style="font-size:9.5px;color:#6B7280;margin-bottom:5px;font-weight:400">${fmt(b._exp||0)} · ${b.avgDelay||0}d delay</div>
+            ${acts.slice(0,2).map(fn=>`<div style="display:flex;gap:5px;margin-bottom:3px">
+              <div style="width:4px;height:4px;border-radius:50%;background:${rc};flex-shrink:0;margin-top:5px"></div>
+              <span style="font-size:10.5px;color:#374151;line-height:1.4;font-weight:400">${fn(b)}</span>
             </div>`).join('')}
           </div>`;
         }).join('')}
       </div>
     </div>
 
-    <!-- COL 3: Risk Breakdown + Portfolio Health -->
+    <!-- COL 3: Risk Breakdown + Portfolio Health — Stripe clean style -->
     <div id="dash-col3" style="display:flex;flex-direction:column;gap:10px">
 
-      <!-- Risk Distribution — thin bars only, no boxes -->
-      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-        <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:12px">Risk Distribution</div>
+      <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(10,37,64,.05)">
+        <div style="font-size:12px;font-weight:600;color:#0A2540;margin-bottom:14px;letter-spacing:-.02em">Risk Distribution</div>
         ${[
           {l:'High Risk',n:highCount,c:'#EF4444'},
           {l:'Medium Risk',n:medCount,c:'#F59E0B'},
           {l:'Low Risk',n:lowCount,c:'#10B981'},
         ].map(r=>`
-        <div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:10.5px;font-weight:500;color:#64748B">${r.l}</span>
-            <span style="font-size:10.5px;font-weight:700;color:#0F172A">${r.n}</span>
+        <div style="margin-bottom:11px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:10.5px;font-weight:400;color:#6B7280">${r.l}</span>
+            <span style="font-size:10.5px;font-weight:600;color:#0A2540">${r.n}</span>
           </div>
-          <div style="height:4px;background:#F1F5F9;border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${totalBuyers>0?Math.round(r.n/totalBuyers*100):0}%;background:${r.c};border-radius:2px;transition:width .6s ease"></div>
+          <div style="height:4px;background:#F6F9FC;border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${totalBuyers>0?Math.round(r.n/totalBuyers*100):0}%;background:${r.c};border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)"></div>
           </div>
         </div>`).join('')}
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #F1F5F9">
-          ${[
-            {l:'High',v:highCount,c:'#EF4444',bg:'#FEF2F2'},
-            {l:'Med',v:medCount,c:'#92400E',bg:'#FFFBEB'},
-            {l:'Low',v:lowCount,c:'#065F46',bg:'#ECFDF5'},
-          ].map(r=>`<div style="background:${r.bg};border-radius:8px;padding:7px;text-align:center">
-            <div style="font-size:17px;font-weight:700;color:${r.c}">${r.v}</div>
-            <div style="font-size:9px;color:#64748B;margin-top:1px;font-weight:500">${r.l}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid #F6F9FC">
+          ${[{l:'High',v:highCount,c:'#EF4444',bg:'#FEF2F2'},{l:'Med',v:medCount,c:'#92400E',bg:'#FFFBEB'},{l:'Low',v:lowCount,c:'#065F46',bg:'#ECFDF5'}]
+          .map(r=>`<div style="background:${r.bg};border-radius:10px;padding:8px 6px;text-align:center">
+            <div style="font-size:16px;font-weight:700;color:${r.c};letter-spacing:-.02em">${r.v}</div>
+            <div style="font-size:9px;color:#6B7280;margin-top:2px;font-weight:500">${r.l}</div>
           </div>`).join('')}
         </div>
       </div>
 
-      <!-- Portfolio Health — thin bars, muted labels -->
-      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-        <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:12px">Portfolio Health</div>
+      <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(10,37,64,.05)">
+        <div style="font-size:12px;font-weight:600;color:#0A2540;margin-bottom:14px;letter-spacing:-.02em">Portfolio Health</div>
         ${[
           {l:'Cash Health Score',v:healthScore+'/100',bar:healthScore,c:healthCol},
           {l:'On-Time Rate',v:onTimePctAvg+'%',bar:onTimePctAvg,c:'#10B981'},
           {l:'Concentration Risk',v:concPct+'%',bar:Math.min(concPct,100),c:'#F59E0B'},
           {l:'Overdue Ratio',v:overdueRatio+'%',bar:Math.min(overdueRatio,100),c:'#EF4444'},
         ].map(m=>`
-        <div style="margin-bottom:9px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-            <span style="font-size:10px;color:#64748B;font-weight:500">${m.l}</span>
-            <span style="font-size:10px;font-weight:700;color:#0F172A">${m.v}</span>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10px;color:#6B7280;font-weight:400">${m.l}</span>
+            <span style="font-size:10px;font-weight:600;color:#0A2540">${m.v}</span>
           </div>
-          <div style="height:3px;background:#F1F5F9;border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${m.bar}%;background:${m.c};border-radius:2px"></div>
+          <div style="height:4px;background:#F6F9FC;border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${m.bar}%;background:${m.c};border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)"></div>
           </div>
         </div>`).join('')}
       </div>
