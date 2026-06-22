@@ -142,12 +142,9 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 .sidebar-logo:hover{background:rgba(255,255,255,.04)}
 
 /* ── Dashboard Responsive Layout ── */
-/* On any screen smaller than full monitor: allow the main area to scroll */
-@media(max-width:1500px){
-  .main.main-locked{overflow-y:auto!important}
-  #dash-content{height:auto!important;overflow:visible!important}
-  #dash-grid{overflow:visible!important;min-height:unset!important}
-}
+/* Recommended Actions column: always scrolls internally, never causes page scroll */
+#dash-col2{height:100%;overflow:hidden;display:flex;flex-direction:column}
+#rec-actions-list{flex:1;overflow-y:auto;min-height:0}
 /* Laptop (≤1440px): shrink columns */
 @media(max-width:1440px){
   .main{padding:12px 14px!important}
@@ -5951,7 +5948,7 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- ── Main 4-column grid ── -->
-  <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:start;flex:1;min-height:0;overflow:hidden">
+  <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:stretch;flex:1;min-height:0;overflow:hidden">
 
     <!-- COL 1: Top Delayed / Top Punctual Buyers (dual tab) -->
     <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
