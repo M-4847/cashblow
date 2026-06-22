@@ -83,82 +83,63 @@
 html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
 
 /* -- SIDEBAR -- */
-.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--white);border-right:1px solid var(--gray-200);display:flex;flex-direction:column;z-index:100}
-.logo-mark{width:30px;height:30px;background:var(--blue-600);border-radius:8px;display:flex;align-items:center;justify-content:center}
+/* ═══ DARK NAVY SIDEBAR — Money.ex style ═══ */
+:root{--sidebar-bg:#0B1437;--sidebar-active:#3B82F6;--sidebar-hover:rgba(255,255,255,.06);--sidebar-text:rgba(255,255,255,.55);--sidebar-text-active:#fff;--sidebar-border:rgba(255,255,255,.06)}
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);border-right:none;display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,#3B82F6,#6366F1);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(59,130,246,.4)}
 .logo-mark svg{width:16px;height:16px;fill:#fff}
-.logo-text{font-size:15px;font-weight:700;color:var(--gray-900);letter-spacing:-.4px}
-.logo-text span{color:var(--blue-600)}
-.sidebar-scroll{overflow-y:auto;flex:1;padding-bottom:8px}
-.section-label{padding:14px 16px 6px;font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
-.section-label::before{content:'';width:5px;height:5px;border-radius:1.5px;flex-shrink:0}
-.sl-intel{color:#818cf8}.sl-intel::before{background:#6366f1}
-.sl-ops{color:#d97706}.sl-ops::before{background:#f59e0b}
-.sl-mgmt{color:#64748b}.sl-mgmt::before{background:#0d9488}
-.nav-item{display:flex;align-items:center;gap:9px;padding:5px 12px 5px 12px;margin:1px 8px;border-radius:var(--r-sm);cursor:pointer;font-size:12.5px;font-weight:450;color:var(--gray-600);transition:background .12s,color .12s;border:none;background:transparent;width:calc(100% - 16px);text-align:left}
-.nav-item:hover{color:var(--gray-900)}
-.ni-wrap{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;flex-shrink:0;transition:background .15s}
-.ni{width:15px;height:15px;flex-shrink:0;transition:color .15s}
-.nav-item[data-section="intel"] .ni{color:#a5b4fc}
-.nav-item[data-section="intel"]:hover{background:transparent;color:#3730a3}
-.nav-item[data-section="intel"]:hover .ni-wrap{background:rgba(99,102,241,.09)}
-.nav-item[data-section="intel"]:hover .ni{color:#6366f1}
-.nav-item[data-section="intel"].active{background:#eef2ff;color:#3730a3;font-weight:600}
-.nav-item[data-section="intel"].active .ni-wrap{background:#e0e7ff}
-.nav-item[data-section="intel"].active .ni{color:#4f46e5}
-.nav-item[data-section="ops"] .ni{color:#fbbf24}
-.nav-item[data-section="ops"]:hover{background:transparent;color:#92400e}
-.nav-item[data-section="ops"]:hover .ni-wrap{background:rgba(245,158,11,.09)}
-.nav-item[data-section="ops"]:hover .ni{color:#d97706}
-.nav-item[data-section="ops"].active{background:#fffbeb;color:#92400e;font-weight:600}
-.nav-item[data-section="ops"].active .ni-wrap{background:#fde68a}
-.nav-item[data-section="ops"].active .ni{color:#b45309}
-.nav-item[data-section="mgmt"] .ni{color:#94a3b8}
-.nav-item[data-section="mgmt"]:hover{background:transparent;color:#134e4a}
-.nav-item[data-section="mgmt"]:hover .ni-wrap{background:rgba(13,148,136,.08)}
-.nav-item[data-section="mgmt"]:hover .ni{color:#0d9488}
-.nav-item[data-section="mgmt"].active{background:#f0fdfa;color:#134e4a;font-weight:600}
-.nav-item[data-section="mgmt"].active .ni-wrap{background:#ccfbf1}
-.nav-item[data-section="mgmt"].active .ni{color:#0f766e}
-.nav-badge{margin-left:auto;background:var(--blue-600);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px}
+.logo-text{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.logo-text span{color:#60A5FA}
+.sidebar-scroll{overflow-y:auto;flex:1;padding-bottom:8px;scrollbar-width:none}
+.sidebar-scroll::-webkit-scrollbar{display:none}
+.section-label{padding:16px 16px 5px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.22);display:flex;align-items:center;gap:7px}
+.section-label::before{content:'';width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0}
+.sl-intel{color:rgba(165,180,252,.6)}.sl-intel::before{background:#818cf8}
+.sl-ops{color:rgba(253,186,116,.5)}.sl-ops::before{background:#fb923c}
+.sl-mgmt{color:rgba(148,163,184,.4)}.sl-mgmt::before{background:#94a3b8}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:2px 10px;border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--sidebar-text);transition:all .15s;border:none;background:transparent;width:calc(100% - 20px);text-align:left}
+.nav-item:hover{background:var(--sidebar-hover);color:rgba(255,255,255,.85)}
+.nav-item:hover .ni{opacity:.9}
+.ni-wrap{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:7px;flex-shrink:0;transition:background .15s}
+.ni{width:14px;height:14px;flex-shrink:0;transition:all .15s;opacity:.5}
+/* All active states — uniform blue */
+.nav-item.active,.ng-dash .nav-item.active,.nav-standalone.active,
+.ng-decision .nav-item.active,.ng-receivables .nav-item.active,
+.ng-buyers .nav-item.active,.ng-risk .nav-item.active{
+  background:var(--sidebar-active);color:#fff;font-weight:600;
+  box-shadow:0 4px 12px rgba(59,130,246,.3)}
+.nav-item.active .ni,.nav-item.active .ni-wrap .ni{opacity:1;color:#fff!important}
+.nav-item.active .ni-wrap{background:rgba(255,255,255,.15)}
+/* All hover states — uniform subtle */
+.nav-item[data-section]:hover,.ng-decision .nav-item:hover,
+.ng-receivables .nav-item:hover,.ng-buyers .nav-item:hover,.ng-risk .nav-item:hover{
+  background:var(--sidebar-hover)!important;color:rgba(255,255,255,.85)!important}
+.nav-badge{margin-left:auto;background:rgba(59,130,246,.3);color:#93C5FD;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;border:1px solid rgba(59,130,246,.3)}
+.nav-badge.ai{background:linear-gradient(135deg,rgba(99,102,241,.4),rgba(59,130,246,.4));color:#a5b4fc;font-size:9px;border:1px solid rgba(99,102,241,.3)}
 
-/* ── Grouped nav ── */
-.nav-standalone{margin:2px 8px}
+/* ── Grouped nav on dark bg ── */
+.nav-standalone{margin:2px 10px}
 .nav-group{margin:2px 0;position:relative}
-.nav-group-hdr{display:flex;align-items:center;gap:8px;padding:7px 14px 5px;margin:0 6px;cursor:pointer;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--gray-400);border-radius:7px;user-select:none;transition:background .15s,color .15s}
-.nav-group-hdr:hover{background:rgba(0,0,0,.04);color:var(--gray-600)}
-.nav-group-hdr .ng-icon{width:14px;height:14px;flex-shrink:0;opacity:.75;transition:opacity .15s}
-.nav-group:not(.ng-closed) .nav-group-hdr .ng-icon{opacity:1}
-.nav-group-hdr .ng-arrow{margin-left:auto;font-size:9px;opacity:.4;transition:transform .2s ease,opacity .15s;display:inline-block}
+.nav-group-hdr{display:flex;align-items:center;gap:8px;padding:7px 14px 5px;margin:0 8px;cursor:pointer;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.28);border-radius:8px;user-select:none;transition:all .15s}
+.nav-group-hdr:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.55)}
+.nav-group-hdr .ng-icon{width:13px;height:13px;flex-shrink:0;opacity:.4;transition:opacity .15s}
+.nav-group:not(.ng-closed) .nav-group-hdr .ng-icon{opacity:.6}
+.nav-group-hdr .ng-arrow{margin-left:auto;font-size:9px;opacity:.35;transition:transform .2s ease,opacity .15s;display:inline-block;color:rgba(255,255,255,.4)}
 .nav-group.ng-closed .ng-arrow{transform:rotate(-90deg)}
-.nav-group:not(.ng-closed) .ng-arrow{opacity:.7}
-/* Body: default open — closed state collapses */
+.nav-group:not(.ng-closed) .ng-arrow{opacity:.6}
+.nav-group:not(.ng-closed) .nav-group-hdr{background:rgba(255,255,255,.02)}
 .nav-group-body{overflow:hidden;max-height:500px;transition:max-height .22s cubic-bezier(.4,0,.2,1),opacity .18s ease;opacity:1}
 .nav-group.ng-closed .nav-group-body{max-height:0;opacity:0}
-/* Hover-open: header glow for active group section */
-.nav-group:not(.ng-closed) .nav-group-hdr{background:rgba(0,0,0,.025)}
-.nav-child{padding-left:26px!important;font-size:12px!important;margin:0px 8px!important}
-.nav-child .ni-wrap{width:18px!important;height:18px!important;flex-shrink:0}
+.nav-child{padding-left:24px!important;font-size:12px!important;margin:1px 10px!important}
+.nav-child .ni-wrap{width:18px!important;height:18px!important}
 .nav-child .ni{width:11px!important;height:11px!important}
-[data-theme="dark"] .nav-group-hdr:hover{background:rgba(255,255,255,.05);color:var(--gray-300)}
-/* section accent colours */
-.ng-dash .nav-item.active,.nav-standalone.active{background:#eef2ff;color:#3730a3;font-weight:600}
-.ng-decision .nav-group-hdr{color:#7c3aed}.ng-decision .nav-item.active{background:#f5f3ff;color:#5b21b6;font-weight:600}
-.ng-decision .nav-item:hover{background:rgba(124,58,237,.06);color:#5b21b6}
-.ng-receivables .nav-group-hdr{color:#059669}.ng-receivables .nav-item.active{background:#ecfdf5;color:#065f46;font-weight:600}
-.ng-receivables .nav-item:hover{background:rgba(5,150,105,.06);color:#065f46}
-.ng-buyers .nav-group-hdr{color:#0284c7}.ng-buyers .nav-item.active{background:#e0f2fe;color:#0c4a6e;font-weight:600}
-.ng-buyers .nav-item:hover{background:rgba(2,132,199,.06);color:#0c4a6e}
-.ng-risk .nav-group-hdr{color:#dc2626}.ng-risk .nav-item.active{background:#fef2f2;color:#7f1d1d;font-weight:600}
-.ng-risk .nav-item:hover{background:rgba(220,38,38,.06);color:#7f1d1d}
-[data-theme="dark"] .ng-decision .nav-item.active{background:rgba(124,58,237,.2);color:#c4b5fd}
-[data-theme="dark"] .ng-receivables .nav-item.active{background:rgba(5,150,105,.2);color:#6ee7b7}
-[data-theme="dark"] .ng-buyers .nav-item.active{background:rgba(2,132,199,.2);color:#7dd3fc}
-[data-theme="dark"] .ng-risk .nav-item.active{background:rgba(220,38,38,.2);color:#fca5a5}
-.nav-badge.amber{background:var(--amber-600)}
-.nav-badge.red{background:var(--red-600)}
-.nav-badge.ai{background:linear-gradient(135deg,#6366f1,#3b82f6);color:#fff;font-size:9px;letter-spacing:.03em}
-.sidebar-logo{padding:0 20px;height:var(--topbar-h);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .12s}
-.sidebar-logo:hover{background:var(--gray-50)}
+/* section group colors on dark */
+.ng-decision .nav-group-hdr{color:rgba(196,181,253,.5)}
+.ng-receivables .nav-group-hdr{color:rgba(110,231,183,.5)}
+.ng-buyers .nav-group-hdr{color:rgba(125,211,252,.5)}
+.ng-risk .nav-group-hdr{color:rgba(252,165,165,.5)}
+.sidebar-logo{padding:0 18px;height:var(--topbar-h);display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--sidebar-border);cursor:pointer;transition:background .12s}
+.sidebar-logo:hover{background:rgba(255,255,255,.04)}
 
 /* filter pills */
 .filter-pill-wrap{position:relative;margin:2px 8px 2px}
@@ -2354,6 +2335,29 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
       </button>
     </div>
 
+  </div>
+
+  <!-- ── Bottom Interface Card — Money.ex style ── -->
+  <div style="margin:8px 10px 12px;background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 12px;border:1px solid rgba(255,255,255,.07);flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+      <div style="width:34px;height:34px;background:linear-gradient(135deg,#3B82F6,#6366F1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(59,130,246,.35)">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="#fff"><path d="M10 2L3 7v6l7 5 7-5V7L10 2zm0 2.3l5 3.6v4.6L10 15.6l-5-3.1V7.9l5-3.6z"/><circle cx="10" cy="10" r="2.5"/></svg>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#fff;line-height:1.2">CashFlowIQ</div>
+        <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:1px">Business Intelligence</div>
+      </div>
+    </div>
+    <button onclick="Actions.toggleDarkMode()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:10px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
+      <div style="display:flex;align-items:center;gap:8px">
+        <svg id="iconMoon2" width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="rgba(255,255,255,.7)" stroke-width="1.8"><path d="M13.5 10A5.5 5.5 0 016 2.5a5.5 5.5 0 100 11 5.5 5.5 0 007.5-3.5z" stroke-linecap="round"/></svg>
+        <svg id="iconSun2" width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="rgba(255,255,255,.7)" stroke-width="1.8" style="display:none"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" stroke-linecap="round"/></svg>
+        <span style="font-size:11.5px;font-weight:600;color:rgba(255,255,255,.7)">Light Mode</span>
+      </div>
+      <div id="sidebar-theme-dot" style="width:28px;height:16px;background:#3B82F6;border-radius:8px;position:relative;transition:background .2s">
+        <div style="position:absolute;top:2px;left:2px;width:12px;height:12px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>
+      </div>
+    </button>
   </div>
 
 </aside>
