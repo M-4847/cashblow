@@ -2483,17 +2483,48 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
     <div style="width:52px;height:52px;background:#FEF2F2;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#EF4444" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:17px;font-weight:800;color:#0F172A;margin-bottom:8px">Switch to Manual Entry?</div>
-      <div style="font-size:13px;color:#64748B;line-height:1.6">You have <strong id="me-confirm-count" style="color:#0F172A">0 buyers</strong> loaded from Excel.<br>Switching will <strong style="color:#EF4444">clear all existing data</strong> so you can start fresh with manual entries.</div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:17px;font-weight:800;color:#0F172A;margin-bottom:8px">Manual Entry Options</div>
+      <div style="font-size:13px;color:#64748B;line-height:1.6">You have <strong id="me-confirm-count" style="color:#0F172A">0 buyers</strong> loaded from Excel.<br>Choose how you want to proceed.</div>
     </div>
-    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#92400E">
-      💡 You can always re-upload your Excel file later to restore the data.
-    </div>
-    <div style="display:flex;gap:10px">
-      <button onclick="document.getElementById('me-confirm-overlay').style.display='none'" style="flex:1;padding:11px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-weight:600;color:#64748B;background:#fff;cursor:pointer">Keep Excel Data</button>
-      <button onclick="window.addBuyerClearAndOpen()" id="me-confirm-btn" style="flex:1;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;background:#EF4444;cursor:pointer;box-shadow:0 3px 8px rgba(239,68,68,.3)">Clear &amp; Start Manual</button>
-    </div>
+
+    <!-- Option 1: Add on top of Excel -->
+    <button onclick="document.getElementById('me-confirm-overlay').style.display='none';window.addBuyerOpen()"
+      style="width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border:1.5px solid #635BFF;border-radius:12px;background:#F5F3FF;cursor:pointer;transition:all .15s"
+      onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#F5F3FF'">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;background:#635BFF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke="#fff" stroke-width="2.2"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#0A2540">Keep Excel &amp; Add More</div>
+          <div style="font-size:11.5px;color:#6B7280;margin-top:1px">Keep your <strong id="me-confirm-count2" style="color:#635BFF">0</strong> existing buyers and add new ones manually</div>
+        </div>
+        <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke="#635BFF" stroke-width="2" style="margin-left:auto;flex-shrink:0"><path d="M6 3l5 5-5 5" stroke-linecap="round"/></svg>
+      </div>
+    </button>
+
+    <!-- Option 2: Clear and start fresh -->
+    <button onclick="window.addBuyerClearAndOpen()" id="me-confirm-btn"
+      style="width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border:1.5px solid #FECACA;border-radius:12px;background:#FFF5F5;cursor:pointer;transition:all .15s"
+      onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FFF5F5'">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;background:#EF4444;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7M10 11v6M14 11v6M4 7h16M8 7V5a2 2 0 014 0v2" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#0A2540">Clear Excel &amp; Start Fresh</div>
+          <div style="font-size:11.5px;color:#6B7280;margin-top:1px">Remove all existing data and add buyers one by one manually</div>
+        </div>
+        <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke="#EF4444" stroke-width="2" style="margin-left:auto;flex-shrink:0"><path d="M6 3l5 5-5 5" stroke-linecap="round"/></svg>
+      </div>
+    </button>
+
+    <!-- Cancel -->
+    <button onclick="document.getElementById('me-confirm-overlay').style.display='none'"
+      style="width:100%;padding:10px;border:none;border-radius:10px;font-size:12.5px;font-weight:500;color:#6B7280;background:transparent;cursor:pointer">
+      Cancel
+    </button>
   </div>
 </div>
 <style>@keyframes me-pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}</style>
@@ -11549,7 +11580,9 @@ window.addBuyerOpenWithClear=function(){
   // If Excel data exists, ask for confirmation first
   const hasData = DB._fromAPI && DB.buyers && DB.buyers.length > 0;
   if(hasData){
-    document.getElementById('me-confirm-count').textContent = DB.buyers.length+' buyer'+(DB.buyers.length!==1?'s':'');
+    const _cnt=DB.buyers.length+' buyer'+(DB.buyers.length!==1?'s':'');
+    document.getElementById('me-confirm-count').textContent = _cnt;
+    const c2=document.getElementById('me-confirm-count2'); if(c2) c2.textContent=DB.buyers.length;
     const ov=document.getElementById('me-confirm-overlay');
     ov.style.display='flex';
   } else {
