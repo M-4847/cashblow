@@ -247,6 +247,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 
 /* -- MAIN -- */
 .main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;overflow-x:hidden;padding:20px 24px;background:#f0f4f8;box-sizing:border-box}
+.main.main-locked{overflow:hidden}
 
 /* -- BUTTONS -- */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-sm);font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .12s;white-space:nowrap;font-family:inherit}
@@ -5719,7 +5720,7 @@ function _renderBusinessDashboard(){
   const riskBar = (count,total,col) => total>0?`<div style="height:100%;width:${Math.round(count/total*100)}%;background:${col};border-radius:2px"></div>`:'';
 
   return `
-<div id="dash-content" style="padding:14px 18px;width:100%;box-sizing:border-box">
+<div id="dash-content" style="padding:14px 18px;width:100%;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden">
 
   <!-- Header bar -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -5736,7 +5737,7 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- KPI Row -->
-  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px">
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;flex-shrink:0">
     ${kpis.map(k=>`
     <div style="background:var(--white);border:1px solid var(--gray-100);border-top:3px solid ${k.border};border-radius:10px;padding:12px 14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -5752,7 +5753,7 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- ── Main 4-column grid ── -->
-  <div style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:start">
+  <div style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:stretch;flex:1;min-height:0;overflow:hidden">
 
     <!-- COL 1: Top Delayed / Top Punctual Buyers (dual tab) -->
     <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
@@ -5903,15 +5904,15 @@ function _renderBusinessDashboard(){
     </div>
 
 
-    <!-- COL 2: Recommended Actions (collapsible) -->
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+    <!-- COL 2: Recommended Actions (internal scroll) -->
+    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:100%">
       <div style="padding:10px 14px 8px;border-bottom:1px solid var(--gray-100);flex-shrink:0">
         <div style="font-size:13px;font-weight:800;color:var(--gray-900)">Recommended Actions</div>
         <div style="font-size:10px;color:var(--gray-400);margin-top:1px">Priority follow-ups</div>
       </div>
 
-      <!-- Cards list — collapsed by default (shows 2) -->
-      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:6px;overflow:hidden;max-height:220px;transition:max-height .35s cubic-bezier(.4,0,.2,1)">
+      <!-- Cards list — full internal scroll, no collapse needed -->
+      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#e2e8f0 transparent">
         ${drainers.filter(b=>classifyRisk(b)!=='Low').map(b=>{
           const risk=classifyRisk(b),rc=riskCol(risk),acts=actionMap[risk]||actionMap['Medium'];
           return `<div style="border:1px solid ${rc}25;border-left:3px solid ${rc};border-radius:8px;padding:8px 10px;background:${rc}05;flex-shrink:0">
@@ -5928,29 +5929,6 @@ function _renderBusinessDashboard(){
         }).join('')}
       </div>
 
-      <!-- Fade overlay + toggle button -->
-      <div style="position:relative;flex-shrink:0">
-        <div id="rec-actions-fade" style="height:28px;background:linear-gradient(to bottom,rgba(255,255,255,0),var(--white));margin-top:-28px;pointer-events:none;position:relative;z-index:1"></div>
-        <div style="padding:6px 10px 8px;display:flex;justify-content:flex-end;border-top:1px solid var(--gray-100)">
-          <button id="rec-actions-btn" onclick="(function(){
-            const list=document.getElementById('rec-actions-list');
-            const fade=document.getElementById('rec-actions-fade');
-            const btn=document.getElementById('rec-actions-btn');
-            const expanded=list.style.maxHeight==='none'||parseInt(list.style.maxHeight)>400;
-            if(expanded){
-              list.style.maxHeight='220px';
-              fade.style.display='block';
-              btn.textContent='+ View More';
-            } else {
-              list.style.maxHeight=list.scrollHeight+'px';
-              fade.style.display='none';
-              btn.textContent='− View Less';
-            }
-          })()" style="font-size:10.5px;font-weight:700;color:#6366f1;background:none;border:none;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:3px">
-            + View More
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- COL 3: Risk Breakdown + Quick Stats -->
@@ -12383,6 +12361,10 @@ const App = {
       if(gid===activeGroup)el.classList.remove('ng-closed');
       else if(gid!==activeGroup&&activeGroup)el.classList.add('ng-closed');
     });
+
+    // Lock scroll on dashboard; enable scroll on all other pages
+    const mainEl=document.getElementById('main-content')?.closest('.main');
+    if(mainEl) mainEl.classList.toggle('main-locked', s.page==='dashboard');
 
     const bc=document.getElementById('bc-page');
     if(bc) bc.textContent=PAGE_LABELS[s.page]||s.page;
