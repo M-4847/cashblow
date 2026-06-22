@@ -141,12 +141,28 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 .sidebar-logo{padding:0 18px;height:var(--topbar-h);display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--sidebar-border);cursor:pointer;transition:background .12s}
 .sidebar-logo:hover{background:rgba(255,255,255,.04)}
 
-/* ── Dashboard: fully fixed, no scroll anywhere except Recommended Actions ── */
-#dash-content{overflow:hidden!important}
-#dash-grid{overflow:hidden!important}
-/* ONLY Recommended Actions list scrolls internally */
-#dash-col2{display:flex!important;flex-direction:column!important;overflow:hidden!important;height:100%!important}
-#rec-actions-list{flex:1!important;overflow-y:auto!important;overflow-x:hidden!important;min-height:0!important;scrollbar-width:thin;scrollbar-color:#E2E8F0 transparent}
+/* ── Dashboard: fully fixed viewport, only Recommended Actions scrolls ── */
+#dash-content{overflow:hidden!important;display:flex!important;flex-direction:column!important}
+/* Grid gets exact height = viewport minus everything above it */
+#dash-grid{
+  overflow:hidden!important;
+  height:calc(100vh - var(--topbar-h) - 190px)!important;
+  align-items:stretch!important;
+}
+/* Recommended Actions: fills grid height, list scrolls internally */
+#dash-col2{
+  height:100%!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;
+}
+#rec-actions-list{
+  flex:1!important;overflow-y:auto!important;overflow-x:hidden!important;
+  min-height:0!important;scrollbar-width:thin;scrollbar-color:#E2E8F0 transparent
+}
+/* Laptop: tighten spacing */
+@media(max-width:1440px){
+  #dash-grid{height:calc(100vh - var(--topbar-h) - 180px)!important}
+}
 /* Laptop (≤1440px): shrink columns */
 @media(max-width:1440px){
   .main{padding:12px 14px!important}
