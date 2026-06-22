@@ -141,6 +141,35 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 .sidebar-logo{padding:0 18px;height:var(--topbar-h);display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--sidebar-border);cursor:pointer;transition:background .12s}
 .sidebar-logo:hover{background:rgba(255,255,255,.04)}
 
+/* ── Dashboard Responsive Layout ── */
+/* Laptop (≤1440px): shrink columns */
+@media(max-width:1440px){
+  .main{padding:14px 16px!important}
+  #dash-kpi{gap:8px!important}
+  #dash-grid{grid-template-columns:1fr 230px 190px 175px!important;gap:8px!important}
+}
+/* Small laptop (≤1280px): drop 4th column below */
+@media(max-width:1280px){
+  #dash-grid{grid-template-columns:1fr 220px 185px!important}
+  #dash-col4{display:none!important}
+  #dash-kpi .kpi-val{font-size:18px!important}
+}
+/* Tablet-ish (≤1100px): 2 columns */
+@media(max-width:1100px){
+  #dash-grid{grid-template-columns:1fr 210px!important}
+  #dash-col3{display:none!important}
+  #dash-kpi{grid-template-columns:repeat(3,1fr)!important}
+}
+/* Small (≤900px): single column, KPI wraps */
+@media(max-width:900px){
+  #dash-grid{grid-template-columns:1fr!important}
+  #dash-col2,#dash-col3,#dash-col4{display:none!important}
+  #dash-kpi{grid-template-columns:repeat(2,1fr)!important}
+}
+/* KPI card text scaling */
+@media(max-width:1280px){
+  .kpi-card{padding:10px 12px!important}
+}
 /* filter pills */
 .filter-pill-wrap{position:relative;margin:2px 8px 2px}
 .filter-pill{width:100%;display:flex;align-items:center;gap:7px;padding:6px 10px 6px 13px;border-radius:var(--r-sm);background:var(--blue-50);border:1.5px solid var(--blue-100);cursor:pointer;font-size:12px;color:var(--gray-700);transition:background .12s,border-color .12s}
@@ -5907,7 +5936,7 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- KPI Row -->
-  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;flex-shrink:0">
+  <div id="dash-kpi" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;flex-shrink:0">
     ${kpis.map(k=>`
     <div style="background:#fff;border:1px solid #E2E8F0;border-top:3px solid ${k.border};border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -5921,7 +5950,7 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- ── Main 4-column grid ── -->
-  <div style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:stretch;flex:1;min-height:0;overflow:hidden">
+  <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:stretch;flex:1;min-height:0;overflow:hidden">
 
     <!-- COL 1: Top Delayed / Top Punctual Buyers (dual tab) -->
     <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
@@ -6074,7 +6103,7 @@ function _renderBusinessDashboard(){
 
 
     <!-- COL 2: Recommended Actions (internal scroll) -->
-    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:100%;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+    <div id="dash-col2" style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;height:100%;box-shadow:0 1px 3px rgba(0,0,0,.04)">
       <div style="padding:10px 14px 8px;border-bottom:1px solid #E2E8F0;flex-shrink:0">
         <div style="font-size:12px;font-weight:700;color:#0F172A">Recommended Actions</div>
         <div style="font-size:10px;color:#94A3B8;margin-top:1px">Priority follow-ups</div>
@@ -6100,7 +6129,7 @@ function _renderBusinessDashboard(){
     </div>
 
     <!-- COL 3: Risk Breakdown + Portfolio Health -->
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <div id="dash-col3" style="display:flex;flex-direction:column;gap:10px">
 
       <!-- Risk Distribution — thin bars only, no boxes -->
       <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
@@ -6154,7 +6183,7 @@ function _renderBusinessDashboard(){
     </div>
 
     <!-- COL 4: Business Discipline Score -->
-    ${renderDisciplineScore()}
+    <div id="dash-col4">${renderDisciplineScore()}</div>
 
   </div>
 
