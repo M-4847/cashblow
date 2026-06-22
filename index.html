@@ -8868,37 +8868,38 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
         </div>
 
         <div class="brp-tab-bar">
-          <button class="brp-tab ${st.tab==='overview'?'active':''}" onclick="brpTab('overview')">
+          <button class="brp-tab ${st.tab==='overview'?'active':''}" data-brp-tab="overview" onclick="brpTab('overview')">
             <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
             Overview
           </button>
-          <button class="brp-tab ${st.tab==='invoiceHistory'?'active':''}" onclick="brpTab('invoiceHistory')">
+          <button class="brp-tab ${st.tab==='invoiceHistory'?'active':''}" data-brp-tab="invoiceHistory" onclick="brpTab('invoiceHistory')">
             <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 6h4M6 9h4M6 12h2" stroke-linecap="round"/></svg>
             Invoice History
           </button>
-          <button class="brp-tab ${st.tab==='credit'?'active':''}" onclick="brpTab('credit')">
+          <button class="brp-tab ${st.tab==='credit'?'active':''}" data-brp-tab="credit" onclick="brpTab('credit')">
             <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="14" height="9" rx="1.5"/><path d="M1 7h14" stroke-linecap="round"/><path d="M4 11h3" stroke-linecap="round"/></svg>
             Credit Intelligence
           </button>
-          <button class="brp-tab ${st.tab==='forecast'?'active':''}" onclick="brpTab('forecast')">
+          <button class="brp-tab ${st.tab==='forecast'?'active':''}" data-brp-tab="forecast" onclick="brpTab('forecast')">
             <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Payment Forecast
           </button>
-          <button class="brp-tab ${st.tab==='comparison'?'active':''}" onclick="brpTab('comparison')">
+          <button class="brp-tab ${st.tab==='comparison'?'active':''}" data-brp-tab="comparison" onclick="brpTab('comparison')">
             <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M2 12V4M8 12V7M14 12V2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Buyer Comparison
           </button>
-          <button class="brp-tab ${st.tab==='aiInsights'?'active':''}" onclick="brpTab('aiInsights')">
+          <button class="brp-tab ${st.tab==='aiInsights'?'active':''}" data-brp-tab="aiInsights" onclick="brpTab('aiInsights')">
             <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M8 2a5 5 0 015 5c0 2-1.5 3.5-2.5 4.5L8 14l-2.5-2.5C4.5 10.5 3 9 3 7a5 5 0 015-5z"/><circle cx="8" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg>
             AI Insights
           </button>
-          <button class="brp-tab ${st.tab==='actionCenter'?'active':''}" onclick="brpTab('actionCenter')">
+          <button class="brp-tab ${st.tab==='actionCenter'?'active':''}" data-brp-tab="actionCenter" onclick="brpTab('actionCenter')">
             <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M8 3v2M8 11v2M3 8h2M11 8h2" stroke-linecap="round"/><circle cx="8" cy="8" r="2.5"/></svg>
             Action Center
           </button>
         </div>
         </div><!-- end sticky header -->
 
+        <div id="brp-tab-content">
         ${st.tab==='overview' ? `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 
@@ -9900,6 +9901,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
               </div>
             </div>`;
         })()}
+        </div><!-- end brp-tab-content -->
       </div>`;
     }
 
@@ -10813,6 +10815,22 @@ function brpOpen(id){window._brpState=Object.assign(window._brpState||{},{buyerI
 function brpBack(){window._brpState=Object.assign(window._brpState||{},{buyerId:null});AppState.set({page:'buyerRiskProfiles'});}
 function brpTab(t){
   window._brpState=Object.assign(window._brpState||{},{tab:t});
+
+  // 1. Instantly highlight the clicked tab — no lag
+  document.querySelectorAll('.brp-tab').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.brpTab===t);
+  });
+
+  // 2. Re-render ONLY the content div, not the sticky header
+  const contentEl=document.getElementById('brp-tab-content');
+  if(contentEl){
+    // Generate new full page HTML in a detached element, extract just the content
+    const tmp=document.createElement('div');
+    tmp.innerHTML=Pages.buyerRiskProfiles();
+    const newContent=tmp.querySelector('#brp-tab-content');
+    if(newContent){ contentEl.replaceWith(newContent); return; }
+  }
+  // Fallback: full re-render
   AppState.set({page:'buyerRiskProfiles'});
 }
 function brpSearch(q){window._brpState=Object.assign(window._brpState||{},{search:q});AppState.set({page:'buyerRiskProfiles'});}
