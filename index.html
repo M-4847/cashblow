@@ -8826,8 +8826,9 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
         : cat.tier==='risk-low' ? 'Avg monthly purchase — 3 months'
         : 'Avg monthly purchase — 1.5 months';
 
-      return `<div class="page-wrap fade-in" style="max-width:none;width:100%">
-        <div class="back-row">
+      return `<div class="page-wrap fade-in" style="max-width:none;width:100%;padding-top:0">
+        <div style="position:sticky;top:-20px;z-index:80;background:var(--bg, #f0f4f8);padding:16px 0 0;margin:-20px 0 0">
+        <div class="back-row" style="margin-bottom:10px">
           <button class="btn btn-ghost" onclick="brpBack()" style="display:flex;align-items:center;gap:6px;font-size:12.5px">
             <svg width="15" height="15" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2"><path d="M10 3L5 8l5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>All Profiles
           </button>
@@ -8870,6 +8871,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
             Action Center
           </button>
         </div>
+        </div><!-- end sticky header -->
 
         ${st.tab==='overview' ? `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
