@@ -5809,38 +5809,78 @@ function _renderBusinessDashboard(){
       <!-- Punctual buyers panel (hidden initially) -->
       <div id="tdb-panel-punctual" style="display:none;transition:opacity .25s,transform .25s;opacity:0;transform:translateX(20px)">
         ${(()=>{
+          /* Compute avg payment timing per buyer from real invoices:
+             negative = paid early, 0 = on due date, positive = paid late */
+          const buyerTimings={};
+          invoices.forEach(inv=>{
+            if(!inv.paidDate||!inv.dueDate) return;
+            const t=Math.round((new Date(inv.paidDate)-new Date(inv.dueDate))/86400000);
+            if(!buyerTimings[inv.buyerId]) buyerTimings[inv.buyerId]=[];
+            buyerTimings[inv.buyerId].push(t);
+          });
+          const avgTiming=b=>{
+            const ts=buyerTimings[b.id]||[];
+            if(!ts.length) return 0;
+            return Math.round(ts.reduce((s,t)=>s+t,0)/ts.length);
+          };
+          const timingLabel=t=>{
+            if(t<0) return {txt:Math.abs(t)+'d early',col:'#22c55e'};
+            if(t===0) return {txt:'On time',col:'#10b981'};
+            return {txt:t+'d late',col:'#f59e0b'};
+          };
+          /* Sort ALL buyers by best payment timing (most early first) */
           const punctual=[...buyers]
-            .filter(b=>(b.onTimePct||0)>=80||(b.avgDelay||0)<=5)
-            .map(b=>({...b,_exp:effExp(b),contrib:grandTotal>0?Math.round((effExp(b)/grandTotal)*1000)/10:0}))
-            .sort((a,b2)=>(b2.onTimePct||0)-(a.onTimePct||0)||(a.avgDelay||0)-(b2.avgDelay||0))
+            .map(b=>{
+              const t=avgTiming(b);
+              const exp=effExp(b);
+              const contrib=grandTotal>0?Math.round((exp/grandTotal)*1000)/10:0;
+              return {...b,_exp:exp,contrib,_timing:t};
+            })
+            .sort((a,b2)=>a._timing-b2._timing||(b2.onTimePct||0)-(a.onTimePct||0))
             .slice(0,5);
-          if(!punctual.length) return `<div style="padding:32px;text-align:center;color:var(--gray-400);font-size:12px">No punctual buyers found yet</div>`;
+
+          const contribCol2=c=>c>=15?'#ef4444':c>=10?'#f97316':c>=5?'#f59e0b':'#6366f1';
+          const classifyRisk2=b=>b.riskScore<45?'High':b.riskScore<70?'Medium':'Low';
+          const riskCol2=r=>r==='High'?'#ef4444':r==='Medium'?'#f97316':'#10b981';
+
           return `<table style="width:100%;border-collapse:collapse">
             <thead><tr style="background:#f0fdf4">
-              ${['#','Buyer','Exposure','On-Time','Delay','Score'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#22c55e;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
+              ${['#','Buyer','Exposure','Paid Before/On','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
             </tr></thead>
             <tbody>
-              ${punctual.map((b,i)=>`<tr style="border-top:1px solid var(--gray-100);cursor:pointer"
-                onmouseover="this.style.background='rgba(34,197,94,.06)'"
-                onmouseout="this.style.background='transparent'"
-                onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-                <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
-                <td style="padding:7px 10px">
-                  <div style="display:flex;align-items:center;gap:7px">
-                    <div style="width:20px;height:20px;border-radius:5px;background:#22c55e18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#22c55e;flex-shrink:0">${(b.name||'?')[0]}</div>
-                    <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
-                  </div>
-                </td>
-                <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
-                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#22c55e;white-space:nowrap">${b.onTimePct||100}%</td>
-                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${(b.avgDelay||0)===0?'#22c55e':'#10b981'};white-space:nowrap">${b.avgDelay||0}d</td>
-                <td style="padding:7px 10px"><span style="background:#22c55e18;color:#22c55e;border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${b.riskScore||100}/100</span></td>
-              </tr>`).join('')}
+              ${punctual.map((b,i)=>{
+                const tl=timingLabel(b._timing);
+                const risk=classifyRisk2(b),rc=riskCol2(risk);
+                const cc=contribCol2(b.contrib);
+                return `<tr style="border-top:1px solid var(--gray-100);background:rgba(34,197,94,.02);cursor:pointer"
+                  onmouseover="this.style.background='rgba(34,197,94,.07)'"
+                  onmouseout="this.style.background='rgba(34,197,94,.02)'"
+                  onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
+                  <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
+                  <td style="padding:7px 10px">
+                    <div style="display:flex;align-items:center;gap:7px">
+                      <div style="width:20px;height:20px;border-radius:5px;background:#22c55e18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#22c55e;flex-shrink:0">${(b.name||'?')[0]}</div>
+                      <div>
+                        <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px">${b.name}</div>
+                        <div style="font-size:9.5px;color:var(--gray-400)">${b.sector||b.industry||''}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
+                  <td style="padding:7px 10px">
+                    <span style="display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:${tl.col}">
+                      ${b._timing<=0?'✓':''} ${tl.txt}
+                    </span>
+                  </td>
+                  <td style="padding:7px 10px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:2px 7px;font-size:10px;font-weight:800">${b.contrib<0.1?'<0.1%':b.contrib+'%'}</span></td>
+                  <td style="padding:7px 10px"><span style="background:${rc}18;color:${rc};border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${risk}</span></td>
+                </tr>`;
+              }).join('')}
             </tbody>
           </table>
           <div style="padding:7px 14px;border-top:1px solid var(--gray-100);background:#f0fdf4;display:flex;justify-content:space-between">
-            <span style="font-size:10px;color:#22c55e;font-weight:600">Top ${punctual.length} punctual buyers</span>
-            <span style="font-size:10px;color:#16a34a;font-weight:700">✓ Reliable payers</span>
+            <span style="font-size:10px;color:#22c55e;font-weight:600">Top 5 of ${buyers.length} buyers · sorted by payment timing</span>
+            <span style="font-size:10px;color:#16a34a;font-weight:700">✓ Best payers first</span>
           </div>`;
         })()}
       </div>
