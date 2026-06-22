@@ -11090,14 +11090,14 @@ window._tdbSwitch = function(){
     requestAnimationFrame(function(){ dp.style.opacity='1'; dp.style.transform='translateX(0)'; });
     td.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;box-shadow:0 2px 6px rgba(239,68,68,.3)';
     tp.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--gray-500)';
-    if(va) va.style.display='';
+    if(va){ va.style.display=''; va.style.color='#6366f1'; va.onclick=function(){AppState.set({page:'allDrainers'});App.onStateChange();}; }
   } else {
     dp.style.display='none'; pp.style.display='';
     pp.style.opacity='0'; pp.style.transform='translateX(12px)';
     requestAnimationFrame(function(){ pp.style.opacity='1'; pp.style.transform='translateX(0)'; });
     tp.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 2px 6px rgba(34,197,94,.3)';
     td.style.cssText='flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--gray-500)';
-    if(va) va.style.display='none';
+    if(va){ va.style.display=''; va.style.color='#22c55e'; va.onclick=function(){AppState.set({page:'allPunctual'});App.onStateChange();}; }
   }
 };
 
@@ -12226,6 +12226,136 @@ function renderAllDrainers(){
 </div>`;
 }
 
+function renderAllPunctual(){
+  const buyers = DB.buyers||[];
+  const invoices = DB.invoices||[];
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const invTotalByBuyer={};
+  invoices.forEach(i=>{ invTotalByBuyer[i.buyerId]=(invTotalByBuyer[i.buyerId]||0)+i.amount; });
+  const effExp=b=>(b.currentExposure||0)>0?(b.currentExposure||0):(invTotalByBuyer[b.id]||0);
+  const grandTotal=buyers.reduce((s,b)=>s+effExp(b),0);
+
+  // Compute avg payment timing per buyer (negative=early, 0=on time, +ve=late)
+  const buyerTimings={};
+  invoices.forEach(inv=>{
+    if(!inv.paidDate||!inv.dueDate) return;
+    const t=Math.round((new Date(inv.paidDate)-new Date(inv.dueDate))/86400000);
+    if(!buyerTimings[inv.buyerId]) buyerTimings[inv.buyerId]=[];
+    buyerTimings[inv.buyerId].push(t);
+  });
+  const avgTiming=b=>{ const ts=buyerTimings[b.id]||[]; return ts.length?Math.round(ts.reduce((s,t)=>s+t,0)/ts.length):0; };
+  const timingLabel=t=>t<0?{txt:Math.abs(t)+'d early',col:'#22c55e'}:t===0?{txt:'On time',col:'#10b981'}:{txt:t+'d late',col:'#f59e0b'};
+
+  const classifyRisk=b=>b.riskScore<45?'High':b.riskScore<70?'Medium':'Low';
+  const riskCol=r=>r==='High'?'#ef4444':r==='Medium'?'#f97316':'#10b981';
+  const fmt=v=>v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1e3?'₹'+(v/1e3).toFixed(0)+'K':'₹'+Math.round(v);
+  const contribFmt=c=>c<0.1?'<0.1%':c+'%';
+  const contribCol=c=>c>=15?'#ef4444':c>=10?'#f97316':c>=5?'#f59e0b':'#6366f1';
+
+  const st=window._apState=window._apState||{sort:'timing',dir:1,search:''};
+
+  let rows=buyers.map(b=>({
+    ...b, _exp:effExp(b),
+    contrib:grandTotal>0?Math.round((effExp(b)/grandTotal)*1000)/10:0,
+    _timing:avgTiming(b)
+  }));
+
+  if(st.search){ const q=st.search.toLowerCase(); rows=rows.filter(b=>b.name.toLowerCase().includes(q)||(b.sector||b.industry||'').toLowerCase().includes(q)); }
+
+  rows.sort((a,b2)=>{
+    const v=st.sort==='timing'?a._timing-b2._timing
+      :st.sort==='exposure'?b2._exp-a._exp
+      :st.sort==='contrib'?b2.contrib-a.contrib
+      :st.sort==='risk'?(b2.riskScore||50)-(a.riskScore||50)
+      :a.name.localeCompare(b2.name);
+    return st.dir*v;
+  });
+
+  const bestCount=rows.filter(b=>b._timing<=0).length;
+
+  function sortBtn(col,label){
+    const active=st.sort===col;
+    return `<th onclick="window._apState.sort='${col}';window._apState.dir=window._apState.sort==='${col}'?window._apState.dir*-1:1;window._apState.sort='${col}';AppState.set({page:'allPunctual'})" style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:${active?'#22c55e':'var(--gray-400)'};text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;cursor:pointer;user-select:none">${label}${active?(st.dir===1?'↑':'↓'):''}</th>`;
+  }
+
+  return `<div class="page-wrap" style="max-width:none;padding:20px 24px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div>
+      <button onclick="AppState.set({page:'dashboard'});App.onStateChange()" style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gray-500);background:none;border:none;cursor:pointer;margin-bottom:4px">
+        <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5" stroke-linecap="round"/></svg>Back to Dashboard
+      </button>
+      <h1 style="font-size:20px;font-weight:900;color:var(--gray-900);margin:0;display:flex;align-items:center;gap:8px">
+        ✅ All Punctual Buyers
+        <span style="font-size:13px;font-weight:600;color:var(--gray-400)">${rows.length} buyers · ${bestCount} pay on time or early</span>
+      </h1>
+    </div>
+    <input type="text" placeholder="Search buyer or sector…" value="${st.search}"
+      oninput="window._apState.search=this.value;AppState.set({page:'allPunctual'})"
+      style="padding:7px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:12px;width:200px;outline:none;color:var(--gray-900)">
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+    ${[
+      {l:'Best Payers',v:bestCount,c:'#22c55e'},
+      {l:'On Time / Early',v:rows.filter(b=>b._timing<=0).length,c:'#10b981'},
+      {l:'Avg Payment Timing',v:(rows.length?Math.round(rows.reduce((s,b)=>s+b._timing,0)/rows.length):0)+'d',c:'#6366f1'},
+      {l:'Low Risk Buyers',v:rows.filter(b=>classifyRisk(b)==='Low').length,c:'#22c55e'},
+    ].map(k=>`<div style="background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:12px 16px">
+      <div style="font-size:20px;font-weight:900;color:${k.c}">${k.v}</div>
+      <div style="font-size:11px;color:var(--gray-500);margin-top:3px">${k.l}</div>
+    </div>`).join('')}
+  </div>
+
+  <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#f0fdf4;border-bottom:2px solid #bbf7d0">
+        <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#22c55e;width:40px">#</th>
+        ${sortBtn('name','Buyer')}
+        ${sortBtn('exposure','Exposure')}
+        ${sortBtn('timing','Avg. Early')}
+        <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">On-Time %</th>
+        ${sortBtn('contrib','Contribution')}
+        ${sortBtn('risk','Risk Score')}
+        <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">Risk</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map((b,i)=>{
+          const tl=timingLabel(b._timing),risk=classifyRisk(b),rc=riskCol(risk),cc=contribCol(b.contrib);
+          return `<tr style="border-top:1px solid var(--gray-100);background:${b._timing<0?'rgba(34,197,94,.02)':'transparent'};cursor:pointer;transition:background .12s"
+            onmouseover="this.style.background='rgba(34,197,94,.06)'"
+            onmouseout="this.style.background='${b._timing<0?'rgba(34,197,94,.02)':'transparent'}'"
+            onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
+            <td style="padding:9px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--gray-400)">${i+1}</td>
+            <td style="padding:9px 12px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:28px;height:28px;border-radius:7px;background:#22c55e18;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#22c55e;flex-shrink:0">${(b.name||'?')[0]}</div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--gray-900)">${b.name}</div>
+                  <div style="font-size:10px;color:var(--gray-400)">${b.sector||b.industry||b.cluster||'—'}</div>
+                </div>
+              </div>
+            </td>
+            <td style="padding:9px 12px;font-size:13px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
+            <td style="padding:9px 12px">
+              <span style="font-size:13px;font-weight:700;color:${tl.col}">${b._timing<=0?'✓ ':''} ${tl.txt}</span>
+            </td>
+            <td style="padding:9px 12px;font-size:13px;font-weight:700;color:${(b.onTimePct||0)>=80?'#22c55e':(b.onTimePct||0)>=50?'#f59e0b':'#ef4444'}">${b.onTimePct||0}%</td>
+            <td style="padding:9px 12px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:3px 10px;font-size:11px;font-weight:800">${contribFmt(b.contrib)}</span></td>
+            <td style="padding:9px 12px;font-size:12px;font-weight:700;color:var(--gray-600)">${b.riskScore||'—'}/100</td>
+            <td style="padding:9px 12px"><span style="background:${rc}18;color:${rc};border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:800">${risk}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div style="padding:10px 16px;border-top:1px solid var(--gray-100);background:#f0fdf4;display:flex;justify-content:space-between">
+      <span style="font-size:11.5px;color:#22c55e;font-weight:600">${rows.length} buyers · sorted by payment timing</span>
+      <span style="font-size:11.5px;color:#16a34a;font-weight:700">✓ Best payers first</span>
+    </div>
+  </div>
+</div>`;
+}
+
 function renderCashExposureMap(){
   var inrFmt = function(v){return v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+v;};
   var PAL = window.CEM_PALETTE;
@@ -12319,6 +12449,7 @@ function _placeholderPage(title,subtitle,icon){
     tradeRelationship:()=>_placeholderPage('Trade Relationship','Strength, tenure and transaction history with each buyer','🤝'),
     exposureAnalysis:()=>renderCashExposureMap(),
     allDrainers:()=>renderAllDrainers(),
+    allPunctual:()=>renderAllPunctual(),
     buyerComparison:()=>_placeholderPage('Buyer Comparison','Side-by-side comparison of risk, terms and payment metrics','🔍'),
     riskReport:()=>_placeholderPage('Risk Report','Consolidated risk scoring, tier changes and early warnings','⚠️'),
     financingReadiness:()=>_placeholderPage('Financing Readiness','Invoice financing eligibility, anchor scores and lender readiness','🏦'),
