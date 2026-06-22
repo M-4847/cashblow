@@ -5710,11 +5710,19 @@ function _renderBusinessDashboard(){
     },
   ];
 
+  // Extra computed values for right panels
+  const highCount   = buyers.filter(b=>classifyRisk(b)==='High').length;
+  const medCount    = buyers.filter(b=>classifyRisk(b)==='Medium').length;
+  const lowCount    = buyers.filter(b=>classifyRisk(b)==='Low').length;
+  const onTimePctAvg = buyers.length ? Math.round(buyers.reduce((s,b)=>s+(b.onTimePct||0),0)/buyers.length) : 0;
+  const overdueCount = invoices.filter(i=>i.status==='Overdue'||(!i.paidDate&&i.status!=='Paid'&&i.dueDate&&new Date(i.dueDate)<today)).length;
+  const riskBar = (count,total,col) => total>0?`<div style="height:100%;width:${Math.round(count/total*100)}%;background:${col};border-radius:2px"></div>`:'';
+
   return `
-<div id="dash-content" style="padding:16px 22px;max-width:1500px;margin:0 auto">
+<div id="dash-content" style="padding:14px 18px;width:100%;box-sizing:border-box">
 
   <!-- Header bar -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <div>
       <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:3px">Business Intelligence</div>
       <div style="font-size:20px;font-weight:900;color:var(--gray-900)">Cash Flow Dashboard</div>
@@ -5729,139 +5737,157 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- KPI Row -->
-  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px">
     ${kpis.map(k=>`
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-top:3px solid ${k.border};border-radius:10px;padding:12px 14px;position:relative;overflow:hidden">
+    <div style="background:var(--white);border:1px solid var(--gray-100);border-top:3px solid ${k.border};border-radius:10px;padding:12px 14px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div style="background:${k.bg};border-radius:8px;padding:6px">${k.icon.replace('width="22" height="22"','width="18" height="18"')}</div>
-        ${k.pill?`<span style="background:${k.pillCol}18;color:${k.pillCol};border-radius:100px;padding:2px 8px;font-size:9.5px;font-weight:800;letter-spacing:.04em">${k.pill}</span>`:''}
+        <div style="background:${k.bg};border-radius:8px;padding:6px">${k.icon.replace('width="22" height="22"','width="16" height="16"')}</div>
+        ${k.pill?`<span style="background:${k.pillCol}18;color:${k.pillCol};border-radius:100px;padding:2px 7px;font-size:9px;font-weight:800">${k.pill}</span>`:''}
       </div>
-      <div style="font-size:22px;font-weight:900;color:${k.col};letter-spacing:-.5px;line-height:1">${k.val}</div>
-      <div style="font-size:10.5px;font-weight:600;color:var(--gray-500);margin-top:5px">${k.label}</div>
-      <div style="font-size:10px;color:var(--gray-400);margin-top:2px">${k.sub}</div>
+      <div style="font-size:20px;font-weight:900;color:${k.col};letter-spacing:-.5px;line-height:1">${k.val}</div>
+      <div style="font-size:10.5px;font-weight:600;color:var(--gray-500);margin-top:4px">${k.label}</div>
+      <div style="font-size:10px;color:var(--gray-400);margin-top:1px">${k.sub}</div>
     </div>`).join('')}
   </div>
 
-  <!-- Hero + Actions Row -->
-  <div style="display:grid;grid-template-columns:1fr 310px;gap:14px;align-items:start">
+  <!-- ── Main 3-column grid ── -->
+  <div style="display:grid;grid-template-columns:1fr 260px 220px;gap:10px;align-items:start">
 
-    <!-- Top 5 Cash Drainers -->
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:16px;overflow:hidden">
-      <div style="padding:14px 18px 12px;border-bottom:1px solid var(--gray-100)">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px">
-          <span style="font-size:16px">🚨</span>
-          <span style="font-size:15px;font-weight:900;color:var(--gray-900)">Top Cash Drainers</span>
+    <!-- COL 1: Top Cash Drainers -->
+    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
+      <div style="padding:10px 14px 8px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:14px">🚨</span>
+          <span style="font-size:13px;font-weight:800;color:var(--gray-900)">Top Cash Drainers</span>
+          <span style="font-size:10px;color:var(--gray-400)">· sorted by delay</span>
         </div>
-        <div style="font-size:11.5px;color:var(--gray-500)">Customers hurting your cash flow the most — sorted by payment delay</div>
+        <button onclick="AppState.set({page:'buyerRiskProfiles'});App.onStateChange()" style="font-size:11px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700">View All →</button>
       </div>
-
       <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="background:var(--gray-50)">
-            ${['Buyer','Exposure','Avg Delay','Contribution','Risk'].map(h=>`<th style="padding:8px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
-          </tr>
-        </thead>
+        <thead><tr style="background:var(--gray-50)">
+          ${['#','Buyer','Exposure','Delay','Contrib','Risk'].map((h,i)=>`<th style="padding:6px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`).join('')}
+        </tr></thead>
         <tbody>
-          ${drainers.length ? drainers.map((b,i)=>{
-            const risk = classifyRisk(b);
-            const rc = riskCol(risk);
-            const rb = risk==='High'?'rgba(239,68,68,.04)':'transparent';
-            const cc = contribCol(b.contrib);
-            return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer;transition:background .15s"
-              onmouseover="this.style.background='${risk==='High'?'rgba(239,68,68,.08)':'rgba(99,102,241,.04)'}'"
+          ${drainers.slice(0,5).map((b,i)=>{
+            const risk=classifyRisk(b),rc=riskCol(risk),rb=risk==='High'?'rgba(239,68,68,.04)':'transparent',cc=contribCol(b.contrib);
+            return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer"
+              onmouseover="this.style.background='${risk==='High'?'rgba(239,68,68,.07)':'rgba(99,102,241,.04)'}'"
               onmouseout="this.style.background='${rb}'"
               onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-              <td style="padding:10px 14px">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <div style="width:24px;height:24px;border-radius:6px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:${rc};flex-shrink:0">${(b.name||'?')[0]}</div>
-                  <div>
-                    <div style="font-size:12.5px;font-weight:700;color:var(--gray-900)">${b.name}</div>
-                    <div style="font-size:10px;color:var(--gray-400)">${b.sector||b.industry||''}</div>
-                  </div>
+              <td style="padding:7px 8px;text-align:center;font-size:10px;color:var(--gray-400);font-weight:700">${i+1}</td>
+              <td style="padding:7px 10px">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:20px;height:20px;border-radius:5px;background:${rc}18;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:${rc};flex-shrink:0">${(b.name||'?')[0]}</div>
+                  <div style="font-size:12px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${b.name}</div>
                 </div>
               </td>
-              <td style="padding:10px 14px;font-size:13px;font-weight:800;color:var(--gray-900)">${fmt(b._exp||0)}</td>
-              <td style="padding:10px 14px">
-                <span style="font-size:12.5px;font-weight:700;color:${(b.avgDelay||0)>60?'#ef4444':(b.avgDelay||0)>30?'#f97316':'#10b981'}">${b.avgDelay||0} days</span>
-              </td>
-              <td style="padding:10px 14px">
-                <span style="display:inline-block;background:${cc}18;color:${cc};border-radius:100px;padding:2px 8px;font-size:10.5px;font-weight:800">${contribFmt(b.contrib)}</span>
-              </td>
-              <td style="padding:10px 14px">
-                <span style="display:inline-block;background:${rc}18;color:${rc};border-radius:6px;padding:3px 9px;font-size:10px;font-weight:800;letter-spacing:.04em">${risk}</span>
-              </td>
+              <td style="padding:7px 10px;font-size:12px;font-weight:800;color:var(--gray-900);white-space:nowrap">${fmt(b._exp||0)}</td>
+              <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${(b.avgDelay||0)>60?'#ef4444':(b.avgDelay||0)>30?'#f97316':'#10b981'};white-space:nowrap">${b.avgDelay||0}d</td>
+              <td style="padding:7px 10px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:2px 7px;font-size:10px;font-weight:800">${contribFmt(b.contrib)}</span></td>
+              <td style="padding:7px 10px"><span style="background:${rc}18;color:${rc};border-radius:5px;padding:2px 7px;font-size:9.5px;font-weight:800">${risk}</span></td>
             </tr>`;
-          }).join('') : `<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--gray-400);font-size:13px">No exposure data available</td></tr>`}
+          }).join('')}
         </tbody>
       </table>
-
-      ${drainers.length ? `<div style="padding:12px 24px;border-top:1px solid var(--gray-100);background:var(--gray-50);display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:11.5px;color:var(--gray-500)">Top ${drainers.length} buyers · total: <strong style="color:var(--gray-800)">${fmt(totalDrainerExp)}</strong></span>
-        <button onclick="AppState.set({page:'buyerRiskProfiles'});App.onStateChange()" style="font-size:11.5px;color:#6366f1;background:none;border:none;cursor:pointer;font-weight:700">View All Buyers →</button>
-      </div>` : ''}
-    </div>
-
-    <!-- Recommended Actions -->
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div style="font-size:12px;font-weight:800;color:var(--gray-900);padding:0 0 6px">Recommended Actions</div>
-      ${drainers.filter(b=>classifyRisk(b)!=='Low').slice(0,5).map(b=>{
-        const risk = classifyRisk(b);
-        const rc = riskCol(risk);
-        const acts = actionMap[risk]||actionMap['Medium'];
-        return `<div style="background:var(--white);border:1px solid ${rc}30;border-left:3px solid ${rc};border-radius:10px;padding:10px 12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <div style="font-size:11.5px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
-            <span style="background:${rc}18;color:${rc};border-radius:100px;padding:2px 7px;font-size:9px;font-weight:800;flex-shrink:0;margin-left:4px">${risk}</span>
-          </div>
-          <div style="font-size:10px;color:var(--gray-500);margin-bottom:6px">${fmt(b._exp||0)} · ${b.avgDelay||0} days delay</div>
-          ${acts.map(fn=>`<div style="display:flex;align-items:flex-start;gap:5px;margin-bottom:4px">
-            <span style="color:${rc};font-size:11px;flex-shrink:0;margin-top:1px">⚠</span>
-            <span style="font-size:10.5px;color:var(--gray-700);line-height:1.4">${fn(b)}</span>
-          </div>`).join('')}
-        </div>`;
-      }).join('')}
-      ${!drainers.length?`<div style="background:var(--gray-50);border-radius:12px;padding:24px;text-align:center;color:var(--gray-400);font-size:12px">No actions required</div>`:''}
-    </div>
-
-  </div>
-
-  <!-- Portfolio Insights Row -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px">
-    ${[
-      {
-        icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#6366f1" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"/></svg>',
-        label:'Avg Collection Delay', val: avgDelay+' days',
-        sub: avgDelay>30?'Above healthy range (15-20d)':'Within healthy range',
-        col:'#6366f1', bg:'rgba(99,102,241,.08)'
-      },
-      {
-        icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"/></svg>',
-        label:'On-Time Payment Rate',
-        val: (buyers.length?Math.round(buyers.reduce((s,b)=>s+(b.onTimePct||0),0)/buyers.length):0)+'%',
-        sub: buyers.length+' buyers tracked',
-        col:'#10b981', bg:'rgba(16,185,129,.08)'
-      },
-      {
-        icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round"/></svg>',
-        label:'Total Invoices Tracked', val: totalInvoices.toLocaleString('en-IN'),
-        sub: invoices.filter(i=>i.status==='Overdue'||(!i.paidDate&&i.status!=='Paid')).length+' overdue',
-        col:'#f59e0b', bg:'rgba(245,158,11,.08)'
-      },
-      {
-        icon:'<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="2"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"/></svg>',
-        label:'High Risk Buyers', val: highRiskBuyers.length+' / '+totalBuyers,
-        sub: highRiskBuyers.length>0?'Immediate action needed':'Portfolio looks healthy',
-        col:'#ef4444', bg:'rgba(239,68,68,.08)'
-      },
-    ].map(k=>`
-    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px">
-      <div style="background:${k.bg};border-radius:8px;padding:8px;flex-shrink:0">${k.icon}</div>
-      <div style="min-width:0">
-        <div style="font-size:16px;font-weight:800;color:${k.col};letter-spacing:-.3px;line-height:1">${k.val}</div>
-        <div style="font-size:10.5px;font-weight:600;color:var(--gray-600);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${k.label}</div>
-        <div style="font-size:10px;color:var(--gray-400);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${k.sub}</div>
+      <div style="padding:8px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10.5px;color:var(--gray-500)">Top 5 of ${totalBuyers} buyers · <strong style="color:var(--gray-700)">${fmt(totalDrainerExp)}</strong></span>
+        <span style="font-size:10px;color:var(--gray-400)">${overdueCount} overdue invoices</span>
       </div>
-    </div>`).join('')}
+
+      <!-- Portfolio stats below drainers -->
+      <div style="padding:10px 14px;border-top:1px solid var(--gray-100)">
+        <div style="font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Portfolio Metrics</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+          ${[
+            {l:'Avg Delay',v:avgDelay+'d',c:'#6366f1'},
+            {l:'On-Time %',v:onTimePctAvg+'%',c:'#10b981'},
+            {l:'Overdue',v:fmt(overdueAmtCapped),c:'#ef4444'},
+            {l:'Total Inv.',v:totalInvoices,c:'#f59e0b'},
+          ].map(m=>`<div style="background:var(--gray-50);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:800;color:${m.c}">${m.v}</div>
+            <div style="font-size:9.5px;color:var(--gray-400);margin-top:2px">${m.l}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 2: Recommended Actions -->
+    <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;overflow:hidden">
+      <div style="padding:10px 14px 8px;border-bottom:1px solid var(--gray-100)">
+        <div style="font-size:13px;font-weight:800;color:var(--gray-900)">Recommended Actions</div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:1px">Priority follow-ups</div>
+      </div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:6px">
+        ${drainers.filter(b=>classifyRisk(b)!=='Low').slice(0,5).map(b=>{
+          const risk=classifyRisk(b),rc=riskCol(risk),acts=actionMap[risk]||actionMap['Medium'];
+          return `<div style="border:1px solid ${rc}25;border-left:3px solid ${rc};border-radius:8px;padding:8px 10px;background:${rc}05">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div style="font-size:11px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${b.name}</div>
+              <span style="background:${rc}18;color:${rc};border-radius:100px;padding:1px 6px;font-size:8.5px;font-weight:800;flex-shrink:0">${risk}</span>
+            </div>
+            <div style="font-size:9.5px;color:var(--gray-500);margin-bottom:4px">${fmt(b._exp||0)} · ${b.avgDelay||0}d delay</div>
+            ${acts.slice(0,2).map(fn=>`<div style="display:flex;gap:4px;margin-bottom:2px">
+              <span style="color:${rc};font-size:10px;flex-shrink:0">⚠</span>
+              <span style="font-size:10px;color:var(--gray-700);line-height:1.35">${fn(b)}</span>
+            </div>`).join('')}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- COL 3: Risk Breakdown + Quick Stats -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <!-- Risk Distribution -->
+      <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:12px 14px">
+        <div style="font-size:12px;font-weight:800;color:var(--gray-900);margin-bottom:10px">Risk Distribution</div>
+        ${[
+          {l:'High Risk',n:highCount,c:'#ef4444',bg:'rgba(239,68,68,.1)'},
+          {l:'Medium Risk',n:medCount,c:'#f97316',bg:'rgba(249,115,22,.1)'},
+          {l:'Low Risk',n:lowCount,c:'#10b981',bg:'rgba(16,185,129,.1)'},
+        ].map(r=>`
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="font-size:10.5px;font-weight:600;color:var(--gray-700)">${r.l}</span>
+            <span style="font-size:10.5px;font-weight:800;color:${r.c}">${r.n} buyers</span>
+          </div>
+          <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${totalBuyers>0?Math.round(r.n/totalBuyers*100):0}%;background:${r.c};border-radius:3px"></div>
+          </div>
+        </div>`).join('')}
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:10px">
+          ${[
+            {l:'High',v:highCount,c:'#ef4444'},
+            {l:'Med',v:medCount,c:'#f97316'},
+            {l:'Low',v:lowCount,c:'#10b981'},
+          ].map(r=>`<div style="background:${r.c}10;border-radius:7px;padding:6px;text-align:center">
+            <div style="font-size:16px;font-weight:900;color:${r.c}">${r.v}</div>
+            <div style="font-size:9px;color:var(--gray-500);margin-top:1px">${r.l}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Portfolio Health -->
+      <div style="background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:12px 14px">
+        <div style="font-size:12px;font-weight:800;color:var(--gray-900);margin-bottom:10px">Portfolio Health</div>
+        ${[
+          {l:'Cash Health Score',v:healthScore+'/100',bar:healthScore,c:healthCol},
+          {l:'On-Time Rate',v:onTimePctAvg+'%',bar:onTimePctAvg,c:'#10b981'},
+          {l:'Concentration Risk',v:concPct+'%',bar:Math.min(concPct,100),c:'#f59e0b'},
+          {l:'Overdue Ratio',v:overdueRatio+'%',bar:Math.min(overdueRatio,100),c:'#ef4444'},
+        ].map(m=>`
+        <div style="margin-bottom:7px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+            <span style="font-size:10px;color:var(--gray-600)">${m.l}</span>
+            <span style="font-size:10px;font-weight:800;color:${m.c}">${m.v}</span>
+          </div>
+          <div style="height:4px;background:var(--gray-100);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${m.bar}%;background:${m.c};border-radius:2px"></div>
+          </div>
+        </div>`).join('')}
+      </div>
+
+    </div>
   </div>
 
 </div>`;
