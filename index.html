@@ -2286,6 +2286,147 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 
 </div>
 
+<!-- ════════════════════════════════════════
+     MANUAL BUYER ENTRY — Slide-over Drawer
+════════════════════════════════════════ -->
+<div id="add-buyer-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,.45);backdrop-filter:blur(3px)" onclick="if(event.target===this)addBuyerClose()"></div>
+<div id="add-buyer-drawer" style="position:fixed;top:0;right:-740px;width:740px;height:100vh;background:#fff;z-index:2001;box-shadow:-8px 0 40px rgba(0,0,0,.15);transition:right .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden">
+
+  <!-- Drawer header -->
+  <div style="padding:18px 24px 14px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff">
+    <div>
+      <div style="font-size:17px;font-weight:800;color:#0F172A">Add New Buyer</div>
+      <div style="font-size:11.5px;color:#94A3B8;margin-top:2px">Enter minimum details — system fills the rest</div>
+    </div>
+    <button onclick="addBuyerClose()" style="width:32px;height:32px;border-radius:8px;background:#F1F5F9;border:none;cursor:pointer;font-size:16px;color:#64748B;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+
+  <!-- Two-column body -->
+  <div style="display:grid;grid-template-columns:1fr 260px;flex:1;overflow:hidden;min-height:0">
+
+    <!-- LEFT: Form -->
+    <div style="overflow-y:auto;padding:20px 24px;border-right:1px solid #E2E8F0">
+
+      <!-- Section 1: Basic Details -->
+      <div style="font-size:9.5px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">① Basic Details</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Buyer Name <span style="color:#EF4444">*</span></label>
+          <input id="ab-name" type="text" placeholder="e.g. ABC Industries Pvt Ltd" oninput="addBuyerEnrich()"
+            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+          <div id="ab-name-suggestions" style="display:none;background:#fff;border:1px solid #E2E8F0;border-radius:8px;margin-top:4px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden"></div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">GSTIN <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional — auto-fills State)</span></label>
+          <input id="ab-gstin" type="text" placeholder="e.g. 27AABCD1234E1Z5" oninput="addBuyerEnrich()" maxlength="15"
+            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;font-family:monospace;letter-spacing:.05em;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">State <span style="color:#EF4444">*</span></label>
+            <input id="ab-state" type="text" placeholder="e.g. Maharashtra" oninput="addBuyerEnrich()"
+              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">City <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional)</span></label>
+            <input id="ab-city" type="text" placeholder="e.g. Pune" oninput="addBuyerEnrich()"
+              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Sector / Industry <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional)</span></label>
+          <input id="ab-sector" type="text" placeholder="e.g. Manufacturing, Textiles, Chemicals…" oninput="addBuyerEnrich()"
+            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+        </div>
+      </div>
+
+      <!-- Section 2: Payment Terms -->
+      <div style="font-size:9.5px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">② Payment Terms</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Credit Days</label>
+          <input id="ab-credit-days" type="number" value="30" min="0" max="365"
+            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Payment Terms</label>
+          <select id="ab-trade-term" style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;background:#fff;transition:border .15s" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+            <option value="Credit">Credit</option>
+            <option value="Advance">Advance</option>
+            <option value="LC">LC</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Credit Limit (₹)</label>
+          <input id="ab-credit-limit" type="number" placeholder="e.g. 500000"
+            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+        </div>
+      </div>
+
+      <!-- Section 3: Contact -->
+      <div style="font-size:9.5px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">③ Contact Details <span style="font-size:9px;color:#94A3B8;font-weight:400;text-transform:none;letter-spacing:0">(Optional)</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Contact Person</label>
+            <input id="ab-contact" type="text" placeholder="e.g. Rajesh Kumar"
+              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Phone</label>
+            <input id="ab-phone" type="text" placeholder="+91 98XXX XXXXX"
+              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Email</label>
+          <input id="ab-email" type="email" placeholder="buyer@company.com"
+            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <div id="ab-error" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;font-size:12px;color:#EF4444;margin-bottom:12px"></div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:10px;padding-top:4px">
+        <button onclick="addBuyerClose()" style="flex:1;padding:11px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-weight:600;color:#64748B;background:#fff;cursor:pointer">Cancel</button>
+        <button onclick="addBuyerSave()" id="ab-save-btn" style="flex:2;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#4F46E5,#6366F1);cursor:pointer;box-shadow:0 4px 12px rgba(79,70,229,.3)">
+          Create Buyer Profile →
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Auto Intelligence Preview -->
+    <div style="background:#F8FAFC;overflow-y:auto;padding:18px 16px;border-left:1px solid #E2E8F0">
+      <div style="font-size:10px;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:6px">
+        <svg width="12" height="12" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" stroke-linecap="round"/></svg>
+        Auto Intelligence
+      </div>
+
+      <div id="ab-preview" style="display:flex;flex-direction:column;gap:10px">
+        <!-- Populated by addBuyerEnrich() -->
+        <div style="text-align:center;padding:32px 16px;color:#CBD5E1">
+          <div style="font-size:28px;margin-bottom:8px">🧠</div>
+          <div style="font-size:11.5px;font-weight:600;color:#94A3B8">Start typing a buyer name</div>
+          <div style="font-size:10.5px;color:#CBD5E1;margin-top:4px">Intelligence fields will appear here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- -------- APP WRAPPER -------- -->
 <div id="cfiq-app">
 
@@ -10118,9 +10259,15 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
     }
 
     return `<div class="page-wrap fade-in" style="max-width:none;width:100%">
-      <div class="page-header">
-        <h1 class="page-title">Buyer Risk Profiles</h1>
-        <p class="page-sub">360° payment risk intelligence — ${profiles.length} buyers in portfolio</p>
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <h1 class="page-title">Buyer Risk Profiles</h1>
+          <p class="page-sub">360° payment risk intelligence — ${profiles.length} buyers in portfolio</p>
+        </div>
+        <button onclick="window.addBuyerOpen()" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#4F46E5,#6366F1);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(79,70,229,.3);flex-shrink:0;transition:transform .12s" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+          <svg width="15" height="15" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.5"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
+          Add Buyer
+        </button>
       </div>
 
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
@@ -11192,6 +11339,250 @@ window._tdbSwitch = function(){
     if(va){ va.style.display=''; va.style.color='#22c55e'; va.onclick=function(){AppState.set({page:'allPunctual'});App.onStateChange();}; }
   }
 };
+
+/* ═══════════════════════════════════════════════
+   MANUAL BUYER ENTRY — Auto-Enrichment Engine
+═══════════════════════════════════════════════ */
+(function(){
+
+const GSTIN_STATES={
+  '01':'Jammu & Kashmir','02':'Himachal Pradesh','03':'Punjab','04':'Chandigarh',
+  '05':'Uttarakhand','06':'Haryana','07':'Delhi','08':'Rajasthan','09':'Uttar Pradesh',
+  '10':'Bihar','11':'Sikkim','18':'Assam','19':'West Bengal','20':'Jharkhand',
+  '21':'Odisha','22':'Chhattisgarh','23':'Madhya Pradesh','24':'Gujarat',
+  '27':'Maharashtra','28':'Andhra Pradesh','29':'Karnataka','30':'Goa',
+  '32':'Kerala','33':'Tamil Nadu','34':'Puducherry','36':'Telangana','37':'Andhra Pradesh'
+};
+
+const NAME_CITY_MAP=[
+  ['peenya','Peenya','Karnataka'],['rajkot','Rajkot','Gujarat'],['coimbatore','Coimbatore','Tamil Nadu'],
+  ['morbi','Morbi','Gujarat'],['pune','Pune','Maharashtra'],['mumbai','Mumbai','Maharashtra'],
+  ['delhi','Delhi','Delhi'],['surat','Surat','Gujarat'],['ahmedabad','Ahmedabad','Gujarat'],
+  ['ludhiana','Ludhiana','Punjab'],['hyderabad','Hyderabad','Telangana'],
+  ['bangalore','Bengaluru','Karnataka'],['bengaluru','Bengaluru','Karnataka'],
+  ['chennai','Chennai','Tamil Nadu'],['kolkata','Kolkata','West Bengal'],
+  ['noida','Noida','Uttar Pradesh'],['nagpur','Nagpur','Maharashtra'],
+  ['jaipur','Jaipur','Rajasthan'],['bhopal','Bhopal','Madhya Pradesh'],
+  ['indore','Indore','Madhya Pradesh'],['vadodara','Vadodara','Gujarat'],
+  ['chandigarh','Chandigarh','Chandigarh'],['kochi','Kochi','Kerala'],
+  ['patna','Patna','Bihar'],['ranchi','Ranchi','Jharkhand'],
+];
+
+const NAME_SECTOR_MAP=[
+  [/auto|motor|gear|vehicle|wheel/,'Automotive'],
+  [/textile|fabric|garment|cotton|weav|yarn/,'Textiles'],
+  [/pharma|medic|health|hospital|drug|biotech/,'Healthcare'],
+  [/steel|metal|iron|alumin|copper|alloy|casting|forge/,'Metals'],
+  [/chemical|polymer|plastic|petro|rubber/,'Chemicals'],
+  [/food|agro|agri|grain|rice|wheat|fmcg/,'FMCG'],
+  [/tech|software|digital|system|semiconductor/,'Technology'],
+  [/cable|wire|power|energy|electric/,'Electronics'],
+  [/construct|infra|cement|building|real/,'Construction'],
+  [/pump|machine|tool|equipment|engineer|component|bearing|instrument|precision/,'Manufacturing'],
+  [/trading|trader|merchant|commerce|distribut/,'Trading'],
+  [/ceramic|tile|porcelain/,'Ceramics'],
+  [/aerospace|defence|defense/,'Aerospace'],
+  [/packaging|pack/,'Packaging'],
+];
+
+const REGION_MAP={
+  'Karnataka':'South India','Tamil Nadu':'South India','Kerala':'South India',
+  'Telangana':'South India','Andhra Pradesh':'South India','Puducherry':'South India',
+  'Maharashtra':'West India','Gujarat':'West India','Goa':'West India','Rajasthan':'West India',
+  'Delhi':'North India','Haryana':'North India','Punjab':'North India',
+  'Himachal Pradesh':'North India','Uttarakhand':'North India','Chandigarh':'North India',
+  'West Bengal':'East India','Odisha':'East India','Bihar':'East India',
+  'Jharkhand':'East India','Assam':'East India',
+  'Uttar Pradesh':'Central India','Madhya Pradesh':'Central India','Chhattisgarh':'Central India',
+};
+
+let _nextId=1;
+function genBuyerId(){
+  const existing=DB.buyers||[];
+  const maxNum=existing.reduce((m,b)=>{const n=parseInt((b.id||'').replace(/\D/g,''))||0;return Math.max(m,n);},0);
+  _nextId=maxNum+1;
+  return 'BUY-'+String(_nextId).padStart(6,'0');
+}
+
+function enrichFromInputs(){
+  const name=(document.getElementById('ab-name')||{}).value||'';
+  const gstin=(document.getElementById('ab-gstin')||{}).value||'';
+  const city=(document.getElementById('ab-city')||{}).value||'';
+  const sector=(document.getElementById('ab-sector')||{}).value||'';
+  const state=(document.getElementById('ab-state')||{}).value||'';
+
+  const result={name,gstin,city,sector,state,region:'',cluster:''};
+
+  // GSTIN → State
+  if(gstin.length>=2){
+    const code=gstin.substring(0,2);
+    if(GSTIN_STATES[code]&&!state) result.stateFromGstin=GSTIN_STATES[code];
+  }
+
+  // Name → City + State
+  if(name){
+    const nl=name.toLowerCase();
+    for(const [kw,c,s] of NAME_CITY_MAP){
+      if(nl.includes(kw)&&!city){result.cityInferred=c;if(!state&&!result.stateFromGstin)result.stateInferred=s;break;}
+    }
+    // Sector from name
+    if(!sector){
+      for(const [pat,sec] of NAME_SECTOR_MAP){
+        if(pat.test(nl)){result.sectorInferred=sec;break;}
+      }
+    }
+  }
+
+  // Effective values
+  const effState=state||result.stateFromGstin||result.stateInferred||'';
+  const effCity=city||result.cityInferred||'';
+  const effSector=sector||result.sectorInferred||'';
+  result.effState=effState; result.effCity=effCity; result.effSector=effSector;
+
+  // Region
+  result.region=REGION_MAP[effState]||'';
+
+  // Cluster
+  if(effCity||effSector){
+    result.cluster=(effCity&&effSector)?`${effCity} ${effSector} Cluster`
+      :effCity?`${effCity} Cluster`:`${effSector} Cluster`;
+  }
+
+  // Buyer ID
+  result.buyerId=genBuyerId();
+
+  // Auto-fill empty fields in form
+  if(result.stateFromGstin&&!state){
+    const stEl=document.getElementById('ab-state');
+    if(stEl&&!stEl.value){stEl.value=result.stateFromGstin;stEl.style.borderColor='#10B981';}
+  }
+  if(result.cityInferred&&!city){
+    const cEl=document.getElementById('ab-city');
+    if(cEl&&!cEl.value){cEl.value=result.cityInferred;cEl.style.borderColor='#10B981';}
+  }
+  if(result.sectorInferred&&!sector){
+    const sEl=document.getElementById('ab-sector');
+    if(sEl&&!sEl.value){sEl.value=result.sectorInferred;sEl.style.borderColor='#10B981';}
+  }
+
+  return result;
+}
+
+function renderPreview(r){
+  const pv=document.getElementById('ab-preview');
+  if(!pv||!r.name) return;
+
+  const initials=r.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
+  const rows=[
+    {icon:'🆔',label:'Buyer ID',val:r.buyerId,col:'#4F46E5'},
+    {icon:'📍',label:'State',val:r.effState||'—',col:r.effState?'#0F172A':'#CBD5E1',sub:r.stateFromGstin?'from GSTIN':r.stateInferred?'inferred':''},
+    {icon:'🏙',label:'City',val:r.effCity||'—',col:r.effCity?'#0F172A':'#CBD5E1',sub:r.cityInferred&&!r.effCity?'':''},
+    {icon:'🏭',label:'Sector',val:r.effSector||'—',col:r.effSector?'#0F172A':'#CBD5E1',sub:r.sectorInferred?'inferred':''},
+    {icon:'🔗',label:'Cluster',val:r.cluster||'—',col:r.cluster?'#6366F1':'#CBD5E1'},
+    {icon:'🌍',label:'Region',val:r.region||'—',col:r.region?'#0F172A':'#CBD5E1'},
+    {icon:'⚡',label:'Risk',val:'Neutral',col:'#F59E0B'},
+    {icon:'📊',label:'Initial Score',val:'70/100',col:'#6366F1'},
+  ];
+
+  pv.innerHTML=`
+    <!-- Buyer avatar -->
+    <div style="background:linear-gradient(135deg,#4F46E5,#6366F1);border-radius:12px;padding:14px;text-align:center;margin-bottom:4px">
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.2);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">${initials}</div>
+      <div style="font-size:13px;font-weight:700;color:#fff;word-break:break-word">${r.name}</div>
+      ${r.gstin?`<div style="font-size:9.5px;color:rgba(255,255,255,.6);margin-top:2px;font-family:monospace">${r.gstin}</div>`:''}
+    </div>
+
+    <!-- Intelligence fields -->
+    ${rows.map(row=>`
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:9px">
+      <span style="font-size:14px;flex-shrink:0">${row.icon}</span>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:9px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em">${row.label}</div>
+        <div style="font-size:12px;font-weight:700;color:${row.col};margin-top:1px">${row.val}</div>
+        ${row.sub?`<div style="font-size:9px;color:#10B981;margin-top:1px">✓ ${row.sub}</div>`:''}
+      </div>
+    </div>`).join('')}
+  `;
+}
+
+window.addBuyerOpen=function(){
+  document.getElementById('add-buyer-overlay').style.display='block';
+  requestAnimationFrame(()=>{document.getElementById('add-buyer-drawer').style.right='0';});
+  document.getElementById('ab-name').focus();
+};
+
+window.addBuyerClose=function(){
+  document.getElementById('add-buyer-drawer').style.right='-740px';
+  setTimeout(()=>{ document.getElementById('add-buyer-overlay').style.display='none'; },350);
+  // Reset form
+  ['ab-name','ab-gstin','ab-state','ab-city','ab-sector','ab-contact','ab-phone','ab-email'].forEach(id=>{
+    const el=document.getElementById(id); if(el){el.value='';el.style.borderColor='#E2E8F0';}
+  });
+  const cd=document.getElementById('ab-credit-days'); if(cd) cd.value='30';
+  const ab=document.getElementById('ab-preview'); if(ab) ab.innerHTML=`<div style="text-align:center;padding:32px 16px"><div style="font-size:28px;margin-bottom:8px">🧠</div><div style="font-size:11.5px;font-weight:600;color:#94A3B8">Start typing a buyer name</div></div>`;
+  const err=document.getElementById('ab-error'); if(err) err.style.display='none';
+};
+
+window.addBuyerEnrich=function(){
+  const r=enrichFromInputs();
+  renderPreview(r);
+};
+
+window.addBuyerSave=async function(){
+  const name=(document.getElementById('ab-name')||{}).value.trim();
+  const state=(document.getElementById('ab-state')||{}).value.trim();
+  if(!name){
+    const err=document.getElementById('ab-error'); if(err){err.textContent='Buyer Name is required.';err.style.display='block';}
+    document.getElementById('ab-name').focus(); return;
+  }
+
+  const r=enrichFromInputs();
+  const btn=document.getElementById('ab-save-btn');
+  if(btn){btn.textContent='Creating…';btn.disabled=true;}
+
+  const payload={
+    id: r.buyerId,
+    name, gstin:(document.getElementById('ab-gstin')||{}).value.trim()||'',
+    code:(name.replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase()||'GEN').padEnd(3,'X'),
+    industry:r.effSector, cluster:r.effCity, state:r.effState,
+    trade_term:(document.getElementById('ab-trade-term')||{}).value||'Credit',
+    credit_limit:parseInt((document.getElementById('ab-credit-limit')||{}).value)||0,
+    contact_name:(document.getElementById('ab-contact')||{}).value.trim(),
+    contact_phone:(document.getElementById('ab-phone')||{}).value.trim(),
+    contact_email:(document.getElementById('ab-email')||{}).value.trim(),
+    risk_score:70, outstanding:0,
+  };
+
+  try{
+    if(API.isConfigured()){
+      await API.post('/api/buyers', payload);
+    }
+    // Add to local DB immediately
+    DB.buyers.push({
+      id:payload.id, name:payload.name, code:payload.code,
+      gstin:payload.gstin, contact:payload.contact_name, phone:payload.contact_phone,
+      email:payload.contact_email, tradeTerm:payload.trade_term,
+      cluster:payload.cluster, state:payload.state, industry:payload.industry,
+      sector:payload.industry, creditLimit:payload.credit_limit,
+      currentExposure:0, avgMonthlyPurchase:0, riskScore:70,
+      avgDelay:0, highestDelay:0, onTimePct:100, overdueCount:0,
+      concentrationRisk:'Low', tradeTermBreachPct:0, since:new Date().toISOString(),
+      _invoiceCount:0, _overdueAmount:0, _exposurePct:0, scenario:'', story:'',
+    });
+    addBuyerClose();
+    Toast.show('Buyer "'+name+'" created successfully','success',3000);
+    // Navigate to the new buyer's profile
+    setTimeout(()=>{
+      window._brpState={buyerId:payload.id,buyerName:name,tab:'overview'};
+      AppState.set({page:'buyerRiskProfiles'}); App.onStateChange();
+    },400);
+  }catch(e){
+    const err=document.getElementById('ab-error'); if(err){err.textContent='Save failed: '+(e.message||'Unknown error');err.style.display='block';}
+    if(btn){btn.textContent='Create Buyer Profile →';btn.disabled=false;}
+  }
+};
+
+})();
 
 window.cfiqToggleGroup=function(id){
   const el=document.getElementById(id);
