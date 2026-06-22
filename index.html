@@ -142,17 +142,22 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
 .sidebar-logo:hover{background:rgba(255,255,255,.04)}
 
 /* ── Dashboard Responsive Layout ── */
+/* On any screen smaller than full monitor: allow the main area to scroll */
+@media(max-width:1500px){
+  .main.main-locked{overflow-y:auto!important}
+  #dash-content{height:auto!important;overflow:visible!important}
+  #dash-grid{overflow:visible!important;min-height:unset!important}
+}
 /* Laptop (≤1440px): shrink columns */
 @media(max-width:1440px){
-  .main{padding:14px 16px!important}
-  #dash-kpi{gap:8px!important}
-  #dash-grid{grid-template-columns:1fr 230px 190px 175px!important;gap:8px!important}
+  .main{padding:12px 14px!important}
+  #dash-kpi{gap:8px!important;margin-bottom:10px!important}
+  #dash-grid{grid-template-columns:1fr 225px 185px 180px!important;gap:8px!important}
 }
-/* Small laptop (≤1280px): drop 4th column below */
+/* Small laptop (≤1280px): drop 4th column */
 @media(max-width:1280px){
-  #dash-grid{grid-template-columns:1fr 220px 185px!important}
+  #dash-grid{grid-template-columns:1fr 215px 180px!important}
   #dash-col4{display:none!important}
-  #dash-kpi .kpi-val{font-size:18px!important}
 }
 /* Tablet-ish (≤1100px): 2 columns */
 @media(max-width:1100px){
@@ -160,15 +165,11 @@ html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:va
   #dash-col3{display:none!important}
   #dash-kpi{grid-template-columns:repeat(3,1fr)!important}
 }
-/* Small (≤900px): single column, KPI wraps */
+/* Small (≤900px): single column */
 @media(max-width:900px){
   #dash-grid{grid-template-columns:1fr!important}
   #dash-col2,#dash-col3,#dash-col4{display:none!important}
   #dash-kpi{grid-template-columns:repeat(2,1fr)!important}
-}
-/* KPI card text scaling */
-@media(max-width:1280px){
-  .kpi-card{padding:10px 12px!important}
 }
 /* filter pills */
 .filter-pill-wrap{position:relative;margin:2px 8px 2px}
