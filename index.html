@@ -9006,18 +9006,69 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 
             <div class="brp-card">
-              <div class="brp-card-hdr">Buyer Information</div>
+              <div class="brp-card-hdr" style="display:flex;align-items:center;justify-content:space-between">
+                Buyer Information
+                <button id="brp-edit-btn-${b.id}" onclick="brpToggleEdit('${b.id}')"
+                  style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#4F46E5;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:7px;padding:4px 10px;cursor:pointer;transition:all .15s"
+                  onmouseover="this.style.background='#E0E7FF'" onmouseout="this.style.background='#EEF2FF'">
+                  <svg width="11" height="11" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Edit
+                </button>
+              </div>
               <div class="brp-card-body" style="display:flex;flex-direction:column;gap:7px">
+
+                <!-- City + Sector highlight row -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+                  <div id="brp-city-display-${b.id}" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px">
+                    <div style="font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">City</div>
+                    <div style="font-size:13px;font-weight:700;color:${b.cluster?'#0F172A':'#CBD5E1'}">${b.cluster||'—  Not set'}</div>
+                  </div>
+                  <div id="brp-sector-display-${b.id}" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px">
+                    <div style="font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Sector</div>
+                    <div style="font-size:13px;font-weight:700;color:${b.industry?'#0F172A':'#CBD5E1'}">${b.industry||'—  Not set'}</div>
+                  </div>
+                </div>
+
+                <!-- Inline edit form (hidden by default) -->
+                <div id="brp-edit-form-${b.id}" style="display:none;background:#F8FAFC;border:1px solid #C7D2FE;border-radius:10px;padding:12px;margin-bottom:4px">
+                  <div style="font-size:10px;font-weight:700;color:#4F46E5;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+                    <svg width="11" height="11" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke-linecap="round"/></svg>
+                    Quick Edit — City &amp; Sector
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+                    <div>
+                      <label style="font-size:10px;font-weight:600;color:#64748B;display:block;margin-bottom:4px">City</label>
+                      <input id="brp-edit-city-${b.id}" type="text" value="${b.cluster||''}" placeholder="e.g. Mumbai"
+                        style="width:100%;padding:7px 10px;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;color:#0F172A;outline:none;background:#fff;box-sizing:border-box"
+                        onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+                    </div>
+                    <div>
+                      <label style="font-size:10px;font-weight:600;color:#64748B;display:block;margin-bottom:4px">Sector</label>
+                      <input id="brp-edit-sector-${b.id}" type="text" value="${b.industry||''}" placeholder="e.g. Manufacturing"
+                        style="width:100%;padding:7px 10px;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;color:#0F172A;outline:none;background:#fff;box-sizing:border-box"
+                        onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:6px;justify-content:flex-end">
+                    <button onclick="brpToggleEdit('${b.id}')"
+                      style="font-size:11px;font-weight:600;color:#64748B;background:#fff;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;cursor:pointer">
+                      Cancel
+                    </button>
+                    <button onclick="brpSaveInfo('${b.id}')"
+                      style="font-size:11px;font-weight:600;color:#fff;background:#4F46E5;border:none;border-radius:7px;padding:5px 14px;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,.3)">
+                      Save
+                    </button>
+                  </div>
+                </div>
+
                 ${[
                   ['Buyer Name',   b.name],
-                  ['GSTIN',        `<code style="font-size:10.5px;background:var(--gray-100);padding:2px 7px;border-radius:4px;letter-spacing:.03em">${b.gstin}</code>`],
-                  ['Industry',     b.industry],
-                  ['State',        b.state],
-                  ['Cluster',      b.cluster],
-                  ['Trade Terms',  `<span style="padding:2px 8px;background:var(--blue-50);color:var(--blue-600);border-radius:10px;font-size:11px;font-weight:600">${b.tradeTerm}</span>`],
-                  ['Contact',      b.contact],
-                  ['Phone',        b.phone],
-                  ['Member Since', b.since],
+                  ['GSTIN',        `<code style="font-size:10.5px;background:var(--gray-100);padding:2px 7px;border-radius:4px;letter-spacing:.03em">${b.gstin||'—'}</code>`],
+                  ['State',        b.state||'—'],
+                  ['Trade Terms',  `<span style="padding:2px 8px;background:#EEF2FF;color:#4F46E5;border-radius:10px;font-size:11px;font-weight:600">${b.tradeTerm||'Credit'}</span>`],
+                  ['Contact',      b.contact||'—'],
+                  ['Phone',        b.phone||'—'],
+                  ['Member Since', b.since ? new Date(b.since).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '—'],
                 ].map(([l,v])=>`<div class="brp-row"><span class="brp-lbl">${l}</span><span class="brp-val">${v}</span></div>`).join('')}
               </div>
             </div>
@@ -10915,6 +10966,47 @@ ${rows.map(row=>`<tr>
 /* -- BRP global handlers -- */
 function brpOpen(id){window._brpState=Object.assign(window._brpState||{},{buyerId:id,tab:'overview'});AppState.set({page:'buyerRiskProfiles'});}
 function brpBack(){window._brpState=Object.assign(window._brpState||{},{buyerId:null});AppState.set({page:'buyerRiskProfiles'});}
+
+function brpToggleEdit(id){
+  const form=document.getElementById('brp-edit-form-'+id);
+  const btn=document.getElementById('brp-edit-btn-'+id);
+  if(!form) return;
+  const open=form.style.display==='none'||!form.style.display;
+  form.style.display=open?'block':'none';
+  if(btn) btn.textContent=open?'✕ Cancel':'✏ Edit';
+}
+
+async function brpSaveInfo(id){
+  const cityEl=document.getElementById('brp-edit-city-'+id);
+  const sectorEl=document.getElementById('brp-edit-sector-'+id);
+  if(!cityEl||!sectorEl) return;
+  const city=cityEl.value.trim();
+  const sector=sectorEl.value.trim();
+  const btn=document.querySelector('#brp-edit-form-'+id+' button:last-child');
+  if(btn){btn.textContent='Saving…';btn.disabled=true;}
+  try{
+    // Update via API if configured
+    if(API.isConfigured()){
+      await API.patch('/api/buyers/'+id, {cluster:city, industry:sector});
+    }
+    // Update local DB.buyers immediately (no page reload)
+    const buyer=DB.buyers.find(b=>b.id===id);
+    if(buyer){ buyer.cluster=city; buyer.state=buyer.state||''; buyer.industry=sector; buyer.sector=sector; }
+    // Update display tiles
+    const cityDisp=document.getElementById('brp-city-display-'+id);
+    const secDisp=document.getElementById('brp-sector-display-'+id);
+    if(cityDisp) cityDisp.querySelector('div:last-child').textContent=city||'— Not set';
+    if(secDisp) secDisp.querySelector('div:last-child').textContent=sector||'— Not set';
+    if(cityDisp) cityDisp.querySelector('div:last-child').style.color=city?'#0F172A':'#CBD5E1';
+    if(secDisp) secDisp.querySelector('div:last-child').style.color=sector?'#0F172A':'#CBD5E1';
+    // Close form
+    brpToggleEdit(id);
+    Toast.show('Buyer info updated','success',2500);
+  }catch(e){
+    Toast.show('Save failed: '+e.message,'error',3000);
+    if(btn){btn.textContent='Save';btn.disabled=false;}
+  }
+}
 function brpTab(t){
   window._brpState=Object.assign(window._brpState||{},{tab:t});
 
