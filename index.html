@@ -2376,9 +2376,29 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
             <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">State <span style="color:#EF4444">*</span></label>
-            <input id="ab-state" type="text" placeholder="e.g. Maharashtra" oninput="addBuyerEnrich()"
-              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+            <select id="ab-state" onchange="addBuyerEnrich()"
+              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;background:#fff;cursor:pointer"
               onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+              <option value="">Select State…</option>
+              <optgroup label="── States ──">
+                <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
+                <option>Bihar</option><option>Chhattisgarh</option><option>Goa</option>
+                <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option>
+                <option>Jharkhand</option><option>Karnataka</option><option>Kerala</option>
+                <option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option>
+                <option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option>
+                <option>Odisha</option><option>Punjab</option><option>Rajasthan</option>
+                <option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option>
+                <option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option>
+                <option>West Bengal</option>
+              </optgroup>
+              <optgroup label="── Union Territories ──">
+                <option>Andaman &amp; Nicobar Islands</option><option>Chandigarh</option>
+                <option>Dadra &amp; Nagar Haveli and Daman &amp; Diu</option>
+                <option>Delhi (NCT)</option><option>Jammu &amp; Kashmir</option>
+                <option>Ladakh</option><option>Lakshadweep</option><option>Puducherry</option>
+              </optgroup>
+            </select>
           </div>
           <div>
             <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">City <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional)</span></label>
@@ -2389,9 +2409,49 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
         </div>
         <div>
           <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Sector / Industry <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional)</span></label>
-          <input id="ab-sector" type="text" placeholder="e.g. Manufacturing, Textiles, Chemicals…" oninput="addBuyerEnrich()"
-            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
+          <select id="ab-sector" onchange="addBuyerEnrich()"
+            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;background:#fff;cursor:pointer"
             onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+            <option value="">Select Sector…</option>
+            <optgroup label="── Manufacturing ──">
+              <option>Automotive &amp; Auto Components</option>
+              <option>Steel &amp; Metal Fabrication</option>
+              <option>Textiles &amp; Garments</option>
+              <option>Chemicals &amp; Petrochemicals</option>
+              <option>Plastics &amp; Rubber Products</option>
+              <option>Pharmaceuticals &amp; Biotech</option>
+              <option>Electronics &amp; Electrical Equipment</option>
+              <option>Food Processing &amp; Beverages</option>
+              <option>Paper &amp; Packaging</option>
+              <option>Ceramics, Glass &amp; Tiles</option>
+              <option>Leather &amp; Footwear</option>
+              <option>Wood &amp; Furniture</option>
+              <option>Gems &amp; Jewellery</option>
+              <option>Defence &amp; Aerospace Components</option>
+            </optgroup>
+            <optgroup label="── Engineering &amp; Infrastructure ──">
+              <option>Engineering &amp; Capital Goods</option>
+              <option>Construction &amp; Infrastructure</option>
+              <option>Renewable Energy &amp; Solar</option>
+              <option>Mining &amp; Minerals</option>
+            </optgroup>
+            <optgroup label="── Services ──">
+              <option>IT &amp; Software Services</option>
+              <option>Healthcare &amp; Medical Devices</option>
+              <option>Education &amp; Training</option>
+              <option>Logistics &amp; Transport</option>
+              <option>Tourism &amp; Hospitality</option>
+              <option>Financial Services &amp; NBFC</option>
+              <option>Real Estate &amp; Property</option>
+              <option>Waste Management &amp; Recycling</option>
+            </optgroup>
+            <optgroup label="── Trade &amp; Commerce ──">
+              <option>FMCG &amp; Consumer Goods</option>
+              <option>Trading &amp; Distribution</option>
+              <option>Agriculture &amp; Agro Processing</option>
+              <option>Handicrafts &amp; Cottage Industry</option>
+            </optgroup>
+          </select>
         </div>
       </div>
 
