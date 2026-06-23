@@ -5999,11 +5999,13 @@ function _renderBusinessDashboard(){
     ${kpis.map(k=>`
     <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(10,37,64,.05);position:relative;overflow:hidden;transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 4px 16px rgba(10,37,64,.1)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(10,37,64,.05)'">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${k.dot};border-radius:16px 16px 0 0;opacity:${k.danger?1:.6}"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:4px">
-        <div style="width:32px;height:32px;border-radius:10px;background:${k.bg};display:flex;align-items:center;justify-content:center">${k.icon}</div>
-        ${k.pill?`<span style="background:${k.pillCol}15;color:${k.pillCol};border-radius:20px;padding:2px 8px;font-size:9.5px;font-weight:600;letter-spacing:.02em">${k.pill}</span>`:''}
+      <!-- pill badge top-right -->
+      ${k.pill?`<div style="text-align:right;margin-top:2px;margin-bottom:6px"><span style="background:${k.pillCol}15;color:${k.pillCol};border-radius:20px;padding:2px 8px;font-size:9.5px;font-weight:600">${k.pill}</span></div>`:`<div style="margin-bottom:10px"></div>`}
+      <!-- icon + value inline -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="width:34px;height:34px;border-radius:10px;background:${k.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0">${k.icon}</div>
+        <div style="font-size:20px;font-weight:700;color:#0A2540;letter-spacing:-.4px;line-height:1">${k.val}</div>
       </div>
-      <div style="font-size:21px;font-weight:700;color:#0A2540;letter-spacing:-.4px;line-height:1.1;margin-bottom:5px">${k.val}</div>
       <div style="font-size:11px;font-weight:500;color:#6B7280;letter-spacing:-.01em">${k.label}</div>
       <div style="font-size:10.5px;color:#9CA3AF;margin-top:2px">${k.sub}</div>
     </div>`).join('')}
