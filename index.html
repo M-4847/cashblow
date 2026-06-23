@@ -191,6 +191,38 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
   #dash-col2,#dash-col3,#dash-col4{display:none!important}
   #dash-kpi{grid-template-columns:repeat(2,1fr)!important}
 }
+/* ── Dashboard tile hover lift animation ── */
+#dash-kpi > div {
+  transition: transform .22s cubic-bezier(.34,1.28,.64,1), box-shadow .22s ease !important;
+  will-change: transform;
+}
+#dash-kpi > div:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 24px rgba(10,37,64,.12) !important;
+}
+#dash-grid > div {
+  transition: transform .22s cubic-bezier(.34,1.28,.64,1), box-shadow .22s ease !important;
+  will-change: transform;
+}
+#dash-grid > div:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 24px rgba(10,37,64,.11) !important;
+}
+#rec-actions-list > div {
+  transition: transform .18s cubic-bezier(.34,1.28,.64,1), box-shadow .18s ease !important;
+  will-change: transform;
+}
+#rec-actions-list > div:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(10,37,64,.10) !important;
+}
+#dash-col3 > div {
+  transition: transform .22s cubic-bezier(.34,1.28,.64,1), box-shadow .22s ease !important;
+}
+#dash-col4 > div {
+  transition: transform .22s cubic-bezier(.34,1.28,.64,1), box-shadow .22s ease !important;
+}
+
 /* filter pills */
 .filter-pill-wrap{position:relative;margin:2px 8px 2px}
 .filter-pill{width:100%;display:flex;align-items:center;gap:7px;padding:6px 10px 6px 13px;border-radius:var(--r-sm);background:var(--blue-50);border:1.5px solid var(--blue-100);cursor:pointer;font-size:12px;color:var(--gray-700);transition:background .12s,border-color .12s}
