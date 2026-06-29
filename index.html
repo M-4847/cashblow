@@ -5936,6 +5936,48 @@ function _renderBusinessDashboard(){
 
   // ── Build live metrics from DB ──
   const fmt = v => v>=1e7?'₹'+(v/1e7).toFixed(2)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+Math.round(v);
+
+  /* ── Sparkline: mini trend chart from real invoice payment data ── */
+  const sparkline = (buyerId, W=64, H=26) => {
+    const buyerInvs = (invoices||[])
+      .filter(i => i.buyerId===buyerId && i.dueDate)
+      .sort((a,b) => new Date(a.dueDate)-new Date(b.dueDate));
+    if(buyerInvs.length < 2) return `<svg width="${W}" height="${H}"><line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="#E6EBF1" stroke-width="1.5" stroke-dasharray="3,3"/></svg>`;
+
+    // Compute delay for each invoice: positive=late, negative=early
+    const pts = buyerInvs.map(i => {
+      if(i.paidDate && i.dueDate) return Math.round((new Date(i.paidDate)-new Date(i.dueDate))/86400000);
+      if(!i.paidDate && i.dueDate && new Date(i.dueDate)<today) return Math.max(0,Math.round((today-new Date(i.dueDate))/86400000));
+      return 0;
+    });
+
+    const mn=Math.min(...pts), mx=Math.max(...pts), range=mx-mn||1;
+    // Trend direction: compare first half avg vs second half avg
+    const h=Math.floor(pts.length/2);
+    const firstAvg=pts.slice(0,h||1).reduce((s,v)=>s+v,0)/(h||1);
+    const lastAvg=pts.slice(-Math.max(h,1)).reduce((s,v)=>s+v,0)/Math.max(h,1);
+    const worsening=lastAvg>firstAvg;
+    const col=worsening?'#EF4444':'#10B981';
+    const fillCol=worsening?'rgba(239,68,68,.08)':'rgba(16,185,129,.08)';
+
+    const PAD=2;
+    const coords=pts.map((v,i)=>{
+      const x=PAD+(i/(pts.length-1))*(W-PAD*2);
+      const y=H-PAD-((v-mn)/range)*(H-PAD*2);
+      return [x.toFixed(1),y.toFixed(1)];
+    });
+    const linePts=coords.map(c=>c.join(',')).join(' ');
+    const areaClose=`${coords[coords.length-1][0]},${H} ${coords[0][0]},${H}`;
+    const areaPts=linePts+' '+areaClose;
+
+    // Smooth dots for last point
+    const [lx,ly]=coords[coords.length-1];
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">
+      <polygon points="${areaPts}" fill="${fillCol}" stroke="none"/>
+      <polyline points="${linePts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${lx}" cy="${ly}" r="2.5" fill="${col}" stroke="#fff" stroke-width="1"/>
+    </svg>`;
+  };
   const buyers = DB.buyers || [];
   const invoices = DB.invoices || [];
   const totalExp = buyers.reduce((s,b)=>s+(b.currentExposure||0),0);
@@ -6128,7 +6170,7 @@ function _renderBusinessDashboard(){
       <div id="tdb-panel-delayed" style="transition:opacity .25s,transform .25s;opacity:1;transform:translateX(0)">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr style="background:#F9FAFB">
-            ${['#','Buyer','Exposure','Delay','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
+            ${['#','Buyer','Exposure','Delay','Trend','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
           </tr></thead>
           <tbody>
             ${drainers.slice(0,5).map((b,i)=>{
@@ -6147,6 +6189,7 @@ function _renderBusinessDashboard(){
                 </td>
                 <td style="padding:8px 10px;font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap">${fmt(b._exp||0)}</td>
                 <td style="padding:8px 10px;font-size:12px;font-weight:700;color:${dc};white-space:nowrap">${b.avgDelay||0}d</td>
+                <td style="padding:5px 8px;vertical-align:middle">${sparkline(b.id)}</td>
                 <td style="padding:8px 10px"><span style="background:#EEF2FF;color:#4F46E5;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700">${contribFmt(b.contrib)}</span></td>
                 <td style="padding:8px 10px"><span style="background:${riskBg(risk)};color:${rc};border-radius:6px;padding:2px 8px;font-size:9.5px;font-weight:700">${risk}</span></td>
               </tr>`;
@@ -6174,7 +6217,7 @@ function _renderBusinessDashboard(){
           const punctual=[...buyers].map(b=>{const t=avgTiming(b);const exp=effectiveExp(b);return{...b,_exp:exp,contrib:grandTotal>0?Math.round((exp/grandTotal)*1000)/10:0,_timing:t};}).sort((a,b2)=>a._timing-b2._timing||(b2.onTimePct||0)-(a.onTimePct||0)).slice(0,5);
           return `<table style="width:100%;border-collapse:collapse">
             <thead><tr style="background:#F9FAFB">
-              ${['#','Buyer','Exposure','Avg. Early','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
+              ${['#','Buyer','Exposure','Trend','Avg. Early','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
             </tr></thead>
             <tbody>
               ${punctual.map((b,i)=>{
