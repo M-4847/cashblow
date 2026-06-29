@@ -11407,13 +11407,31 @@ window.tablePage=function(p,bid){TableState.page=p;renderPaymentTable(bid);};
    Nav group — hover-expand + click fallback
 ---------------------------------------- */
 /* ── Business Discipline Score Widget ─────────────────────────── */
+/* ── Discipline calendar navigation ── */
+window._discNav = window._discNav || (()=>{ const n=new Date(); return {y:n.getFullYear(),m:n.getMonth()}; })();
+window.discPrev = function(){
+  var n=window._discNav;
+  n.m--; if(n.m<0){n.m=11;n.y--;}
+  var el=document.getElementById('dash-col4');
+  if(el) el.innerHTML=renderDisciplineScore();
+};
+window.discNext = function(){
+  var n=window._discNav;
+  const now=new Date();
+  if(n.y>now.getFullYear()||(n.y===now.getFullYear()&&n.m>=now.getMonth())) return;
+  n.m++; if(n.m>11){n.m=0;n.y++;}
+  var el=document.getElementById('dash-col4');
+  if(el) el.innerHTML=renderDisciplineScore();
+};
+
 function renderDisciplineScore(){
   const log = JSON.parse(localStorage.getItem('cfiq_upload_log')||'[]');
-  const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
-  const monthName = now.toLocaleString('default',{month:'long'})+' '+y;
+  const nav = window._discNav;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const y = nav.y, m = nav.m;
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthName = MONTHS[m]+'-'+y;
 
-  // Build day map for current month
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const dayMap = {};
   log.forEach(d=>{ dayMap[d.date] = d; });
@@ -11459,51 +11477,79 @@ function renderDisciplineScore(){
     return '#E2E8F0'; // light grey — no upload (not alarming)
   }
 
-  // Build rows (weeks)
+  // Pad trailing days to complete last week
+  const totalCells = cells.length + (7 - cells.length%7)%7;
+  const prevMonthDays = new Date(y,m,0).getDate();
+  const leadingCells=[];
+  for(let i=startOffset-1;i>=0;i--) leadingCells.push({d:prevMonthDays-i,outside:true});
+  const trailingCount=(7-cells.length%7)%7;
+  const trailingCells=[];
+  for(let i=1;i<=trailingCount;i++) trailingCells.push({d:i,outside:true});
+  const allCells=[...leadingCells,...cells,...trailingCells];
+
   const rows=[];
-  for(let i=0;i<cells.length;i+=7) rows.push(cells.slice(i,i+7));
+  for(let i=0;i<allCells.length;i+=7) rows.push(allCells.slice(i,i+7));
 
-  const DAY_LABELS=['M','T','W','T','F','S','S'];
+  const DAY_LABELS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const todayNav=new Date(); todayNav.setHours(0,0,0,0);
+  const isCurrentMonth=y===todayNav.getFullYear()&&m===todayNav.getMonth();
+  const isMaxMonth=isCurrentMonth;
 
-  return `<div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-    <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+  function circleStyle(cell){
+    if(cell.outside) return {bg:'transparent',tc:'#CBD5E1',ring:false};
+    const isTodayCell=cell.isToday;
+    if(cell.entry){
+      const bg=cell.entry.risk==='high'?'#EF4444':'#22C55E';
+      return {bg,tc:'#fff',ring:isTodayCell,ringCol:'#0A2540'};
+    }
+    if(cell.isFuture) return {bg:'#F1F5F9',tc:'#CBD5E1',ring:false};
+    if(isTodayCell) return {bg:'#3B82F6',tc:'#fff',ring:false};
+    return {bg:'#93C5FD',tc:'#fff',ring:false}; // default = light blue like reference
+  }
+
+  return `<div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:12px 14px;box-shadow:0 1px 4px rgba(10,37,64,.05)">
+
+    <!-- Score header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div>
-        <div style="font-size:12px;font-weight:700;color:#0F172A">Business Discipline</div>
-        <div style="font-size:10px;color:#94A3B8;margin-top:1px">Upload consistency</div>
+        <div style="font-size:12px;font-weight:600;color:#0A2540;letter-spacing:-.01em">Business Discipline</div>
+        <div style="font-size:9.5px;color:#94A3B8;margin-top:1px">Upload consistency</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:20px;font-weight:700;color:${scoreCol};line-height:1">${score}</div>
-        <div style="font-size:9px;font-weight:600;color:${scoreCol}">${scoreLabel}</div>
+        <div style="font-size:18px;font-weight:700;color:${scoreCol};line-height:1">${score}</div>
+        <div style="font-size:8.5px;font-weight:600;color:${scoreCol}">${scoreLabel}</div>
       </div>
     </div>
 
-    <!-- Month label -->
-    <div style="font-size:10px;font-weight:600;color:#64748B;margin-bottom:6px">${monthName}</div>
-
-    <!-- Day headers -->
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px">
-      ${DAY_LABELS.map(l=>`<div style="text-align:center;font-size:8px;font-weight:600;color:#CBD5E1">${l}</div>`).join('')}
+    <!-- Month navigator -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <button onclick="window.discPrev()" style="width:22px;height:22px;border-radius:50%;border:1px solid #E6EBF1;background:#F6F9FC;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6B7280;transition:all .15s" onmouseover="this.style.background='#E6EBF1'" onmouseout="this.style.background='#F6F9FC'">‹</button>
+      <div style="font-size:11px;font-weight:700;color:#0A2540;letter-spacing:.01em">${monthName}</div>
+      <button onclick="window.discNext()" style="width:22px;height:22px;border-radius:50%;border:1px solid #E6EBF1;background:${isMaxMonth?'#F9FAFB':'#F6F9FC'};cursor:${isMaxMonth?'not-allowed':'pointer'};display:flex;align-items:center;justify-content:center;font-size:11px;color:${isMaxMonth?'#D1D5DB':'#6B7280'};transition:all .15s" ${isMaxMonth?'':`onmouseover="this.style.background='#E6EBF1'" onmouseout="this.style.background='#F6F9FC'"`}>›</button>
     </div>
 
-    <!-- Calendar grid — GitHub style -->
+    <!-- Day headers -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px">
+      ${DAY_LABELS.map(l=>`<div style="text-align:center;font-size:8px;font-weight:600;color:#94A3B8">${l}</div>`).join('')}
+    </div>
+
+    <!-- Calendar — round circle style -->
     ${rows.map(row=>`
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px">
       ${row.map(cell=>{
-        if(!cell) return `<div></div>`;
-        const col=cellColor(cell);
-        const border=cell.isToday?`2px solid #4F46E5`:'2px solid transparent';
-        const title=cell.entry?`title="Uploaded · ${cell.entry.buyers||''} buyers"`:cell.isFuture?'':' title="No upload"';
-        return `<div ${title} style="width:100%;aspect-ratio:1;background:${col};border-radius:3px;border:${border}"></div>`;
+        const s=circleStyle(cell);
+        const ring=s.ring?`outline:2px solid ${s.ringCol};outline-offset:1px;`:'';
+        const title=cell.entry?`title="${cell.entry.risk==='high'?'⚠ High Risk':'✓ Uploaded'} · ${cell.entry.buyers||0} buyers"`:!cell.outside&&!cell.isFuture?'title="No upload"':'';
+        return `<div ${title} style="width:100%;aspect-ratio:1;background:${s.bg};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:${s.tc};${ring}transition:transform .1s" onmouseover="if(!${cell.outside||false})this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">${cell.outside?cell.d:''}</div>`;
       }).join('')}
     </div>`).join('')}
 
     <!-- Legend -->
-    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
-      ${[['#22C55E','Uploaded'],['#E2E8F0','No upload'],['#EF4444','High risk'],['#4F46E5','Today']].map(([c,l])=>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+      ${[['#22C55E','Uploaded'],['#93C5FD','No upload'],['#EF4444','High risk'],['#3B82F6','Today']].map(([c,l])=>
         `<div style="display:flex;align-items:center;gap:3px">
-          <div style="width:8px;height:8px;border-radius:2px;background:${c};${c==='#4F46E5'?'border:2px solid #4F46E5;background:transparent':''}"></div>
-          <span style="font-size:8.5px;color:#94A3B8">${l}</span>
+          <div style="width:8px;height:8px;border-radius:50%;background:${c}"></div>
+          <span style="font-size:8px;color:#94A3B8">${l}</span>
         </div>`).join('')}
     </div>
 
