@@ -9316,16 +9316,39 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
             const ph=(b.phone||'').replace(/\s+/g,'');
             const msg=encodeURIComponent(`Dear ${b.contact||b.name}, this is a reminder regarding your outstanding payment with us. Kindly arrange the payment at the earliest. Thank you.`);
             const hasPhone=ph&&ph!=='—';
-            const ic='width:28px;height:28px;border-radius:50%;border:none;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,box-shadow .15s;';
-            return `<div style="display:flex;gap:5px;align-items:center;flex-shrink:0">
-              <a href="${hasPhone?'tel:'+ph:'#'}" title="${hasPhone?'Call '+b.contact:'No phone'}" style="${ic}background:${hasPhone?'#22C55E':'#E5E7EB'};box-shadow:${hasPhone?'0 2px 6px rgba(34,197,94,.3)':'none'};pointer-events:${hasPhone?'auto':'none'};cursor:${hasPhone?'pointer':'default'}" onmouseover="this.style.transform='scale(1.12)'" onmouseout="this.style.transform='scale(1)'">
-                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="${hasPhone?'#fff':'#9CA3AF'}" stroke-width="2.2"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            const ic='width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,box-shadow .15s;text-decoration:none;';
+            return `<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+
+              <!-- Phone: filled handset on white circle -->
+              <a href="${hasPhone?'tel:'+ph:'#'}" title="${hasPhone?'Call '+(b.contact||b.name):'No phone on record'}"
+                style="${ic}background:${hasPhone?'#fff':'#F3F4F6'};box-shadow:${hasPhone?'0 2px 8px rgba(0,0,0,.18)':'none'};pointer-events:${hasPhone?'auto':'none'};cursor:${hasPhone?'pointer':'default'}"
+                onmouseover="this.style.transform='scale(1.13)'" onmouseout="this.style.transform='scale(1)'">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="${hasPhone?'#111827':'#9CA3AF'}">
+                  <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.45 2.33.69 3.58.69a1 1 0 011 1V20a1 1 0 01-1 1C10.18 21 3 13.82 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.26.24 2.47.69 3.58a1 1 0 01-.24 1.01l-2.33 2.2z"/>
+                </svg>
               </a>
-              <a href="${hasPhone?'https://wa.me/91'+ph.replace(/^\+91/,'').replace(/^91/,'')+'?text='+msg:'#'}" target="_blank" title="${hasPhone?'WhatsApp '+b.contact:'No phone'}" style="${ic}background:${hasPhone?'#25D366':'#E5E7EB'};box-shadow:${hasPhone?'0 2px 6px rgba(37,211,102,.3)':'none'};pointer-events:${hasPhone?'auto':'none'};cursor:${hasPhone?'pointer':'default'}" onmouseover="this.style.transform='scale(1.12)'" onmouseout="this.style.transform='scale(1)'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="${hasPhone?'#fff':'#9CA3AF'}"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.534 5.857L.057 23.09a.75.75 0 00.94.94l5.233-1.477A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.721 9.721 0 01-5.007-1.385l-.36-.214-3.73 1.053 1.053-3.73-.214-.36A9.72 9.72 0 012.25 12C2.25 6.59 6.59 2.25 12 2.25S21.75 6.59 21.75 12 17.41 21.75 12 21.75z"/></svg>
+
+              <!-- WhatsApp: official logo — green circle, white speech-bubble phone -->
+              <a href="${hasPhone?'https://wa.me/91'+ph.replace(/^\+91/,'').replace(/^91/,'')+'?text='+msg:'#'}" target="_blank"
+                title="${hasPhone?'WhatsApp '+(b.contact||b.name):'No phone on record'}"
+                style="${ic}background:${hasPhone?'#25D366':'#F3F4F6'};box-shadow:${hasPhone?'0 2px 8px rgba(37,211,102,.4)':'none'};pointer-events:${hasPhone?'auto':'none'};cursor:${hasPhone?'pointer':'default'}"
+                onmouseover="this.style.transform='scale(1.13)'" onmouseout="this.style.transform='scale(1)'">
+                <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+                  <path d="M16 2C8.27 2 2 8.27 2 16c0 2.44.66 4.73 1.8 6.72L2 30l7.45-1.75A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="${hasPhone?'#fff':'#9CA3AF'}"/>
+                  <path d="M22.45 19.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="${hasPhone?'#25D366':'#D1D5DB'}"/>
+                </svg>
               </a>
-              <a href="${b.email?'mailto:'+b.email+'?subject=Payment+Reminder&body='+msg:'#'}" title="${b.email?'Email '+b.contact:'No email'}" style="${ic}background:${b.email?'#6366F1':'#E5E7EB'};box-shadow:${b.email?'0 2px 6px rgba(99,102,241,.3)':'none'};pointer-events:${b.email?'auto':'none'};cursor:${b.email?'pointer':'default'}" onmouseover="this.style.transform='scale(1.12)'" onmouseout="this.style.transform='scale(1)'">
-                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="${b.email?'#fff':'#9CA3AF'}" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+
+              <!-- Email: white envelope on dark rounded-square (iOS Mail style) -->
+              <a href="${b.email?'mailto:'+b.email+'?subject=Payment+Reminder&body='+msg:'#'}"
+                title="${b.email?'Email '+(b.contact||b.name):'No email on record'}"
+                style="${ic}background:${b.email?'#1C1C1E':'#F3F4F6'};border-radius:7px;box-shadow:${b.email?'0 2px 8px rgba(0,0,0,.25)':'none'};pointer-events:${b.email?'auto':'none'};cursor:${b.email?'pointer':'default'}"
+                onmouseover="this.style.transform='scale(1.13)'" onmouseout="this.style.transform='scale(1)'">
+                <svg width="16" height="12" viewBox="0 0 20 15" fill="none">
+                  <rect width="20" height="15" rx="2" fill="${b.email?'#1C1C1E':'#F3F4F6'}"/>
+                  <path d="M1 1.5l9 6.5 9-6.5" stroke="${b.email?'#fff':'#9CA3AF'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="0.8" y="0.8" width="18.4" height="13.4" rx="1.5" stroke="${b.email?'#fff':'#9CA3AF'}" stroke-width="1.4" fill="none"/>
+                </svg>
               </a>
             </div>`;
           })()}
