@@ -13743,6 +13743,24 @@ async function initDB(){
       }));
     }
 
+    // Check if all primary calls were rejected (token expired / network down)
+    const allFailed = [buyersRes, invoicesRes].every(r => r.status === 'rejected');
+    if(allFailed){
+      const reason = buyersRes.reason;
+      const isAuth = reason?.status === 401 || reason?.message === 'Unauthorized';
+      if(isAuth){
+        // Session expired — force re-login
+        localStorage.removeItem('cfiq_login');
+        localStorage.removeItem('cfiq_token');
+        cfiqShowLogin();
+        Toast && Toast.show('Session expired. Please sign in again.', 'error');
+        return;
+      }
+      // Network error — don't set _fromAPI, let dashboard show upload prompt
+      console.warn('[CashFlowIQ] initDB: all calls failed —', reason?.message);
+      return;
+    }
+
     DB._fromAPI = true;
     console.log('[CashFlowIQ] DB loaded — buyers:'+DB.buyers.length+' invoices:'+DB.invoices.length);
   } catch(e) {
