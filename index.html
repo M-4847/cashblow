@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,26 +8,28 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  /* Stripe Design System */
-  --stripe-primary:#635BFF;--stripe-primary-dark:#5A54E8;--stripe-primary-light:#7A73FF;
-  --stripe-text:#0A2540;--stripe-text-muted:#6B7280;--stripe-border:#E6EBF1;
-  --stripe-bg:#F6F9FC;--stripe-card:#FFFFFF;
-  /* Legacy aliases (kept for component compatibility) */
-  --blue-700:#1d4ed8;--blue-600:#635BFF;--blue-500:#7A73FF;--blue-400:#9B97FF;
-  --blue-100:#EEF2FF;--blue-50:#F5F3FF;
+  /* ── Claude.ai warm aesthetic ── */
+  --stripe-primary:#7C6EF0;--stripe-primary-dark:#6B5EDF;--stripe-primary-light:#9083F5;
+  --stripe-text:#1C1917;--stripe-text-muted:#78716C;--stripe-border:#E7E5E4;
+  --stripe-bg:#F5F4F0;--stripe-card:#FFFFFF;
+  /* Semantic aliases */
+  --blue-700:#4F43BE;--blue-600:#7C6EF0;--blue-500:#9083F5;--blue-400:#A99DF7;
+  --blue-100:#EDEBFC;--blue-50:#F5F4FE;
   --green-700:#15803d;--green-600:#16a34a;--green-100:#D1FAE5;--green-50:#ECFDF5;
-  --red-700:#b91c1c;--red-600:#EF4444;--red-100:#FEE2E2;--red-50:#FEF2F2;
-  --amber-600:#F59E0B;--amber-100:#FEF3C7;--amber-50:#FFFBEB;
-  --orange-600:#F97316;--orange-100:#FFEDD5;--orange-50:#FFF7ED;
-  --purple-600:#635BFF;--purple-100:#EEF2FF;
-  --gray-900:#0A2540;--gray-800:#1e293b;--gray-700:#334155;--gray-600:#6B7280;
-  --gray-500:#6B7280;--gray-400:#9CA3AF;--gray-300:#D1D5DB;--gray-200:#E6EBF1;
-  --gray-100:#F6F9FC;--gray-50:#F9FAFB;--white:#ffffff;
+  --red-700:#b91c1c;--red-600:#DC2626;--red-100:#FEE2E2;--red-50:#FEF2F2;
+  --amber-600:#B45309;--amber-100:#FEF3C7;--amber-50:#FFFBEB;
+  --orange-600:#C2410C;--orange-100:#FFEDD5;--orange-50:#FFF7ED;
+  --purple-600:#7C6EF0;--purple-100:#EDEBFC;
+  /* Warm stone gray scale (Tailwind stone-*) */
+  --gray-900:#1C1917;--gray-800:#292524;--gray-700:#44403C;--gray-600:#57534E;
+  --gray-500:#78716C;--gray-400:#A8A29E;--gray-300:#D6D3D1;--gray-200:#E7E5E4;
+  --gray-100:#F5F5F4;--gray-50:#FAFAF9;--white:#ffffff;
   --sidebar-w:232px;--topbar-h:56px;
   --r-sm:8px;--r-md:12px;--r-lg:16px;
-  --sh-sm:0 1px 4px rgba(10,37,64,.06),0 1px 2px rgba(10,37,64,.04);
-  --sh-md:0 4px 16px rgba(10,37,64,.08),0 1px 4px rgba(10,37,64,.05);
-  --sh-lg:0 12px 32px rgba(10,37,64,.10),0 2px 8px rgba(10,37,64,.06);
+  /* Warm-tinted shadows */
+  --sh-sm:0 1px 4px rgba(28,25,23,.06),0 1px 2px rgba(28,25,23,.04);
+  --sh-md:0 4px 16px rgba(28,25,23,.08),0 1px 4px rgba(28,25,23,.05);
+  --sh-lg:0 12px 32px rgba(28,25,23,.10),0 2px 8px rgba(28,25,23,.06);
 }
 /* -- DARK MODE -- */
 [data-theme="dark"]{
@@ -35,7 +37,7 @@
   --gray-50:#0f172a;
   --gray-100:#1e293b;
   --gray-200:#334155;
-  --gray-300:#475569;
+  --gray-300:#44403C;
   --gray-400:#64748b;
   --gray-500:#94a3b8;
   --gray-600:#cbd5e1;
@@ -85,13 +87,13 @@
 [data-theme="dark"] .ndot{border-color:var(--white)}
 [data-theme="dark"] canvas{filter:none}
 
-html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--stripe-bg);color:var(--stripe-text);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--stripe-bg);color:var(--stripe-text);font-size:13.5px;line-height:1.6;-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
 
 /* -- SIDEBAR -- */
 /* ═══ DARK NAVY SIDEBAR — Money.ex style ═══ */
-:root{--sidebar-bg:#0B1437;--sidebar-active:#3B82F6;--sidebar-hover:rgba(255,255,255,.06);--sidebar-text:rgba(255,255,255,.55);--sidebar-text-active:#fff;--sidebar-border:rgba(255,255,255,.06)}
+:root{--sidebar-bg:#1C1917;--sidebar-active:#7C6EF0;--sidebar-hover:rgba(255,255,255,.05);--sidebar-text:rgba(255,255,255,.48);--sidebar-text-active:#fff;--sidebar-border:rgba(255,255,255,.07)}
 .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);border-right:none;display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 24px rgba(0,0,0,.18)}
-.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,#3B82F6,#6366F1);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(59,130,246,.4)}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,#D97757,#C86644);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(217,119,87,.35)}
 .logo-mark svg{width:16px;height:16px;fill:#fff}
 .logo-text{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px}
 .logo-text span{color:#60A5FA}
@@ -111,7 +113,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 .nav-item.active,.ng-dash .nav-item.active,.nav-standalone.active,
 .ng-decision .nav-item.active,.ng-receivables .nav-item.active,
 .ng-buyers .nav-item.active,.ng-risk .nav-item.active{
-  background:linear-gradient(135deg,#635BFF,#7A73FF);color:#fff;font-weight:600;
+  background:linear-gradient(135deg,#7C6EF0,#7A73FF);color:#fff;font-weight:600;
   box-shadow:0 4px 14px rgba(99,91,255,.35)}
 .nav-item.active .ni,.nav-item.active .ni-wrap .ni{opacity:1;color:#fff!important}
 .nav-item.active .ni-wrap{background:rgba(255,255,255,.15)}
@@ -146,27 +148,14 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 .sidebar-logo{padding:0 18px;height:var(--topbar-h);display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--sidebar-border);cursor:pointer;transition:background .12s}
 .sidebar-logo:hover{background:rgba(255,255,255,.04)}
 
-/* ── Dashboard: fully fixed viewport, only Recommended Actions scrolls ── */
-#dash-content{overflow:hidden!important;display:flex!important;flex-direction:column!important}
-/* Grid gets exact height = viewport minus everything above it */
-#dash-grid{
-  overflow:hidden!important;
-  height:calc(100vh - var(--topbar-h) - 190px)!important;
-  align-items:stretch!important;
-}
-/* Recommended Actions: fills grid height, list scrolls internally */
-#dash-col2{
-  height:100%!important;
-  display:flex!important;flex-direction:column!important;
-  overflow:hidden!important;
-}
-#rec-actions-list{
-  flex:1!important;overflow-y:auto!important;overflow-x:hidden!important;
-  min-height:0!important;scrollbar-width:thin;scrollbar-color:#E2E8F0 transparent
-}
+/* ── Dashboard: natural page scroll, nothing clipped ── */
+#dash-content{display:flex;flex-direction:column;overflow:visible!important}
+#dash-grid{align-items:start;overflow:visible!important;height:auto!important}
+#dash-col2{display:flex;flex-direction:column;overflow:visible!important;height:auto!important}
+#rec-actions-list{overflow-y:visible!important;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
 /* Laptop: tighten spacing */
 @media(max-width:1440px){
-  #dash-grid{height:calc(100vh - var(--topbar-h) - 180px)!important}
+  #dash-grid{gap:8px}
 }
 /* Laptop (≤1440px): shrink columns */
 @media(max-width:1440px){
@@ -198,7 +187,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 }
 #dash-kpi > div:hover {
   transform: translateY(-4px) !important;
-  box-shadow: 0 8px 24px rgba(10,37,64,.12) !important;
+  box-shadow: 0 8px 24px rgba(28,25,23,.12) !important;
 }
 #dash-grid > div {
   transition: transform .22s cubic-bezier(.34,1.28,.64,1), box-shadow .22s ease !important;
@@ -206,7 +195,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 }
 #dash-grid > div:hover {
   transform: translateY(-3px) !important;
-  box-shadow: 0 8px 24px rgba(10,37,64,.11) !important;
+  box-shadow: 0 8px 24px rgba(28,25,23,.11) !important;
 }
 #rec-actions-list > div {
   transition: transform .18s cubic-bezier(.34,1.28,.64,1), box-shadow .18s ease !important;
@@ -214,7 +203,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 }
 #rec-actions-list > div:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 16px rgba(10,37,64,.10) !important;
+  box-shadow: 0 6px 16px rgba(28,25,23,.10) !important;
 }
 #dash-col3 > div {
   transition: transform .22s cubic-bezier(.34,1.28,.64,1), box-shadow .22s ease !important;
@@ -2060,11 +2049,11 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 .ob-btn{padding:11px 24px;border-radius:10px;border:none;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .ob-btn-primary{background:#6366f1;color:#fff}.ob-btn-primary:hover{opacity:.88}
 .ob-btn-primary:disabled{background:#c7d2fe;cursor:not-allowed;opacity:1}
-.ob-btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+.ob-btn-ghost{background:#f1f5f9;color:#44403C;border:1px solid #e2e8f0}
 .ob-dropzone{border:2px dashed #c7d2fe;border-radius:16px;padding:44px 24px;text-align:center;background:#fafbff;color:#64748b;font-size:14px;cursor:pointer;transition:border-color .2s,background .2s}
 .ob-dropzone:hover,.ob-dropzone.drag-over{border-color:#6366f1;background:#f0f0ff}
 .ob-dropzone label{color:#6366f1;font-weight:700;cursor:pointer}
-.ob-proc-step{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;margin-bottom:10px;font-size:14px;color:#475569;transition:all .3s}
+.ob-proc-step{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;margin-bottom:10px;font-size:14px;color:#44403C;transition:all .3s}
 .ob-proc-step.active{border-color:#6366f1;background:#fafbff;color:#3730a3;font-weight:600}
 .ob-proc-step.done{border-color:#bbf7d0;background:#f0fdf4;color:#15803d}
 .ob-proc-dot{width:10px;height:10px;border-radius:50%;background:#e2e8f0;flex-shrink:0;transition:background .3s}
@@ -2116,14 +2105,14 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
     <div style="margin-top:10px;padding:16px 20px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
       <div style="font-size:11.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Supported columns — we detect these automatically</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Buyer Name</div>
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Invoice Number</div>
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Invoice Date</div>
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Invoice Value</div>
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Credit Days</div>
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Due Date</div>
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Payment Date</div>
-        <div style="font-size:12px;color:#475569;padding:3px 0">● Outstanding Amount</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Buyer Name</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Invoice Number</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Invoice Date</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Invoice Value</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Credit Days</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Due Date</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Payment Date</div>
+        <div style="font-size:12px;color:#44403C;padding:3px 0">● Outstanding Amount</div>
         <div style="font-size:12px;color:#94a3b8;padding:3px 0">● State (optional)</div>
       </div>
     </div>
@@ -2375,42 +2364,42 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 <div id="add-buyer-drawer" style="position:fixed;top:0;right:-740px;width:740px;height:100vh;background:#fff;z-index:2001;box-shadow:-8px 0 40px rgba(0,0,0,.15);transition:right .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden">
 
   <!-- Drawer header -->
-  <div style="padding:18px 24px 14px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff">
+  <div style="padding:18px 24px 14px;border-bottom:1px solid #E7E5E4;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff">
     <div>
-      <div style="font-size:17px;font-weight:800;color:#0F172A">Add New Buyer</div>
-      <div style="font-size:11.5px;color:#94A3B8;margin-top:2px">Enter minimum details — system fills the rest</div>
+      <div style="font-size:17px;font-weight:800;color:#1C1917">Add New Buyer</div>
+      <div style="font-size:11.5px;color:#A8A29E;margin-top:2px">Enter minimum details — system fills the rest</div>
     </div>
-    <button onclick="addBuyerClose()" style="width:32px;height:32px;border-radius:8px;background:#F1F5F9;border:none;cursor:pointer;font-size:16px;color:#64748B;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="addBuyerClose()" style="width:32px;height:32px;border-radius:8px;background:#F5F5F4;border:none;cursor:pointer;font-size:16px;color:#64748B;display:flex;align-items:center;justify-content:center">✕</button>
   </div>
 
   <!-- Two-column body -->
   <div style="display:grid;grid-template-columns:1fr 260px;flex:1;overflow:hidden;min-height:0">
 
     <!-- LEFT: Form -->
-    <div style="overflow-y:auto;padding:20px 24px;border-right:1px solid #E2E8F0">
+    <div style="overflow-y:auto;padding:20px 24px;border-right:1px solid #E7E5E4">
 
       <!-- Section 1: Basic Details -->
       <div style="font-size:9.5px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">① Basic Details</div>
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
         <div>
-          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Buyer Name <span style="color:#EF4444">*</span></label>
+          <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Buyer Name <span style="color:#EF4444">*</span></label>
           <input id="ab-name" type="text" placeholder="e.g. ABC Industries Pvt Ltd" oninput="addBuyerEnrich()"
-            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
-            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
-          <div id="ab-name-suggestions" style="display:none;background:#fff;border:1px solid #E2E8F0;border-radius:8px;margin-top:4px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden"></div>
+            style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
+          <div id="ab-name-suggestions" style="display:none;background:#fff;border:1px solid #E7E5E4;border-radius:8px;margin-top:4px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden"></div>
         </div>
         <div>
-          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">GSTIN <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional — auto-fills State)</span></label>
+          <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">GSTIN <span style="font-size:10px;color:#A8A29E;font-weight:400">(Optional — auto-fills State)</span></label>
           <input id="ab-gstin" type="text" placeholder="e.g. 27AABCD1234E1Z5" oninput="addBuyerEnrich()" maxlength="15"
-            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;font-family:monospace;letter-spacing:.05em;transition:border .15s"
-            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+            style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;font-family:monospace;letter-spacing:.05em;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
-            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">State <span style="color:#EF4444">*</span></label>
+            <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">State <span style="color:#EF4444">*</span></label>
             <select id="ab-state" onchange="addBuyerEnrich()"
-              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;background:#fff;cursor:pointer"
-              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+              style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;background:#fff;cursor:pointer"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
               <option value="">Select State…</option>
               <optgroup label="── States ──">
                 <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
@@ -2433,17 +2422,17 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
             </select>
           </div>
           <div>
-            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">City <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional)</span></label>
+            <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">City <span style="font-size:10px;color:#A8A29E;font-weight:400">(Optional)</span></label>
             <input id="ab-city" type="text" placeholder="e.g. Pune" oninput="addBuyerEnrich()"
-              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
-              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+              style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;transition:border .15s"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
           </div>
         </div>
         <div>
-          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Sector / Industry <span style="font-size:10px;color:#94A3B8;font-weight:400">(Optional)</span></label>
+          <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Sector / Industry <span style="font-size:10px;color:#A8A29E;font-weight:400">(Optional)</span></label>
           <select id="ab-sector" onchange="addBuyerEnrich()"
-            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;background:#fff;cursor:pointer"
-            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+            style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;background:#fff;cursor:pointer"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
             <option value="">Select Sector…</option>
             <optgroup label="── Manufacturing ──">
               <option>Automotive &amp; Auto Components</option>
@@ -2491,14 +2480,14 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
       <div style="font-size:9.5px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">② Payment Terms</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
         <div>
-          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Credit Days</label>
+          <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Credit Days</label>
           <input id="ab-credit-days" type="number" value="30" min="0" max="365"
-            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
-            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+            style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
         </div>
         <div>
-          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Payment Terms</label>
-          <select id="ab-trade-term" style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;background:#fff;transition:border .15s" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+          <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Payment Terms</label>
+          <select id="ab-trade-term" style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;background:#fff;transition:border .15s" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
             <option value="Credit">Credit</option>
             <option value="Advance">Advance</option>
             <option value="LC">LC</option>
@@ -2506,35 +2495,35 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
           </select>
         </div>
         <div>
-          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Credit Limit (₹)</label>
+          <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Credit Limit (₹)</label>
           <input id="ab-credit-limit" type="number" placeholder="e.g. 500000"
-            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
-            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+            style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
         </div>
       </div>
 
       <!-- Section 3: Contact -->
-      <div style="font-size:9.5px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">③ Contact Details <span style="font-size:9px;color:#94A3B8;font-weight:400;text-transform:none;letter-spacing:0">(Optional)</span></div>
+      <div style="font-size:9.5px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">③ Contact Details <span style="font-size:9px;color:#A8A29E;font-weight:400;text-transform:none;letter-spacing:0">(Optional)</span></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
-            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Contact Person</label>
+            <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Contact Person</label>
             <input id="ab-contact" type="text" placeholder="e.g. Rajesh Kumar"
-              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
-              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+              style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;transition:border .15s"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
           </div>
           <div>
-            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Phone</label>
+            <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Phone</label>
             <input id="ab-phone" type="text" placeholder="+91 98XXX XXXXX"
-              style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
-              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+              style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;transition:border .15s"
+              onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
           </div>
         </div>
         <div>
-          <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Email</label>
+          <label style="font-size:11px;font-weight:600;color:#44403C;display:block;margin-bottom:5px">Email</label>
           <input id="ab-email" type="email" placeholder="buyer@company.com"
-            style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:9px;font-size:13px;color:#0F172A;outline:none;box-sizing:border-box;transition:border .15s"
-            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+            style="width:100%;padding:9px 12px;border:1.5px solid #E7E5E4;border-radius:9px;font-size:13px;color:#1C1917;outline:none;box-sizing:border-box;transition:border .15s"
+            onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
         </div>
       </div>
 
@@ -2543,16 +2532,16 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 
       <!-- Actions -->
       <div style="display:flex;gap:10px;padding-top:4px">
-        <button onclick="addBuyerClose()" style="flex:1;padding:11px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-weight:600;color:#64748B;background:#fff;cursor:pointer">Cancel</button>
-        <button onclick="addBuyerSave()" id="ab-save-btn" style="flex:2;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#4F46E5,#6366F1);cursor:pointer;box-shadow:0 4px 12px rgba(79,70,229,.3)">
+        <button onclick="addBuyerClose()" style="flex:1;padding:11px;border:1.5px solid #E7E5E4;border-radius:10px;font-size:13px;font-weight:600;color:#64748B;background:#fff;cursor:pointer">Cancel</button>
+        <button onclick="addBuyerSave()" id="ab-save-btn" style="flex:2;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#5B4FD9,#6366F1);cursor:pointer;box-shadow:0 4px 12px rgba(79,70,229,.3)">
           Create Buyer Profile →
         </button>
       </div>
     </div>
 
     <!-- RIGHT: Auto Intelligence Preview -->
-    <div style="background:#F8FAFC;overflow-y:auto;padding:18px 16px;border-left:1px solid #E2E8F0">
-      <div style="font-size:10px;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:6px">
+    <div style="background:#FAFAF9;overflow-y:auto;padding:18px 16px;border-left:1px solid #E7E5E4">
+      <div style="font-size:10px;font-weight:700;color:#5B4FD9;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:6px">
         <svg width="12" height="12" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" stroke-linecap="round"/></svg>
         Auto Intelligence
       </div>
@@ -2561,7 +2550,7 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
         <!-- Populated by addBuyerEnrich() -->
         <div style="text-align:center;padding:32px 16px;color:#CBD5E1">
           <div style="font-size:28px;margin-bottom:8px">🧠</div>
-          <div style="font-size:11.5px;font-weight:600;color:#94A3B8">Start typing a buyer name</div>
+          <div style="font-size:11.5px;font-weight:600;color:#A8A29E">Start typing a buyer name</div>
           <div style="font-size:10.5px;color:#CBD5E1;margin-top:4px">Intelligence fields will appear here</div>
         </div>
       </div>
@@ -2576,23 +2565,23 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#EF4444" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:17px;font-weight:800;color:#0F172A;margin-bottom:8px">Manual Entry Options</div>
-      <div style="font-size:13px;color:#64748B;line-height:1.6">You have <strong id="me-confirm-count" style="color:#0F172A">0 buyers</strong> loaded from Excel.<br>Choose how you want to proceed.</div>
+      <div style="font-size:17px;font-weight:800;color:#1C1917;margin-bottom:8px">Manual Entry Options</div>
+      <div style="font-size:13px;color:#64748B;line-height:1.6">You have <strong id="me-confirm-count" style="color:#1C1917">0 buyers</strong> loaded from Excel.<br>Choose how you want to proceed.</div>
     </div>
 
     <!-- Option 1: Add on top of Excel -->
     <button onclick="document.getElementById('me-confirm-overlay').style.display='none';window.addBuyerOpen()"
-      style="width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border:1.5px solid #635BFF;border-radius:12px;background:#F5F3FF;cursor:pointer;transition:all .15s"
-      onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='#F5F3FF'">
+      style="width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border:1.5px solid #7C6EF0;border-radius:12px;background:#F5F3FF;cursor:pointer;transition:all .15s"
+      onmouseover="this.style.background='#EDEBFC'" onmouseout="this.style.background='#F5F3FF'">
       <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:36px;height:36px;background:#635BFF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="width:36px;height:36px;background:#7C6EF0;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke="#fff" stroke-width="2.2"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
         </div>
         <div>
-          <div style="font-size:13px;font-weight:700;color:#0A2540">Keep Excel &amp; Add More</div>
-          <div style="font-size:11.5px;color:#6B7280;margin-top:1px">Keep your <strong id="me-confirm-count2" style="color:#635BFF">0</strong> existing buyers and add new ones manually</div>
+          <div style="font-size:13px;font-weight:700;color:#1C1917">Keep Excel &amp; Add More</div>
+          <div style="font-size:11.5px;color:#78716C;margin-top:1px">Keep your <strong id="me-confirm-count2" style="color:#7C6EF0">0</strong> existing buyers and add new ones manually</div>
         </div>
-        <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke="#635BFF" stroke-width="2" style="margin-left:auto;flex-shrink:0"><path d="M6 3l5 5-5 5" stroke-linecap="round"/></svg>
+        <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke="#7C6EF0" stroke-width="2" style="margin-left:auto;flex-shrink:0"><path d="M6 3l5 5-5 5" stroke-linecap="round"/></svg>
       </div>
     </button>
 
@@ -2605,8 +2594,8 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7M10 11v6M14 11v6M4 7h16M8 7V5a2 2 0 014 0v2" stroke-linecap="round"/></svg>
         </div>
         <div>
-          <div style="font-size:13px;font-weight:700;color:#0A2540">Clear Excel &amp; Start Fresh</div>
-          <div style="font-size:11.5px;color:#6B7280;margin-top:1px">Remove all existing data and add buyers one by one manually</div>
+          <div style="font-size:13px;font-weight:700;color:#1C1917">Clear Excel &amp; Start Fresh</div>
+          <div style="font-size:11.5px;color:#78716C;margin-top:1px">Remove all existing data and add buyers one by one manually</div>
         </div>
         <svg width="16" height="16" fill="none" viewBox="0 0 16 16" stroke="#EF4444" stroke-width="2" style="margin-left:auto;flex-shrink:0"><path d="M6 3l5 5-5 5" stroke-linecap="round"/></svg>
       </div>
@@ -2614,7 +2603,7 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 
     <!-- Cancel -->
     <button onclick="document.getElementById('me-confirm-overlay').style.display='none'"
-      style="width:100%;padding:10px;border:none;border-radius:10px;font-size:12.5px;font-weight:500;color:#6B7280;background:transparent;cursor:pointer">
+      style="width:100%;padding:10px;border:none;border-radius:10px;font-size:12.5px;font-weight:500;color:#78716C;background:transparent;cursor:pointer">
       Cancel
     </button>
   </div>
@@ -3318,9 +3307,9 @@ const avatarBg=code=>{
     TW:'linear-gradient(135deg,#2dd4bf,#0891b2)',PC:'linear-gradient(135deg,#c084fc,#9333ea)',
     DA:'linear-gradient(135deg,#38bdf8,#0284c7)',KS:'linear-gradient(135deg,#a3e635,#65a30d)',
     NM:'linear-gradient(135deg,#fb7185,#e11d48)',RD:'linear-gradient(135deg,#fdba74,#ea580c)',
-    CS:'linear-gradient(135deg,#94a3b8,#475569)',IG:'linear-gradient(135deg,#86efac,#15803d)',
+    CS:'linear-gradient(135deg,#94a3b8,#44403C)',IG:'linear-gradient(135deg,#86efac,#15803d)',
     PR:'linear-gradient(135deg,#fca5a5,#b91c1c)',SF:'linear-gradient(135deg,#fcd34d,#d97706)',
-    OS:'linear-gradient(135deg,#6b7280,#374151)',BT:'linear-gradient(135deg,#f9a8d4,#be185d)',
+    OS:'linear-gradient(135deg,#6b7280,#44403C)',BT:'linear-gradient(135deg,#f9a8d4,#be185d)',
     VH:'linear-gradient(135deg,#7dd3fc,#1d4ed8)',PI:'linear-gradient(135deg,#d1d5db,#6b7280)',
     AE:'linear-gradient(135deg,#f59e0b,#f97316)',TF:'linear-gradient(135deg,#8b5cf6,#6366f1)',
     MC:'linear-gradient(135deg,#06b6d4,#3b82f6)',KM:'linear-gradient(135deg,#10b981,#059669)',
@@ -4094,9 +4083,9 @@ const ChartEngine = (() => {
     });
     // Legend
     ctx.fillStyle='#4ade80';ctx.fillRect(W-82,16,10,9);
-    ctx.fillStyle='#475569';ctx.font='9.5px Inter,sans-serif';ctx.textAlign='left';ctx.fillText('On-Time',W-68,24);
+    ctx.fillStyle='#44403C';ctx.font='9.5px Inter,sans-serif';ctx.textAlign='left';ctx.fillText('On-Time',W-68,24);
     ctx.fillStyle='#f87171';ctx.fillRect(W-82,30,10,9);
-    ctx.fillStyle='#475569';ctx.fillText('Late',W-68,38);
+    ctx.fillStyle='#44403C';ctx.fillText('Late',W-68,38);
   }
 
   function drawStatusDonut(hist, buyerId){
@@ -4120,7 +4109,7 @@ const ChartEngine = (() => {
     let ly=H-52;
     data.forEach(d=>{
       ctx.fillStyle=d.c;ctx.fillRect(8,ly,10,9);
-      ctx.font='9.5px Inter,sans-serif';ctx.fillStyle='#475569';ctx.textAlign='left';
+      ctx.font='9.5px Inter,sans-serif';ctx.fillStyle='#44403C';ctx.textAlign='left';
       ctx.fillText(`${d.l}: ${d.n} (${Math.round(d.n/total*100)}%)`,22,ly+8);
       ly+=17;
     });
@@ -4186,7 +4175,7 @@ const ChartEngine = (() => {
       pts.forEach((p,i)=>{
         if(p.x>clipX) return;
         ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,2*Math.PI);ctx.fillStyle='#16a34a';ctx.fill();
-        ctx.font='8px Inter,sans-serif';ctx.fillStyle='#475569';ctx.textAlign='center';ctx.fillText(vals[i]+'d',p.x,p.y-7);
+        ctx.font='8px Inter,sans-serif';ctx.fillStyle='#44403C';ctx.textAlign='center';ctx.fillText(vals[i]+'d',p.x,p.y-7);
         if(i%step===0||i===pts.length-1){
           ctx.font='8.5px Inter,sans-serif';ctx.fillStyle='#94a3b8';
           ctx.fillText(months[i].slice(5)+'/'+months[i].slice(2,4),p.x,H-pad.b+14);
@@ -5249,7 +5238,7 @@ const OASCharts = (() => {
       ctx.fillText(v+'L',pad.l-4,y+3);
     }
     // title
-    ctx.fillStyle='#374151'; ctx.font='bold 10px system-ui'; ctx.textAlign='left';
+    ctx.fillStyle='#44403C'; ctx.font='bold 10px system-ui'; ctx.textAlign='left';
     ctx.fillText('Portfolio Receivables Aging (₹)',pad.l,12);
     // bars
     values.forEach((v,i)=>{
@@ -5284,7 +5273,7 @@ const OASCharts = (() => {
     const entryPost=entries.map(e=>e.isTarget?{...e,amt:e.amt+OV}:e);
     const maxAmt=Math.max(...entryPost.map(e=>e.amt),1);
     const rowH=(H-pad.t-pad.b)/Math.max(entries.length,1);
-    ctx.fillStyle='#374151'; ctx.font='bold 10px system-ui'; ctx.textAlign='left';
+    ctx.fillStyle='#44403C'; ctx.font='bold 10px system-ui'; ctx.textAlign='left';
     ctx.fillText('Buyer Concentration (Post-Order)',pad.l,12);
     entryPost.forEach((e,i)=>{
       const y=pad.t+i*rowH;
@@ -5477,7 +5466,7 @@ const OASCharts = (() => {
 
     const insEl = document.getElementById('cff-ai-insights');
     if (insEl) {
-      insEl.innerHTML = `<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:9px;display:flex;align-items:center;gap:5px"><span style="font-size:10px">🧠</span> AI Stress Analysis</div>` +
+      insEl.innerHTML = `<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#44403C;margin-bottom:9px;display:flex;align-items:center;gap:5px"><span style="font-size:10px">🧠</span> AI Stress Analysis</div>` +
         insights.map(ins=>`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;line-height:1.45">
           <span style="flex-shrink:0;font-size:11px;margin-top:.5px">${ins.icon}</span>
           <span style="font-size:10.5px;color:#94a3b8">${ins.text}</span>
@@ -5490,10 +5479,10 @@ const OASCharts = (() => {
       const worsens = scoreSim > scoreBase;
       const arrow   = worsens ? '↓' : '↑';
       const arrowCol = worsens ? '#ef4444' : '#22c55e';
-      impEl.innerHTML = `<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:10px;display:flex;align-items:center;gap:5px"><span style="font-size:10px">⚡</span> Decision Impact</div>
+      impEl.innerHTML = `<div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#44403C;margin-bottom:10px;display:flex;align-items:center;gap:5px"><span style="font-size:10px">⚡</span> Decision Impact</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div>
-            <div style="font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin-bottom:4px">Current Scenario</div>
+            <div style="font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#44403C;margin-bottom:4px">Current Scenario</div>
             <div style="background:${stressBg(scoreBase)};border:1px solid ${stressBdr(scoreBase)};border-radius:9px;padding:7px 10px">
               <div style="font-size:13px;font-weight:900;color:${stressCol(scoreBase)};line-height:1">${scoreBase}</div>
               <div style="font-size:10px;font-weight:700;color:${stressCol(scoreBase)};margin-top:2px">${stressLabel(scoreBase)}</div>
@@ -5501,7 +5490,7 @@ const OASCharts = (() => {
           </div>
           <div style="text-align:center;font-size:16px;font-weight:900;color:${arrowCol};line-height:1">${arrow}</div>
           <div>
-            <div style="font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin-bottom:4px">After New Order</div>
+            <div style="font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#44403C;margin-bottom:4px">After New Order</div>
             <div style="background:${stressBg(scoreSim)};border:2px solid ${stressBdr(scoreSim)};border-radius:9px;padding:7px 10px">
               <div style="font-size:13px;font-weight:900;color:${stressCol(scoreSim)};line-height:1">${scoreSim}</div>
               <div style="font-size:10px;font-weight:700;color:${stressCol(scoreSim)};margin-top:2px">${stressLabel(scoreSim)}</div>
@@ -5942,7 +5931,7 @@ function _renderBusinessDashboard(){
     const buyerInvs = (invoices||[])
       .filter(i => i.buyerId===buyerId && i.dueDate)
       .sort((a,b) => new Date(a.dueDate)-new Date(b.dueDate));
-    if(buyerInvs.length < 2) return `<svg width="${W}" height="${H}"><line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="#E6EBF1" stroke-width="1.5" stroke-dasharray="3,3"/></svg>`;
+    if(buyerInvs.length < 2) return `<svg width="${W}" height="${H}"><line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="#E7E5E4" stroke-width="1.5" stroke-dasharray="3,3"/></svg>`;
 
     // Compute delay for each invoice: positive=late, negative=early
     const pts = buyerInvs.map(i => {
@@ -5966,15 +5955,26 @@ function _renderBusinessDashboard(){
       const y=H-PAD-((v-mn)/range)*(H-PAD*2);
       return [x.toFixed(1),y.toFixed(1)];
     });
-    const linePts=coords.map(c=>c.join(',')).join(' ');
-    const areaClose=`${coords[coords.length-1][0]},${H} ${coords[0][0]},${H}`;
-    const areaPts=linePts+' '+areaClose;
-
-    // Smooth dots for last point
+    // Build smooth cubic bezier path (Catmull-Rom → cubic bezier)
+    const tension = 0.4;
+    let d = `M ${coords[0][0]} ${coords[0][1]}`;
+    for(let i=0;i<coords.length-1;i++){
+      const p0=coords[Math.max(i-1,0)];
+      const p1=coords[i];
+      const p2=coords[i+1];
+      const p3=coords[Math.min(i+2,coords.length-1)];
+      const cp1x=(+p1[0])+(+p2[0]-+p0[0])*tension;
+      const cp1y=(+p1[1])+(+p2[1]-+p0[1])*tension;
+      const cp2x=(+p2[0])-(+p3[0]-+p1[0])*tension;
+      const cp2y=(+p2[1])-(+p3[1]-+p1[1])*tension;
+      d+=` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
+    }
     const [lx,ly]=coords[coords.length-1];
+    const areaD=d+` L ${lx} ${H} L ${coords[0][0]} ${H} Z`;
+
     return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">
-      <polygon points="${areaPts}" fill="${fillCol}" stroke="none"/>
-      <polyline points="${linePts}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${areaD}" fill="${fillCol}" stroke="none"/>
+      <path d="${d}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       <circle cx="${lx}" cy="${ly}" r="2.5" fill="${col}" stroke="#fff" stroke-width="1"/>
     </svg>`;
   };
@@ -6052,50 +6052,58 @@ function _renderBusinessDashboard(){
     ],
   };
 
-  // Stripe Design System — problems shout, everything else whispers
-  const riskCol = r => r==='High'?'#EF4444':r==='Medium'?'#F59E0B':'#10B981';
-  const riskBg  = r => r==='High'?'#FEF2F2':r==='Medium'?'#FFFBEB':'#F0FDF4';
-  const delayCol = d => d<=30?'#10B981':d<=60?'#F59E0B':d<=90?'#F97316':'#EF4444';
-  // Stripe pill badge helper
+  // ── Color philosophy: 90% neutral · 8% accent · 2% critical ──
+  // Color appears ONLY where it carries signal. Everything else is ink on paper.
+  const ACCENT = '#7C6EF0';
+  const CRITICAL = '#DC2626';   // true red — reserved for overdue > 40% or High risk
+  const WARN_COL = '#92400E';   // dark amber text — readable, not loud
+  const WARN_BG  = 'rgba(120,80,0,.06)';
+  const CRIT_BG  = 'rgba(220,38,38,.06)';
+  const NEUTRAL_ICON_BG = '#F5F5F4'; // all icons same neutral bg
+
+  // Risk: only High gets color. Medium gets a whisper. Low gets nothing.
+  const riskCol = r => r==='High'?CRITICAL:r==='Medium'?WARN_COL:'#78716C';
+  const riskBg  = r => r==='High'?CRIT_BG  :r==='Medium'?WARN_BG :'rgba(107,114,128,.06)';
+  // Delay: neutral until genuinely critical (>60 days)
+  const delayCol = d => d>60?CRITICAL:d>30?WARN_COL:'#44403C';
+  // Pill badge — only High is colored, others are gray text
   const riskPill = r => `<span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.02em;background:${riskBg(r)};color:${riskCol(r)}">${r}</span>`;
 
-  // ── Stripe-style KPI cards — accent dot, no colored border except overdue
+  // ── KPI cards — all neutral except Overdue when it matters ──
+  const _iconStroke = '#A8A29E'; // all icons same muted gray
   const kpis = [
     {
-      dot:'#635BFF',
-      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#635BFF" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="3"/><circle cx="12" cy="14" r="2" fill="#635BFF" stroke="none"/></svg>`,
+      icon:`<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="${_iconStroke}" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="3"/><circle cx="12" cy="14" r="2" fill="${_iconStroke}" stroke="none"/></svg>`,
       label:'Total Receivables', val:fmt(totalExp),
       sub:`${totalBuyers} buyers · ${totalInvoices} invoices`,
-      valCol:'#635BFF', bg:'rgba(99,91,255,.06)',
     },
     {
-      dot:healthCol,
-      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="${healthCol}" stroke-width="2"><path d="M12 21C12 21 4 15 4 9a8 8 0 0116 0c0 6-8 12-8 12z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round"/></svg>`,
+      icon:`<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="${_iconStroke}" stroke-width="1.8"><path d="M12 21C12 21 4 15 4 9a8 8 0 0116 0c0 6-8 12-8 12z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round"/></svg>`,
       label:'Cash Health Score', val:`${healthScore}/100`,
-      pill:healthLabel, pillCol:healthCol,
+      // Only the badge carries color — the number stays black
+      badge:healthLabel, badgeCol:healthScore>=70?'#065F46':healthScore>=45?WARN_COL:CRITICAL,
+      badgeBg:healthScore>=70?'rgba(16,185,129,.1)':healthScore>=45?WARN_BG:CRIT_BG,
       sub:'Overall business health',
-      valCol:healthCol, bg:healthScore>=70?'rgba(16,185,129,.06)':healthScore>=40?'rgba(245,158,11,.06)':'rgba(239,68,68,.06)',
     },
     {
-      dot:'#F59E0B',
-      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round"/></svg>`,
+      icon:`<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="${_iconStroke}" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke-linecap="round"/></svg>`,
       label:'High Risk Buyers', val:highRiskBuyers.length,
+      // Value turns red ONLY if there are actual high-risk buyers
+      valDanger:highRiskBuyers.length>0,
       sub:`${highRiskPct}% of delayed receivables`,
-      valCol:'#92400E', bg:'rgba(245,158,11,.06)',
     },
     {
-      dot:'#F59E0B',
-      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#F59E0B" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3" stroke-linecap="round"/></svg>`,
+      icon:`<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="${_iconStroke}" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3" stroke-linecap="round"/></svg>`,
       label:'Concentration Risk', val:`${concPct}%`,
+      valDanger:concPct>70,
       sub:'Top 3 buyers exposure',
-      valCol:'#92400E', bg:'rgba(245,158,11,.06)',
     },
     {
-      dot:'#EF4444', danger:true,
-      icon:`<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#EF4444" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
+      icon:`<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="${overdueRatio>40?CRITICAL:_iconStroke}" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>`,
       label:'Overdue Exposure', val:fmt(overdueAmtCapped),
+      // Overdue is the one card that earns the red border — only when it's serious
+      critical:overdueRatio>40,
       sub:`${overdueRatio}% of portfolio overdue`,
-      valCol:'#EF4444', bg:'rgba(239,68,68,.06)',
     },
   ];
 
@@ -6107,98 +6115,289 @@ function _renderBusinessDashboard(){
   const overdueCount = invoices.filter(i=>i.status==='Overdue'||(!i.paidDate&&i.status!=='Paid'&&i.dueDate&&new Date(i.dueDate)<today)).length;
   const riskBar = (count,total,col) => total>0?`<div style="height:100%;width:${Math.round(count/total*100)}%;background:${col};border-radius:2px"></div>`:'';
 
-  return `
-<div id="dash-content" style="padding:14px 20px;width:100%;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;font-family:'Inter',-apple-system,sans-serif">
+  // ── Intelligent Business Header ──
+  const _now = new Date();
+  const _hr = _now.getHours();
+  // Full first name in proper case (not all-caps)
+  const _userName = (()=>{
+    try{
+      const n=localStorage.getItem('cfiq_login_name')||'';
+      const first=n.split(/[\s@]/)[0];
+      if(!first) return 'there';
+      return first.charAt(0).toUpperCase()+first.slice(1).toLowerCase();
+    }catch{return 'there';}
+  })();
+  // First login of day → time-based greeting. Return visit same day → "Welcome back"
+  const _todayKey = _now.toISOString().slice(0,10); // e.g. "2026-07-05"
+  const _lastSeen = (()=>{try{return localStorage.getItem('cfiq_last_seen_date');}catch{return null;}})();
+  const _isReturn = _lastSeen === _todayKey;
+  try{ localStorage.setItem('cfiq_last_seen_date', _todayKey); }catch{}
+  const _greeting = _isReturn
+    ? 'Welcome back'
+    : (_hr>=5&&_hr<12?'Good Morning':_hr>=12&&_hr<17?'Good Afternoon':'Good Evening');
+  const _days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const _months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const _dayName=_days[_now.getDay()];
+  const _dd=String(_now.getDate()).padStart(2,'0');
+  const _dateStr=`${_dd} ${_months[_now.getMonth()]} ${_now.getFullYear()}`;
+  const _h12=_now.getHours()%12||12;
+  const _ampm=_now.getHours()>=12?'PM':'AM';
+  const _syncTime=`${String(_h12).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')} ${_ampm}`;
 
-  <!-- Stripe-style header -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <div>
-      <div style="font-size:18px;font-weight:700;color:#0A2540;letter-spacing:-.02em">Cash Flow Dashboard</div>
-      <div style="font-size:11.5px;color:#6B7280;margin-top:1px;font-weight:400">${totalBuyers} buyers · ${totalInvoices} invoices loaded</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button onclick="window.addBuyerOpenWithClear()" style="display:flex;align-items:center;gap:6px;background:#fff;color:#6B7280;border:1.5px solid #E6EBF1;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;box-shadow:0 1px 3px rgba(10,37,64,.05)" onmouseover="this.style.borderColor='#635BFF';this.style.color='#635BFF'" onmouseout="this.style.borderColor='#E6EBF1';this.style.color='#6B7280'">
-        <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.5"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
-        Manual Entry
-      </button>
-      <button onclick="cfiqShowOnboarding()" style="display:flex;align-items:center;gap:6px;background:#635BFF;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(99,91,255,.35);transition:all .15s" onmouseover="this.style.background='#5A54E8'" onmouseout="this.style.background='#635BFF'">
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round"/></svg>
-        Upload
-      </button>
+  // ── Balanced Business Brief — positive / neutral / critical pool ──
+  const lowBuyers  = buyers.filter(b=>classifyRisk(b)==='Low');
+  const medBuyers  = buyers.filter(b=>classifyRisk(b)==='Medium');
+
+  // Build candidate pools
+  const _positives = [];
+  const _neutrals  = [];
+  const _criticals = [];
+
+  // ── POSITIVE signals ──
+  if(highRiskBuyers.length===0 && totalBuyers>0)
+    _positives.push('No high-risk buyers in your portfolio right now.');
+  if(onTimePct>=70)
+    _positives.push(`${onTimePct}% of your buyers are paying on time.`);
+  if(lowBuyers.length>0)
+    _positives.push(`${lowBuyers.length} buyer${lowBuyers.length!==1?' are':' is'} Low Risk — reliable and consistent.`);
+  if(avgDelay<=20 && avgDelay>=0 && totalBuyers>0)
+    _positives.push(`Average payment delay is just ${avgDelay} days — well within range.`);
+  if(overdueRatio<15 && overdueRatio>=0 && totalBuyers>0)
+    _positives.push(`Overdue exposure is low at ${overdueRatio}% of portfolio.`);
+  if(healthScore>=70)
+    _positives.push(`Cash Health Score is ${healthScore}/100 — your portfolio is in good shape.`);
+  if(concPct<40 && totalBuyers>=3)
+    _positives.push(`Portfolio is well diversified — concentration risk at just ${concPct}%.`);
+
+  // ── NEUTRAL signals ──
+  _neutrals.push(`${totalBuyers} buyer${totalBuyers!==1?'s':''} tracked · ${totalInvoices} invoice${totalInvoices!==1?'s':''} analysed.`);
+  _neutrals.push(`Last synced today at ${_syncTime}.`);
+  if(medBuyers.length>0)
+    _neutrals.push(`${medBuyers.length} buyer${medBuyers.length!==1?'s':''} in the Medium Risk zone — worth monitoring.`);
+  const _sectorMap={};
+  buyers.forEach(b=>{if(b.sector)_sectorMap[b.sector]=(_sectorMap[b.sector]||0)+(b.currentExposure||0);});
+  const _topSector=Object.entries(_sectorMap).sort((a,b)=>b[1]-a[1])[0];
+  if(_topSector) _neutrals.push(`${_topSector[0]} is your largest sector by exposure.`);
+
+  // ── CRITICAL signals ──
+  if(highRiskBuyers.length>0)
+    _criticals.push(`${highRiskBuyers.length} buyer${highRiskBuyers.length!==1?'s require':' requires'} immediate follow-up.`);
+  if(overdueRatio>40)
+    _criticals.push(`Overdue exposure is ${overdueRatio}% of portfolio — ${fmt(overdueAmtCapped)} at risk.`);
+  else if(overdueRatio>20)
+    _criticals.push(`Overdue exposure at ${overdueRatio}% (${fmt(overdueAmtCapped)}) needs attention.`);
+  if(avgDelay>60)
+    _criticals.push(`Average payment delay is ${avgDelay} days — significantly above healthy range.`);
+  else if(avgDelay>30)
+    _criticals.push(`Average payment delay of ${avgDelay} days exceeds the 30-day threshold.`);
+  if(healthScore<45)
+    _criticals.push(`Cash Health Score is ${healthScore}/100 — immediate action needed.`);
+  if(concPct>60)
+    _criticals.push(`Top buyers hold ${concPct}% of receivables — high concentration risk.`);
+
+  // ── Pick balanced mix: up to 2 positive + 2 critical + 1–2 neutral ──
+  const _pickedP = _positives.slice(0,2);
+  const _pickedC = _criticals.slice(0,2);
+  const _nSlots  = Math.max(1, Math.min(2, 5-_pickedP.length-_pickedC.length));
+  const _pickedN = _neutrals.slice(0,_nSlots);
+
+  // Interleave: positive first, then neutral, then critical (good news → context → risk)
+  const _briefItems = [
+    ..._pickedP.map(t=>({type:'positive',text:t})),
+    ..._pickedN.map(t=>({type:'neutral', text:t})),
+    ..._pickedC.map(t=>({type:'critical',text:t})),
+  ];
+
+  // Chip style lookup
+  const _chipSt = t=>({
+    positive:{bg:'rgba(16,185,129,.08)',col:'#065F46',  iconCol:'#10B981',icon:'✓',glow:'0 0 0 1px rgba(16,185,129,.15),0 2px 8px rgba(16,185,129,.10)'},
+    neutral: {bg:'rgba(107,114,128,.07)',col:'#44403C', iconCol:'#A8A29E',icon:'ℹ',glow:'none'},
+    critical:{bg:'rgba(220,38,38,.07)',  col:'#991B1B', iconCol:'#DC2626',icon:'⚠',glow:'0 0 0 1px rgba(220,38,38,.13),0 2px 8px rgba(220,38,38,.09)'},
+  })[t];
+
+  // ── One bold headline insight — balanced, acknowledges both good and risk ──
+  const _headline = (()=>{
+    const hasP = _positives.length>0;
+    const hasC = _criticals.length>0;
+    // Mixed: one strong positive + one risk
+    if(hasP&&hasC){
+      if(onTimePct>=70&&highRiskBuyers.length>0){
+        const n=highRiskBuyers.length;
+        return `${onTimePct}% of your buyers pay on time, but ${n} buyer${n>1?'s require':' requires'} a follow-up today.`;
+      }
+      if(healthScore>=55&&overdueRatio>25){
+        return `Portfolio health is solid at ${healthScore}/100, but overdue exposure (${overdueRatio}%) is worth addressing this week.`;
+      }
+      if(lowBuyers.length>highRiskBuyers.length){
+        const n=highRiskBuyers.length;
+        return `${lowBuyers.length} buyers are performing well — focus your energy on the ${n} in the high-risk zone.`;
+      }
+      return `Your portfolio has clear strengths, but a few buyers are creating cash-flow risk — the brief below highlights both.`;
+    }
+    // All positive
+    if(hasP&&!hasC){
+      if(healthScore>=75&&overdueRatio<15)
+        return `Your receivables are in great shape — ${onTimePct}% on-time rate and overdue exposure within a healthy range.`;
+      if(highRiskBuyers.length===0&&totalBuyers>0)
+        return `No high-risk buyers detected. Your portfolio is performing cleanly right now.`;
+      return `Portfolio metrics are looking good — keep up the momentum on collections.`;
+    }
+    // All critical
+    if(!hasP&&hasC){
+      if(highRiskBuyers.length>0){
+        const worst=highRiskBuyers[0];
+        return `${worst.name.split(' ')[0]} alone carries ${fmt(worst.currentExposure||0)} in high-risk exposure — resolving this would meaningfully improve cash health.`;
+      }
+      return `Cash health needs attention — the brief below outlines the key risks in your portfolio today.`;
+    }
+    // Neutral fallback
+    return `${totalBuyers} buyers and ${totalInvoices} invoices analysed — your portfolio overview is ready.`;
+  })();
+
+  return `
+<style>
+@keyframes _dashIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes _briefIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+</style>
+<div id="dash-content" style="padding:14px 20px;width:100%;box-sizing:border-box;min-height:100%;display:flex;flex-direction:column;overflow:visible;font-family:'Inter',-apple-system,sans-serif">
+
+  <!-- ── Intelligent Business Operating System Header ── -->
+  <div style="background:rgba(255,255,255,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(230,235,241,.95);border-radius:20px;padding:18px 22px;margin-bottom:14px;box-shadow:0 4px 28px rgba(28,25,23,.07),0 1px 4px rgba(28,25,23,.04);animation:_dashIn .55s cubic-bezier(.22,1,.36,1) forwards;flex-shrink:0">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px">
+
+      <!-- Left: greeting + date + brief -->
+      <div style="flex:1;min-width:0">
+        <!-- Greeting + day/date -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+          <div style="font-size:20px;font-weight:700;color:#1C1917;letter-spacing:-.03em;line-height:1.2">${_greeting}, ${_userName}</div>
+          <div style="width:1px;height:15px;background:#D6D3D1;flex-shrink:0;align-self:center"></div>
+          <div style="font-size:12.5px;font-weight:500;color:#78716C;letter-spacing:-.01em">${_dayName} • ${_dateStr}</div>
+        </div>
+        <!-- Headline insight — one sentence, one reason to log in -->
+        <div style="font-size:13.5px;font-weight:600;color:#1C1917;line-height:1.55;letter-spacing:-.01em;margin-bottom:6px;max-width:640px">${_headline}</div>
+        <!-- Last sync -->
+        <div style="font-size:10.5px;color:#A8A29E;margin-bottom:13px;font-weight:400;letter-spacing:.01em">Last Data Sync: Today &nbsp;•&nbsp; ${_syncTime}</div>
+
+        <!-- Separator -->
+        <div style="height:1px;background:linear-gradient(90deg,#E7E5E4 0%,rgba(230,235,241,0) 85%);margin-bottom:11px"></div>
+
+        <!-- Brief title -->
+        <div style="font-size:9px;font-weight:700;color:#B5B0AB;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Today's Business Brief</div>
+
+        <!-- Brief items — balanced chips: positive / neutral / critical -->
+        <div style="display:flex;flex-wrap:wrap;gap:5px 8px">
+          ${_briefItems.map((item,i)=>{const s=_chipSt(item.type);return`
+          <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 11px 4px 8px;background:${s.bg};border-radius:100px;box-shadow:${s.glow};animation:_briefIn .4s cubic-bezier(.22,1,.36,1) ${130+i*100}ms both">
+            <span style="font-size:10px;font-weight:700;color:${s.iconCol};flex-shrink:0;line-height:1">${s.icon}</span>
+            <span style="font-size:11.5px;font-weight:500;color:${s.col};letter-spacing:-.01em;white-space:nowrap">${item.text}</span>
+          </div>`}).join('')}
+        </div>
+      </div>
+
+      <!-- Right: action buttons + meta -->
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;padding-top:2px">
+        <div style="display:flex;gap:8px">
+          <button onclick="window.addBuyerOpenWithClear()" style="display:flex;align-items:center;gap:6px;background:#fff;color:#78716C;border:1.5px solid #E7E5E4;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;box-shadow:0 1px 3px rgba(28,25,23,.05)" onmouseover="this.style.borderColor='#7C6EF0';this.style.color='#7C6EF0'" onmouseout="this.style.borderColor='#E7E5E4';this.style.color='#78716C'">
+            <svg width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.5"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
+            Manual Entry
+          </button>
+          <button onclick="cfiqShowOnboarding()" style="display:flex;align-items:center;gap:6px;background:#7C6EF0;color:#fff;border:none;border-radius:9px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(99,91,255,.35);transition:all .15s" onmouseover="this.style.background='#6B5EDF'" onmouseout="this.style.background='#7C6EF0'">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round"/></svg>
+            Upload
+          </button>
+        </div>
+        <div style="font-size:10px;color:#B5B0AB;font-weight:400;text-align:right;line-height:1.6">${totalBuyers} buyers &nbsp;·&nbsp; ${totalInvoices} invoices</div>
+      </div>
+
     </div>
   </div>
 
-  <!-- KPI Row — Stripe card style: accent dot, white card, no colored border -->
+  <!-- KPI Row — 90% neutral, color only where it earns it -->
   <div id="dash-kpi" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;flex-shrink:0">
     ${kpis.map(k=>`
-    <div style="background:#fff;border:1px solid #E6EBF1;border-radius:12px;padding:10px 12px;box-shadow:0 1px 3px rgba(10,37,64,.05);position:relative;overflow:hidden;transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 4px 16px rgba(10,37,64,.1)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(10,37,64,.05)'">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${k.dot};border-radius:16px 16px 0 0;opacity:${k.danger?1:.6}"></div>
-      <!-- pill badge top-right -->
-      ${k.pill?`<div style="text-align:right;margin-bottom:4px"><span style="background:${k.pillCol}15;color:${k.pillCol};border-radius:20px;padding:1px 7px;font-size:9px;font-weight:600">${k.pill}</span></div>`:`<div style="margin-bottom:6px"></div>`}
-      <!-- icon + value inline -->
+    <div style="background:#fff;border:1.5px solid ${k.critical?'rgba(220,38,38,.25)':'#E7E5E4'};border-radius:12px;padding:10px 12px;box-shadow:0 1px 3px rgba(28,25,23,.04);position:relative;overflow:hidden;transition:box-shadow .2s,border-color .2s" onmouseover="this.style.boxShadow='0 3px 12px rgba(28,25,23,.08)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(28,25,23,.04)'">
+      <!-- badge or spacer -->
+      ${k.badge?`<div style="text-align:right;margin-bottom:4px"><span style="background:${k.badgeBg};color:${k.badgeCol};border-radius:20px;padding:1px 7px;font-size:9px;font-weight:600;letter-spacing:.02em">${k.badge}</span></div>`:`<div style="margin-bottom:6px"></div>`}
+      <!-- icon + value -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <div style="width:28px;height:28px;border-radius:8px;background:${k.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0">${k.icon.replace('width="16" height="16"','width="14" height="14"')}</div>
-        <div style="font-size:18px;font-weight:700;color:#0A2540;letter-spacing:-.4px;line-height:1">${k.val}</div>
+        <div style="width:26px;height:26px;border-radius:7px;background:${NEUTRAL_ICON_BG};display:flex;align-items:center;justify-content:center;flex-shrink:0">${k.icon}</div>
+        <div style="font-size:18px;font-weight:700;color:${k.valDanger?CRITICAL:k.critical&&k.valDanger!==false?CRITICAL:'#1C1917'};letter-spacing:-.4px;line-height:1">${k.val}</div>
       </div>
-      <div style="font-size:10.5px;font-weight:500;color:#6B7280">${k.label}</div>
-      <div style="font-size:10px;color:#9CA3AF;margin-top:1px">${k.sub}</div>
+      <div style="font-size:10.5px;font-weight:500;color:#78716C">${k.label}</div>
+      <div style="font-size:10px;color:#B5B0AB;margin-top:1px">${k.sub}</div>
     </div>`).join('')}
   </div>
 
   <!-- ── Main 4-column grid ── -->
-  <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:stretch;flex:1;min-height:0;overflow:hidden">
+  <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:start;padding-bottom:20px">
 
     <!-- COL 1: Top Delayed / Top Punctual Buyers (dual tab) -->
-    <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(10,37,64,.05)">
+    <div style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(28,25,23,.05)">
 
       <!-- Stripe segmented control tab bar -->
-      <div style="padding:10px 14px 9px;border-bottom:1px solid #E6EBF1;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff">
-        <div style="background:#F6F9FC;border:1px solid #E6EBF1;border-radius:10px;padding:3px;display:flex;gap:1px;flex:1;max-width:300px">
+      <div style="padding:10px 14px 9px;border-bottom:1px solid #E7E5E4;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff">
+        <div style="background:#F5F5F4;border:1px solid #E7E5E4;border-radius:10px;padding:3px;display:flex;gap:1px;flex:1;max-width:300px">
           <button id="tdb-tab-delayed" onclick="window._tdbTab='delayed';window._tdbSwitch()"
-            style="flex:1;padding:5px 10px;border:none;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .18s;background:#635BFF;color:#fff;box-shadow:0 2px 8px rgba(99,91,255,.3);letter-spacing:-.01em">
+            style="flex:1;padding:5px 10px;border:none;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .18s;background:#7C6EF0;color:#fff;box-shadow:0 2px 8px rgba(99,91,255,.3);letter-spacing:-.01em">
             Top Delayed
           </button>
           <button id="tdb-tab-punctual" onclick="window._tdbTab='punctual';window._tdbSwitch()"
-            style="flex:1;padding:5px 10px;border:none;border-radius:7px;font-size:11.5px;font-weight:500;cursor:pointer;transition:all .18s;background:transparent;color:#6B7280;letter-spacing:-.01em">
+            style="flex:1;padding:5px 10px;border:none;border-radius:7px;font-size:11.5px;font-weight:500;cursor:pointer;transition:all .18s;background:transparent;color:#78716C;letter-spacing:-.01em">
             Top Punctual
           </button>
         </div>
-        <button id="tdb-view-all" onclick="AppState.set({page:'allDrainers'});App.onStateChange()" style="font-size:11px;color:#635BFF;background:none;border:none;cursor:pointer;font-weight:600;white-space:nowrap;letter-spacing:-.01em">View All →</button>
+        <button id="tdb-view-all" onclick="AppState.set({page:'allDrainers'});App.onStateChange()" style="font-size:11px;color:#7C6EF0;background:none;border:none;cursor:pointer;font-weight:600;white-space:nowrap;letter-spacing:-.01em">View All →</button>
       </div>
 
       <!-- Delayed buyers panel -->
       <div id="tdb-panel-delayed" style="transition:opacity .25s,transform .25s;opacity:1;transform:translateX(0)">
         <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:#F9FAFB">
-            ${['#','Buyer','Exposure','Delay','Trend','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
+          <thead><tr style="background:#FAFAF9">
+            ${['#','Buyer','Exposure','Delay','Trend','Contrib','Risk','Follow Up'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===7?'center':i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#A8A29E;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
           </tr></thead>
           <tbody>
             ${drainers.slice(0,5).map((b,i)=>{
-              const risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#F9FAFB';
+              const risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#FAFAF9';
               const dc=delayCol(b.avgDelay||0);
-              return `<tr style="border-top:1px solid #E6EBF1;background:${rowBg};cursor:pointer;transition:background .12s"
-                onmouseover="this.style.background='#EEF2FF'"
+              const ph=(b.phone||'').replace(/\s+/g,''); const hasPhone=ph&&ph!=='—';
+              const fuMsg=encodeURIComponent(`Dear ${b.contact||b.name}, this is a reminder regarding your outstanding payment. Kindly arrange payment at the earliest. Thank you.`);
+              const fuIc='width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;text-decoration:none;';
+              return `<tr style="border-top:1px solid #E7E5E4;background:${rowBg};cursor:pointer;transition:background .12s"
+                onmouseover="this.style.background='#F4F6F9'"
                 onmouseout="this.style.background='${rowBg}'"
                 onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-                <td style="padding:8px 8px;text-align:center;font-size:10px;color:#9CA3AF;font-weight:500">${i+1}</td>
+                <td style="padding:8px 8px;text-align:center;font-size:10px;color:#C4C0BB;font-weight:500">${i+1}</td>
                 <td style="padding:8px 10px">
                   <div style="display:flex;align-items:center;gap:8px">
-                    <div style="width:24px;height:24px;border-radius:8px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#635BFF;flex-shrink:0">${(b.name||'?')[0]}</div>
-                    <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px">${b.name}</div>
+                    <div style="width:24px;height:24px;border-radius:8px;background:#F5F5F4;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#78716C;flex-shrink:0">${(b.name||'?')[0]}</div>
+                    <div style="font-size:12px;font-weight:600;color:#1C1917;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${b.name}</div>
                   </div>
                 </td>
-                <td style="padding:8px 10px;font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap">${fmt(b._exp||0)}</td>
-                <td style="padding:8px 10px;font-size:12px;font-weight:700;color:${dc};white-space:nowrap">${b.avgDelay||0}d</td>
+                <td style="padding:8px 10px;font-size:12px;font-weight:600;color:#1C1917;white-space:nowrap">${fmt(b._exp||0)}</td>
+                <td style="padding:8px 10px;font-size:12px;font-weight:600;color:${dc};white-space:nowrap">${b.avgDelay||0}d</td>
                 <td style="padding:5px 8px;vertical-align:middle">${sparkline(b.id)}</td>
-                <td style="padding:8px 10px"><span style="background:#EEF2FF;color:#4F46E5;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700">${contribFmt(b.contrib)}</span></td>
-                <td style="padding:8px 10px"><span style="background:${riskBg(risk)};color:${rc};border-radius:6px;padding:2px 8px;font-size:9.5px;font-weight:700">${risk}</span></td>
+                <td style="padding:8px 10px"><span style="background:#F5F5F4;color:#78716C;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:600">${contribFmt(b.contrib)}</span></td>
+                <td style="padding:8px 10px">${riskPill(risk)}</td>
+                <td style="padding:8px 6px" onclick="event.stopPropagation()">
+                  <div style="display:flex;gap:3px;justify-content:center">
+                    <a href="${hasPhone?'tel:'+ph:'#'}" title="${hasPhone?'Call':'No phone'}" style="${fuIc}background:${hasPhone?'#fff':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 3px rgba(0,0,0,.2)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="${hasPhone?'#111827':'#D6D3D1'}"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.45 2.33.69 3.58.69a1 1 0 011 1V20a1 1 0 01-1 1C10.18 21 3 13.82 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.26.24 2.47.69 3.58a1 1 0 01-.24 1.01l-2.32 2.2z"/></svg>
+                    </a>
+                    <a href="${hasPhone?'https://wa.me/91'+ph.replace(/^\+91/,'').replace(/^91/,'')+'?text='+fuMsg:'#'}" target="_blank" title="${hasPhone?'WhatsApp':'No phone'}" style="${fuIc}background:${hasPhone?'#25D366':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 3px rgba(37,211,102,.4)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'">
+                      <svg width="11" height="11" viewBox="0 0 32 32" fill="none"><path d="M16 2C8.27 2 2 8.27 2 16c0 2.44.66 4.73 1.8 6.72L2 30l7.45-1.75A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="${hasPhone?'#fff':'#A8A29E'}"/><path d="M22.45 19.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="${hasPhone?'#25D366':'#D6D3D1'}"/></svg>
+                    </a>
+                    <a href="${b.email?'mailto:'+b.email+'?subject=Payment+Reminder&body='+fuMsg:'#'}" title="${b.email?'Email':'No email'}" style="${fuIc}background:${b.email?'#1C1C1E':'#F3F4F6'};border-radius:5px;box-shadow:${b.email?'0 1px 3px rgba(0,0,0,.25)':'none'};pointer-events:${b.email?'auto':'none'}" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'">
+                      <svg width="10" height="8" viewBox="0 0 20 15" fill="none"><rect x="0.8" y="0.8" width="18.4" height="13.4" rx="1.5" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4"/><path d="M1 2l9 6.5L19 2" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    </a>
+                  </div>
+                </td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
-        <div style="padding:8px 14px 10px;border-top:1px solid #E6EBF1;background:#F9FAFB;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:10px;color:#6B7280;font-weight:500">Top 5 of ${totalBuyers} buyers · ${fmt(totalDrainerExp)}</span>
-          <span style="font-size:10px;color:${overdueCount>0?'#EF4444':'#10B981'};font-weight:600">${overdueCount} overdue</span>
+        <div style="padding:8px 14px 10px;border-top:1px solid #E7E5E4;background:#FAFAF9;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:10px;color:#A8A29E;font-weight:400">Top 5 of ${totalBuyers} buyers · ${fmt(totalDrainerExp)}</span>
+          <span style="font-size:10px;color:${overdueCount>0?CRITICAL:'#A8A29E'};font-weight:${overdueCount>0?'600':'400'}">${overdueCount} overdue</span>
         </div>
       </div>
 
@@ -6216,47 +6415,63 @@ function _renderBusinessDashboard(){
           const timingLabel=t=>t<0?{txt:Math.abs(t)+'d early',col:'#10B981'}:t===0?{txt:'On time',col:'#10B981'}:{txt:t+'d late',col:'#F59E0B'};
           const punctual=[...buyers].map(b=>{const t=avgTiming(b);const exp=effectiveExp(b);return{...b,_exp:exp,contrib:grandTotal>0?Math.round((exp/grandTotal)*1000)/10:0,_timing:t};}).sort((a,b2)=>a._timing-b2._timing||(b2.onTimePct||0)-(a.onTimePct||0)).slice(0,5);
           return `<table style="width:100%;border-collapse:collapse">
-            <thead><tr style="background:#F9FAFB">
-              ${['#','Buyer','Exposure','Trend','Avg. Early','Contrib','Risk'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
+            <thead><tr style="background:#FAFAF9">
+              ${['#','Buyer','Exposure','Trend','Avg. Early','Contrib','Risk','Follow Up'].map((h,i)=>`<th style="padding:7px ${i===0?'8px':'10px'};text-align:${i===7?'center':i===0?'center':'left'};font-size:9.5px;font-weight:600;color:#A8A29E;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">${h}</th>`).join('')}
             </tr></thead>
             <tbody>
               ${punctual.map((b,i)=>{
-                const tl=timingLabel(b._timing),risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#F9FAFB';
-                return `<tr style="border-top:1px solid #E6EBF1;background:${rowBg};cursor:pointer;transition:background .12s"
-                  onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='${rowBg}'"
+                const tl=timingLabel(b._timing),risk=classifyRisk(b),rc=riskCol(risk),rowBg=i%2===0?'#fff':'#FAFAF9';
+                const ph=(b.phone||'').replace(/\s+/g,''); const hasPhone=ph&&ph!=='—';
+                const fuMsg=encodeURIComponent(`Dear ${b.contact||b.name}, this is a reminder regarding your outstanding payment. Kindly arrange payment at the earliest. Thank you.`);
+                const fuIc='width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;text-decoration:none;';
+                return `<tr style="border-top:1px solid #E7E5E4;background:${rowBg};cursor:pointer;transition:background .12s"
+                  onmouseover="this.style.background='#F4F6F9'" onmouseout="this.style.background='${rowBg}'"
                   onclick="window._brpState={buyerId:'${b.id}',buyerName:'${b.name.replace(/'/g,"\\'")}',tab:'overview'};AppState.set({page:'buyerRiskProfiles'});App.onStateChange()">
-                  <td style="padding:8px 8px;text-align:center;font-size:10px;color:#9CA3AF;font-weight:500">${i+1}</td>
+                  <td style="padding:8px 8px;text-align:center;font-size:10px;color:#C4C0BB;font-weight:500">${i+1}</td>
                   <td style="padding:8px 10px"><div style="display:flex;align-items:center;gap:8px">
-                    <div style="width:24px;height:24px;border-radius:8px;background:#ECFDF5;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#10B981">${(b.name||'?')[0]}</div>
-                    <div style="font-size:12px;font-weight:500;color:#0A2540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${b.name}</div>
+                    <div style="width:24px;height:24px;border-radius:8px;background:#F5F5F4;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#78716C">${(b.name||'?')[0]}</div>
+                    <div style="font-size:12px;font-weight:500;color:#1C1917;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${b.name}</div>
                   </div></td>
-                  <td style="padding:8px 10px;font-size:12px;font-weight:600;color:#0A2540;white-space:nowrap">${fmt(b._exp||0)}</td>
-                  <td style="padding:8px 10px"><span style="font-size:11.5px;font-weight:600;color:${tl.col}">${b._timing<=0?'✓ ':''} ${tl.txt}</span></td>
-                  <td style="padding:8px 10px"><span style="background:#EEF2FF;color:#635BFF;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600">${b.contrib<0.1?'<0.1%':b.contrib+'%'}</span></td>
+                  <td style="padding:8px 10px;font-size:12px;font-weight:600;color:#1C1917;white-space:nowrap">${fmt(b._exp||0)}</td>
+                  <td style="padding:8px 10px"><span style="font-size:11.5px;font-weight:500;color:#44403C">${b._timing<=0?'↑ ':''} ${tl.txt}</span></td>
+                  <td style="padding:8px 10px"><span style="background:#F5F5F4;color:#78716C;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:600">${b.contrib<0.1?'<0.1%':b.contrib+'%'}</span></td>
                   <td style="padding:8px 10px">${riskPill(risk)}</td>
+                  <td style="padding:8px 6px" onclick="event.stopPropagation()">
+                    <div style="display:flex;gap:3px;justify-content:center">
+                      <a href="${hasPhone?'tel:'+ph:'#'}" title="${hasPhone?'Call':'No phone'}" style="${fuIc}background:${hasPhone?'#fff':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 3px rgba(0,0,0,.2)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="${hasPhone?'#111827':'#D6D3D1'}"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.45 2.33.69 3.58.69a1 1 0 011 1V20a1 1 0 01-1 1C10.18 21 3 13.82 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.26.24 2.47.69 3.58a1 1 0 01-.24 1.01l-2.32 2.2z"/></svg>
+                      </a>
+                      <a href="${hasPhone?'https://wa.me/91'+ph.replace(/^\+91/,'').replace(/^91/,'')+'?text='+fuMsg:'#'}" target="_blank" title="${hasPhone?'WhatsApp':'No phone'}" style="${fuIc}background:${hasPhone?'#25D366':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 3px rgba(37,211,102,.4)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'">
+                        <svg width="11" height="11" viewBox="0 0 32 32" fill="none"><path d="M16 2C8.27 2 2 8.27 2 16c0 2.44.66 4.73 1.8 6.72L2 30l7.45-1.75A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="${hasPhone?'#fff':'#A8A29E'}"/><path d="M22.45 19.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="${hasPhone?'#25D366':'#D6D3D1'}"/></svg>
+                      </a>
+                      <a href="${b.email?'mailto:'+b.email+'?subject=Payment+Reminder&body='+fuMsg:'#'}" title="${b.email?'Email':'No email'}" style="${fuIc}background:${b.email?'#1C1C1E':'#F3F4F6'};border-radius:5px;box-shadow:${b.email?'0 1px 3px rgba(0,0,0,.25)':'none'};pointer-events:${b.email?'auto':'none'}" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'">
+                        <svg width="10" height="8" viewBox="0 0 20 15" fill="none"><rect x="0.8" y="0.8" width="18.4" height="13.4" rx="1.5" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4"/><path d="M1 2l9 6.5L19 2" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4" stroke-linecap="round"/></svg>
+                      </a>
+                    </div>
+                  </td>
                 </tr>`;
               }).join('')}
             </tbody>
           </table>
-          <div style="padding:8px 14px 10px;border-top:1px solid #E6EBF1;background:#F9FAFB;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:10px;color:#6B7280;font-weight:500">Sorted by payment timing</span>
-            <span style="font-size:10px;color:#10B981;font-weight:600">✓ Best payers first</span>
+          <div style="padding:8px 14px 10px;border-top:1px solid #E7E5E4;background:#FAFAF9;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;color:#A8A29E;font-weight:400">Sorted by payment timing</span>
+            <span style="font-size:10px;color:#A8A29E;font-weight:400">Best payers first</span>
           </div>`;
         })()}
       </div>
 
-      <!-- Portfolio Metrics — Stripe pastel cards -->
-      <div style="padding:10px 14px;border-top:1px solid #E6EBF1">
-        <div style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px">Portfolio Metrics</div>
+      <!-- Portfolio Metrics — neutral stat tiles -->
+      <div style="padding:10px 14px;border-top:1px solid #E7E5E4">
+        <div style="font-size:9px;font-weight:600;color:#B5B0AB;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px">Portfolio Metrics</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
           ${[
-            {l:'Avg Delay',v:avgDelay+'d',c:'#635BFF',bg:'rgba(99,91,255,.07)'},
-            {l:'On-Time %',v:onTimePctAvg+'%',c:'#10B981',bg:'rgba(16,185,129,.07)'},
-            {l:'Overdue',v:fmt(overdueAmtCapped),c:'#EF4444',bg:'rgba(239,68,68,.07)'},
-            {l:'Invoices',v:totalInvoices,c:'#635BFF',bg:'rgba(99,91,255,.05)'},
-          ].map(m=>`<div style="background:${m.bg};border-radius:10px;padding:8px;text-align:center">
-            <div style="font-size:13px;font-weight:700;color:${m.c};letter-spacing:-.02em">${m.v}</div>
-            <div style="font-size:9px;color:#6B7280;margin-top:2px;font-weight:500">${m.l}</div>
+            {l:'Avg Delay',  v:avgDelay+'d',       danger:avgDelay>60, warn:avgDelay>30},
+            {l:'On-Time %',  v:onTimePctAvg+'%',   danger:false, warn:false},
+            {l:'Overdue',    v:fmt(overdueAmtCapped), danger:overdueRatio>40, warn:overdueRatio>20},
+            {l:'Invoices',   v:totalInvoices,       danger:false, warn:false},
+          ].map(m=>`<div style="background:#F5F5F4;border:1px solid #E7E5E4;border-radius:10px;padding:8px;text-align:center">
+            <div style="font-size:13px;font-weight:700;color:${m.danger?CRITICAL:m.warn?WARN_COL:'#1C1917'};letter-spacing:-.02em">${m.v}</div>
+            <div style="font-size:9px;color:#A8A29E;margin-top:2px;font-weight:500">${m.l}</div>
           </div>`).join('')}
         </div>
       </div>
@@ -6264,23 +6479,23 @@ function _renderBusinessDashboard(){
 
 
     <!-- COL 2: Recommended Actions — Stripe issue-card style -->
-    <div id="dash-col2" style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;height:100%;box-shadow:0 1px 4px rgba(10,37,64,.05)">
-      <div style="padding:12px 14px 10px;border-bottom:1px solid #E6EBF1;flex-shrink:0">
-        <div style="font-size:12px;font-weight:600;color:#0A2540;letter-spacing:-.02em">Recommended Actions</div>
-        <div style="font-size:10.5px;color:#6B7280;margin-top:1px;font-weight:400">Priority follow-ups</div>
+    <div id="dash-col2" style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;display:flex;flex-direction:column;overflow:visible;box-shadow:0 1px 4px rgba(28,25,23,.05)">
+      <div style="padding:12px 14px 10px;border-bottom:1px solid #E7E5E4;flex-shrink:0">
+        <div style="font-size:12px;font-weight:600;color:#1C1917;letter-spacing:-.02em">Recommended Actions</div>
+        <div style="font-size:10.5px;color:#78716C;margin-top:1px;font-weight:400">Priority follow-ups</div>
       </div>
-      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#E6EBF1 transparent">
+      <div id="rec-actions-list" style="padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent">
         ${drainers.filter(b=>classifyRisk(b)!=='Low').map(b=>{
           const risk=classifyRisk(b),rc=riskCol(risk),acts=actionMap[risk]||actionMap['Medium'];
-          return `<div style="background:#fff;border:1px solid #E6EBF1;border-left:3px solid ${rc};border-radius:10px;padding:10px 12px;flex-shrink:0;transition:box-shadow .15s;cursor:default" onmouseover="this.style.boxShadow='0 4px 12px rgba(10,37,64,.1)'" onmouseout="this.style.boxShadow='none'">
+          return `<div style="background:#fff;border:1px solid #E7E5E4;border-left:3px solid ${rc};border-radius:10px;padding:10px 12px;flex-shrink:0;transition:box-shadow .15s;cursor:default" onmouseover="this.style.boxShadow='0 4px 12px rgba(28,25,23,.1)'" onmouseout="this.style.boxShadow='none'">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div style="font-size:11px;font-weight:600;color:#0A2540;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:145px;letter-spacing:-.01em">${b.name}</div>
+              <div style="font-size:11px;font-weight:600;color:#1C1917;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:145px;letter-spacing:-.01em">${b.name}</div>
               ${riskPill(risk)}
             </div>
-            <div style="font-size:9.5px;color:#6B7280;margin-bottom:5px;font-weight:400">${fmt(b._exp||0)} · ${b.avgDelay||0}d delay</div>
+            <div style="font-size:9.5px;color:#78716C;margin-bottom:5px;font-weight:400">${fmt(b._exp||0)} · ${b.avgDelay||0}d delay</div>
             ${acts.slice(0,2).map(fn=>`<div style="display:flex;gap:5px;margin-bottom:3px">
               <div style="width:4px;height:4px;border-radius:50%;background:${rc};flex-shrink:0;margin-top:5px"></div>
-              <span style="font-size:10.5px;color:#374151;line-height:1.4;font-weight:400">${fn(b)}</span>
+              <span style="font-size:10.5px;color:#44403C;line-height:1.4;font-weight:400">${fn(b)}</span>
             </div>`).join('')}
           </div>`;
         }).join('')}
@@ -6290,8 +6505,8 @@ function _renderBusinessDashboard(){
     <!-- COL 3: Risk Breakdown + Portfolio Health — Stripe clean style -->
     <div id="dash-col3" style="display:flex;flex-direction:column;gap:10px">
 
-      <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(10,37,64,.05)">
-        <div style="font-size:12px;font-weight:600;color:#0A2540;margin-bottom:14px;letter-spacing:-.02em">Risk Distribution</div>
+      <div style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(28,25,23,.05)">
+        <div style="font-size:12px;font-weight:600;color:#1C1917;margin-bottom:14px;letter-spacing:-.02em">Risk Distribution</div>
         ${[
           {l:'High Risk',n:highCount,c:'#EF4444'},
           {l:'Medium Risk',n:medCount,c:'#F59E0B'},
@@ -6299,24 +6514,24 @@ function _renderBusinessDashboard(){
         ].map(r=>`
         <div style="margin-bottom:11px">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-            <span style="font-size:10.5px;font-weight:400;color:#6B7280">${r.l}</span>
-            <span style="font-size:10.5px;font-weight:600;color:#0A2540">${r.n}</span>
+            <span style="font-size:10.5px;font-weight:400;color:#78716C">${r.l}</span>
+            <span style="font-size:10.5px;font-weight:600;color:#1C1917">${r.n}</span>
           </div>
-          <div style="height:4px;background:#F6F9FC;border-radius:4px;overflow:hidden">
+          <div style="height:4px;background:#F5F5F4;border-radius:4px;overflow:hidden">
             <div style="height:100%;width:${totalBuyers>0?Math.round(r.n/totalBuyers*100):0}%;background:${r.c};border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)"></div>
           </div>
         </div>`).join('')}
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid #F6F9FC">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid #F5F5F4">
           ${[{l:'High',v:highCount,c:'#EF4444',bg:'#FEF2F2'},{l:'Med',v:medCount,c:'#92400E',bg:'#FFFBEB'},{l:'Low',v:lowCount,c:'#065F46',bg:'#ECFDF5'}]
           .map(r=>`<div style="background:${r.bg};border-radius:10px;padding:8px 6px;text-align:center">
             <div style="font-size:16px;font-weight:700;color:${r.c};letter-spacing:-.02em">${r.v}</div>
-            <div style="font-size:9px;color:#6B7280;margin-top:2px;font-weight:500">${r.l}</div>
+            <div style="font-size:9px;color:#78716C;margin-top:2px;font-weight:500">${r.l}</div>
           </div>`).join('')}
         </div>
       </div>
 
-      <div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(10,37,64,.05)">
-        <div style="font-size:12px;font-weight:600;color:#0A2540;margin-bottom:14px;letter-spacing:-.02em">Portfolio Health</div>
+      <div style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(28,25,23,.05)">
+        <div style="font-size:12px;font-weight:600;color:#1C1917;margin-bottom:14px;letter-spacing:-.02em">Portfolio Health</div>
         ${[
           {l:'Cash Health Score',v:healthScore+'/100',bar:healthScore,c:healthCol},
           {l:'On-Time Rate',v:onTimePctAvg+'%',bar:onTimePctAvg,c:'#10B981'},
@@ -6325,10 +6540,10 @@ function _renderBusinessDashboard(){
         ].map(m=>`
         <div style="margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:10px;color:#6B7280;font-weight:400">${m.l}</span>
-            <span style="font-size:10px;font-weight:600;color:#0A2540">${m.v}</span>
+            <span style="font-size:10px;color:#78716C;font-weight:400">${m.l}</span>
+            <span style="font-size:10px;font-weight:600;color:#1C1917">${m.v}</span>
           </div>
-          <div style="height:4px;background:#F6F9FC;border-radius:4px;overflow:hidden">
+          <div style="height:4px;background:#F5F5F4;border-radius:4px;overflow:hidden">
             <div style="height:100%;width:${m.bar}%;background:${m.c};border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)"></div>
           </div>
         </div>`).join('')}
@@ -7260,7 +7475,7 @@ ${rows.map(b=>{
       <div style="font-size:10px;color:var(--gray-400)">Overdue</div>
     </div>
   </div>
-  <div class="dc-row" style="margin-bottom:4px"><span style="font-size:11px;color:var(--gray-500)">Highest Delay</span><span style="font-size:11px;font-weight:600;color:${b.highestDelay>90?'#dc2626':b.highestDelay>45?'#d97706':'#374151'}">${b.highestDelay}d</span></div>
+  <div class="dc-row" style="margin-bottom:4px"><span style="font-size:11px;color:var(--gray-500)">Highest Delay</span><span style="font-size:11px;font-weight:600;color:${b.highestDelay>90?'#dc2626':b.highestDelay>45?'#d97706':'#44403C'}">${b.highestDelay}d</span></div>
   <div class="dc-row" style="margin-bottom:4px"><span style="font-size:11px;color:var(--gray-500)">Avg Monthly</span><span style="font-size:11px;font-weight:600">${inr(b.avgMonthlyPurchase)}</span></div>
   <div class="dc-row" style="margin-bottom:4px"><span style="font-size:11px;color:var(--gray-500)">Credit Limit</span><span style="font-size:11px;font-weight:600">${inr(b.creditLimit)}</span></div>
   <div style="margin:8px 0 4px">
@@ -7743,7 +7958,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
             <!-- Hero header -->
             <div style="padding:16px 20px 14px;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between">
               <div>
-                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:4px">Before vs After Accepting This Order</div>
+                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#44403C;margin-bottom:4px">Before vs After Accepting This Order</div>
                 <div style="font-size:18px;font-weight:900;color:#f1f5f9;letter-spacing:-.01em">Business Impact Analysis</div>
               </div>
               <div style="display:flex;align-items:center;gap:8px">
@@ -7773,10 +7988,10 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
                 const deltaLabel = noChng ? 'No change'
                   : (diff>0?'+':'-') + diffFmt + ' ' + (isGood ? '↑ Better' : '↓ Worse');
                 return `<div style="background:${bgTile};padding:14px 15px" title="${r.tip}">
-                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#475569;margin-bottom:8px">${r.icon} ${r.lbl}</div>
+                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#44403C;margin-bottom:8px">${r.icon} ${r.lbl}</div>
                   <!-- Before row -->
                   <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:3px">
-                    <span style="font-size:11px;color:#475569;font-weight:500">${r.fmt(r.before)}</span>
+                    <span style="font-size:11px;color:#44403C;font-weight:500">${r.fmt(r.before)}</span>
                     <span style="font-size:14px;color:#334155;font-weight:700;padding:0 2px">${arrow}</span>
                     <span style="font-size:16px;font-weight:900;color:${col};line-height:1">${r.fmt(r.after)}</span>
                   </div>
@@ -7793,7 +8008,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
               <div style="display:flex;gap:16px">
                 <span style="font-size:10.5px;color:#4ade80;font-weight:600">▼ ${improved} metric${improved!==1?'s':''} improve</span>
                 <span style="font-size:10.5px;color:#f87171;font-weight:600">▲ ${worsened} metric${worsened!==1?'s':''} worsen</span>
-                <span style="font-size:10.5px;color:#475569;font-weight:600">→ ${rows.length-improved-worsened} unchanged</span>
+                <span style="font-size:10.5px;color:#44403C;font-weight:600">→ ${rows.length-improved-worsened} unchanged</span>
               </div>
               <div style="font-size:10px;color:#334155;font-style:italic">Tap any metric for full drill-down below</div>
             </div>
@@ -7827,7 +8042,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
               </div>
               <div style="text-align:center;padding:10px 8px;background:var(--gray-50);border-radius:9px;border:1px solid var(--gray-100)">
                 <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px">Free Pre-Order</div>
-                <div style="font-size:14px;font-weight:800;color:#374151">${inr(preAvail)}</div>
+                <div style="font-size:14px;font-weight:800;color:#44403C">${inr(preAvail)}</div>
                 <div style="font-size:9px;color:var(--gray-400);margin-top:2px">${result.wcUtilPre}% committed</div>
               </div>
               <div style="text-align:center;padding:10px 8px;background:${afterAcc<result.OV*0.2?'#fef2f2':'#fff7ed'};border-radius:9px;border:1px solid ${afterAcc<result.OV*0.2?'#fecaca':'#fed7aa'}">
@@ -8372,7 +8587,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
                   <span style="font-size:20px;line-height:1">📈</span>Cash Flow Stress Forecast
                   <span style="font-size:9px;font-weight:700;background:rgba(99,102,241,.25);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);padding:2px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase">AI-Powered</span>
                 </div>
-                <div style="font-size:10px;color:#475569;margin-top:3px;font-weight:500">Full portfolio · existing receivables · open orders · buyer behaviour · new order impact</div>
+                <div style="font-size:10px;color:#44403C;margin-top:3px;font-weight:500">Full portfolio · existing receivables · open orders · buyer behaviour · new order impact</div>
               </div>
               <div style="display:flex;gap:3px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:3px" id="cff-toggles">
                 ${[30,90,180,365].map((d,i)=>`<button id="cffT${d}" onclick="window.oasCFFToggle(${d})" style="padding:5px 13px;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;${i===1?'background:#6366f1;color:#fff;box-shadow:0 1px 8px rgba(99,102,241,.5)':'background:transparent;color:#64748b'}">${d}d</button>`).join('')}
@@ -8384,7 +8599,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
 
               <!-- Stress Score Ring -->
               <div style="background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:12px 16px;text-align:center;min-width:108px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:9px">Cash Stress Score</div>
+                <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#44403C;margin-bottom:9px">Cash Stress Score</div>
                 <div style="position:relative;width:68px;height:68px;margin-bottom:7px">
                   <svg width="68" height="68" style="transform:rotate(-90deg);overflow:visible">
                     <circle cx="34" cy="34" r="26" fill="none" stroke="#1e293b" stroke-width="7"/>
@@ -8403,7 +8618,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
 
               <!-- AI Insights -->
               <div id="cff-ai-insights" style="background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:12px 15px">
-                <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:9px;display:flex;align-items:center;gap:5px">
+                <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#44403C;margin-bottom:9px;display:flex;align-items:center;gap:5px">
                   <span style="font-size:10px">🧠</span> AI Stress Analysis
                 </div>
                 <div style="color:#64748b;font-size:11px;font-style:italic">Running analysis…</div>
@@ -8411,7 +8626,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
 
               <!-- Decision Impact -->
               <div id="cff-decision-impact" style="background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:12px 14px;min-width:138px">
-                <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:9px;display:flex;align-items:center;gap:5px">
+                <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#44403C;margin-bottom:9px;display:flex;align-items:center;gap:5px">
                   <span style="font-size:10px">⚡</span> Decision Impact
                 </div>
                 <div style="color:#64748b;font-size:11px;font-style:italic">Computing…</div>
@@ -9111,8 +9326,8 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
   <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
     <div style="display:flex;gap:8px">
       ${[
-        {lbl:'Receivables',val:inr(_portfolio.totalReceivables),col:_portfolio.overdueRatio>25?'#dc2626':'#374151'},
-        {lbl:'Portfolio DSO',val:_portfolio.portfolioDSO+'d',col:_portfolio.portfolioDSO>50?'#d97706':'#374151'},
+        {lbl:'Receivables',val:inr(_portfolio.totalReceivables),col:_portfolio.overdueRatio>25?'#dc2626':'#44403C'},
+        {lbl:'Portfolio DSO',val:_portfolio.portfolioDSO+'d',col:_portfolio.portfolioDSO>50?'#d97706':'#44403C'},
         {lbl:'Health Score',val:_portfolio.healthScore+'/100',col:_portfolio.healthScore>=70?'#16a34a':_portfolio.healthScore>=50?'#d97706':'#dc2626'},
         {lbl:'Overdue',val:inr(_portfolio.totalOverdue),col:_portfolio.totalOverdue>0?'#dc2626':'#16a34a'},
       ].map(k=>`<div style="text-align:center;padding:5px 10px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;min-width:72px">
@@ -9323,7 +9538,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
               <a href="${hasPhone?'tel:'+ph:'#'}" title="${hasPhone?'Call '+(b.contact||b.name):'No phone on record'}"
                 style="${ic}background:${hasPhone?'#fff':'#F3F4F6'};box-shadow:${hasPhone?'0 2px 8px rgba(0,0,0,.18)':'none'};pointer-events:${hasPhone?'auto':'none'};cursor:${hasPhone?'pointer':'default'}"
                 onmouseover="this.style.transform='scale(1.13)'" onmouseout="this.style.transform='scale(1)'">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="${hasPhone?'#111827':'#9CA3AF'}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="${hasPhone?'#111827':'#A8A29E'}">
                   <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.45 2.33.69 3.58.69a1 1 0 011 1V20a1 1 0 01-1 1C10.18 21 3 13.82 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.26.24 2.47.69 3.58a1 1 0 01-.24 1.01l-2.33 2.2z"/>
                 </svg>
               </a>
@@ -9334,8 +9549,8 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
                 style="${ic}background:${hasPhone?'#25D366':'#F3F4F6'};box-shadow:${hasPhone?'0 2px 8px rgba(37,211,102,.4)':'none'};pointer-events:${hasPhone?'auto':'none'};cursor:${hasPhone?'pointer':'default'}"
                 onmouseover="this.style.transform='scale(1.13)'" onmouseout="this.style.transform='scale(1)'">
                 <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-                  <path d="M16 2C8.27 2 2 8.27 2 16c0 2.44.66 4.73 1.8 6.72L2 30l7.45-1.75A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="${hasPhone?'#fff':'#9CA3AF'}"/>
-                  <path d="M22.45 19.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="${hasPhone?'#25D366':'#D1D5DB'}"/>
+                  <path d="M16 2C8.27 2 2 8.27 2 16c0 2.44.66 4.73 1.8 6.72L2 30l7.45-1.75A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="${hasPhone?'#fff':'#A8A29E'}"/>
+                  <path d="M22.45 19.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="${hasPhone?'#25D366':'#D6D3D1'}"/>
                 </svg>
               </a>
 
@@ -9346,8 +9561,8 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
                 onmouseover="this.style.transform='scale(1.13)'" onmouseout="this.style.transform='scale(1)'">
                 <svg width="16" height="12" viewBox="0 0 20 15" fill="none">
                   <rect width="20" height="15" rx="2" fill="${b.email?'#1C1C1E':'#F3F4F6'}"/>
-                  <path d="M1 1.5l9 6.5 9-6.5" stroke="${b.email?'#fff':'#9CA3AF'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                  <rect x="0.8" y="0.8" width="18.4" height="13.4" rx="1.5" stroke="${b.email?'#fff':'#9CA3AF'}" stroke-width="1.4" fill="none"/>
+                  <path d="M1 1.5l9 6.5 9-6.5" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="0.8" y="0.8" width="18.4" height="13.4" rx="1.5" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4" fill="none"/>
                 </svg>
               </a>
             </div>`;
@@ -9399,8 +9614,8 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
               <div class="brp-card-hdr" style="display:flex;align-items:center;justify-content:space-between">
                 Buyer Information
                 <button id="brp-edit-btn-${b.id}" onclick="brpToggleEdit('${b.id}')"
-                  style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#4F46E5;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:7px;padding:4px 10px;cursor:pointer;transition:all .15s"
-                  onmouseover="this.style.background='#E0E7FF'" onmouseout="this.style.background='#EEF2FF'">
+                  style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#5B4FD9;background:#EDEBFC;border:1px solid #C7D2FE;border-radius:7px;padding:4px 10px;cursor:pointer;transition:all .15s"
+                  onmouseover="this.style.background='#EDEBFC'" onmouseout="this.style.background='#EDEBFC'">
                   <svg width="11" height="11" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   Edit
                 </button>
@@ -9409,19 +9624,19 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
 
                 <!-- City + Sector highlight row -->
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
-                  <div id="brp-city-display-${b.id}" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px">
-                    <div style="font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">City</div>
-                    <div style="font-size:13px;font-weight:700;color:${b.cluster?'#0F172A':'#CBD5E1'}">${b.cluster||'—  Not set'}</div>
+                  <div id="brp-city-display-${b.id}" style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:10px;padding:10px 12px">
+                    <div style="font-size:9px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">City</div>
+                    <div style="font-size:13px;font-weight:700;color:${b.cluster?'#1C1917':'#CBD5E1'}">${b.cluster||'—  Not set'}</div>
                   </div>
-                  <div id="brp-sector-display-${b.id}" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px">
-                    <div style="font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Sector</div>
-                    <div style="font-size:13px;font-weight:700;color:${b.industry?'#0F172A':'#CBD5E1'}">${b.industry||'—  Not set'}</div>
+                  <div id="brp-sector-display-${b.id}" style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:10px;padding:10px 12px">
+                    <div style="font-size:9px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Sector</div>
+                    <div style="font-size:13px;font-weight:700;color:${b.industry?'#1C1917':'#CBD5E1'}">${b.industry||'—  Not set'}</div>
                   </div>
                 </div>
 
                 <!-- Inline edit form (hidden by default) -->
-                <div id="brp-edit-form-${b.id}" style="display:none;background:#F8FAFC;border:1px solid #C7D2FE;border-radius:10px;padding:12px;margin-bottom:4px">
-                  <div style="font-size:10px;font-weight:700;color:#4F46E5;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+                <div id="brp-edit-form-${b.id}" style="display:none;background:#FAFAF9;border:1px solid #C7D2FE;border-radius:10px;padding:12px;margin-bottom:4px">
+                  <div style="font-size:10px;font-weight:700;color:#5B4FD9;margin-bottom:10px;display:flex;align-items:center;gap:5px">
                     <svg width="11" height="11" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke-linecap="round"/></svg>
                     Quick Edit — City &amp; Sector
                   </div>
@@ -9429,23 +9644,23 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
                     <div>
                       <label style="font-size:10px;font-weight:600;color:#64748B;display:block;margin-bottom:4px">City</label>
                       <input id="brp-edit-city-${b.id}" type="text" value="${b.cluster||''}" placeholder="e.g. Mumbai"
-                        style="width:100%;padding:7px 10px;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;color:#0F172A;outline:none;background:#fff;box-sizing:border-box"
-                        onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+                        style="width:100%;padding:7px 10px;border:1px solid #E7E5E4;border-radius:7px;font-size:12px;color:#1C1917;outline:none;background:#fff;box-sizing:border-box"
+                        onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
                     </div>
                     <div>
                       <label style="font-size:10px;font-weight:600;color:#64748B;display:block;margin-bottom:4px">Sector</label>
                       <input id="brp-edit-sector-${b.id}" type="text" value="${b.industry||''}" placeholder="e.g. Manufacturing"
-                        style="width:100%;padding:7px 10px;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;color:#0F172A;outline:none;background:#fff;box-sizing:border-box"
-                        onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'">
+                        style="width:100%;padding:7px 10px;border:1px solid #E7E5E4;border-radius:7px;font-size:12px;color:#1C1917;outline:none;background:#fff;box-sizing:border-box"
+                        onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E7E5E4'">
                     </div>
                   </div>
                   <div style="display:flex;gap:6px;justify-content:flex-end">
                     <button onclick="brpToggleEdit('${b.id}')"
-                      style="font-size:11px;font-weight:600;color:#64748B;background:#fff;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;cursor:pointer">
+                      style="font-size:11px;font-weight:600;color:#64748B;background:#fff;border:1px solid #E7E5E4;border-radius:7px;padding:5px 12px;cursor:pointer">
                       Cancel
                     </button>
                     <button onclick="brpSaveInfo('${b.id}')"
-                      style="font-size:11px;font-weight:600;color:#fff;background:#4F46E5;border:none;border-radius:7px;padding:5px 14px;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,.3)">
+                      style="font-size:11px;font-weight:600;color:#fff;background:#5B4FD9;border:none;border-radius:7px;padding:5px 14px;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,.3)">
                       Save
                     </button>
                   </div>
@@ -9455,7 +9670,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
                   ['Buyer Name',   b.name],
                   ['GSTIN',        `<code style="font-size:10.5px;background:var(--gray-100);padding:2px 7px;border-radius:4px;letter-spacing:.03em">${b.gstin||'—'}</code>`],
                   ['State',        b.state||'—'],
-                  ['Trade Terms',  `<span style="padding:2px 8px;background:#EEF2FF;color:#4F46E5;border-radius:10px;font-size:11px;font-weight:600">${b.tradeTerm||'Credit'}</span>`],
+                  ['Trade Terms',  `<span style="padding:2px 8px;background:#EDEBFC;color:#5B4FD9;border-radius:10px;font-size:11px;font-weight:600">${b.tradeTerm||'Credit'}</span>`],
                   ['Contact',      b.contact||'—'],
                   ['Member Since', b.since ? new Date(b.since).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '—'],
                 ].map(([l,v])=>`<div class="brp-row"><span class="brp-lbl">${l}</span><span class="brp-val">${v}</span></div>`).join('')}
@@ -10512,7 +10727,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
           <h1 class="page-title">Buyer Risk Profiles</h1>
           <p class="page-sub">360° payment risk intelligence — ${profiles.length} buyers in portfolio</p>
         </div>
-        <button onclick="window.addBuyerOpen()" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#4F46E5,#6366F1);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(79,70,229,.3);flex-shrink:0;transition:transform .12s" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+        <button onclick="window.addBuyerOpen()" style="display:flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,#5B4FD9,#6366F1);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(79,70,229,.3);flex-shrink:0;transition:transform .12s" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
           <svg width="15" height="15" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.5"><path d="M8 2v12M2 8h12" stroke-linecap="round"/></svg>
           Add Buyer
         </button>
@@ -10837,7 +11052,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
               const dfCol=b.disputeFreq<=5?'#10b981':b.disputeFreq<=10?'#f59e0b':'#ef4444';
               const vpCol=b.verifiedPct>=85?'#10b981':b.verifiedPct>=75?'#f59e0b':'#ef4444';
               return `<tr>
-                <td><div class="iah-buyer">${b.name}</div><div class="iah-buyer-sub">${b.city} · ${b.industry}</div><div style="font-size:10px;color:#475569;margin-top:2px">${b.email}</div></td>
+                <td><div class="iah-buyer">${b.name}</div><div class="iah-buyer-sub">${b.city} · ${b.industry}</div><div style="font-size:10px;color:#44403C;margin-top:2px">${b.email}</div></td>
                 <td><div style="font-size:15px;font-weight:800;color:${arCol}">${b.acceptanceRate}%</div><div style="width:50px;height:4px;background:#1e3a5f;border-radius:2px;margin-top:4px;overflow:hidden"><div style="width:${b.acceptanceRate}%;height:100%;background:${arCol}"></div></div></td>
                 <td><div style="font-size:15px;font-weight:700;color:#e2e8f0">${b.avgAcceptDays} <span style="font-size:11px;color:#64748b">days</span></div></td>
                 <td><div style="font-size:15px;font-weight:800;color:${dfCol}">${b.disputeFreq}%</div></td>
@@ -11392,8 +11607,8 @@ async function brpSaveInfo(id){
     const secDisp=document.getElementById('brp-sector-display-'+id);
     if(cityDisp) cityDisp.querySelector('div:last-child').textContent=city||'— Not set';
     if(secDisp) secDisp.querySelector('div:last-child').textContent=sector||'— Not set';
-    if(cityDisp) cityDisp.querySelector('div:last-child').style.color=city?'#0F172A':'#CBD5E1';
-    if(secDisp) secDisp.querySelector('div:last-child').style.color=sector?'#0F172A':'#CBD5E1';
+    if(cityDisp) cityDisp.querySelector('div:last-child').style.color=city?'#1C1917':'#CBD5E1';
+    if(secDisp) secDisp.querySelector('div:last-child').style.color=sector?'#1C1917':'#CBD5E1';
     // Close form
     brpToggleEdit(id);
     Toast.show('Buyer info updated','success',2500);
@@ -11511,9 +11726,9 @@ function renderDisciplineScore(){
   // GitHub-style: green=uploaded, grey=no upload, red=high risk, future=very light
   function cellColor(cell){
     if(!cell) return 'transparent';
-    if(cell.isFuture) return '#F1F5F9';
+    if(cell.isFuture) return '#F5F5F4';
     if(cell.entry) return cell.entry.risk==='high'?'#EF4444':'#22C55E';
-    return '#E2E8F0'; // light grey — no upload (not alarming)
+    return '#E7E5E4'; // light grey — no upload (not alarming)
   }
 
   // Pad trailing days to complete last week
@@ -11539,20 +11754,20 @@ function renderDisciplineScore(){
     const isTodayCell=cell.isToday;
     if(cell.entry){
       const bg=cell.entry.risk==='high'?'#EF4444':'#22C55E';
-      return {bg,tc:'#fff',ring:isTodayCell,ringCol:'#0A2540'};
+      return {bg,tc:'#fff',ring:isTodayCell,ringCol:'#1C1917'};
     }
-    if(cell.isFuture) return {bg:'#F1F5F9',tc:'#CBD5E1',ring:false};
+    if(cell.isFuture) return {bg:'#F5F5F4',tc:'#CBD5E1',ring:false};
     if(isTodayCell) return {bg:'#3B82F6',tc:'#fff',ring:false};
     return {bg:'#93C5FD',tc:'#fff',ring:false}; // default = light blue like reference
   }
 
-  return `<div style="background:#fff;border:1px solid #E6EBF1;border-radius:16px;padding:12px 14px;box-shadow:0 1px 4px rgba(10,37,64,.05)">
+  return `<div style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;padding:12px 14px;box-shadow:0 1px 4px rgba(28,25,23,.05)">
 
     <!-- Score header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div>
-        <div style="font-size:12px;font-weight:600;color:#0A2540;letter-spacing:-.01em">Business Discipline</div>
-        <div style="font-size:9.5px;color:#94A3B8;margin-top:1px">Upload consistency</div>
+        <div style="font-size:12px;font-weight:600;color:#1C1917;letter-spacing:-.01em">Business Discipline</div>
+        <div style="font-size:9.5px;color:#A8A29E;margin-top:1px">Upload consistency</div>
       </div>
       <div style="text-align:right">
         <div style="font-size:18px;font-weight:700;color:${scoreCol};line-height:1">${score}</div>
@@ -11562,14 +11777,14 @@ function renderDisciplineScore(){
 
     <!-- Month navigator -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <button onclick="window.discPrev()" style="width:22px;height:22px;border-radius:50%;border:1px solid #E6EBF1;background:#F6F9FC;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6B7280;transition:all .15s" onmouseover="this.style.background='#E6EBF1'" onmouseout="this.style.background='#F6F9FC'">‹</button>
-      <div style="font-size:11px;font-weight:700;color:#0A2540;letter-spacing:.01em">${monthName}</div>
-      <button onclick="window.discNext()" style="width:22px;height:22px;border-radius:50%;border:1px solid #E6EBF1;background:${isMaxMonth?'#F9FAFB':'#F6F9FC'};cursor:${isMaxMonth?'not-allowed':'pointer'};display:flex;align-items:center;justify-content:center;font-size:11px;color:${isMaxMonth?'#D1D5DB':'#6B7280'};transition:all .15s" ${isMaxMonth?'':`onmouseover="this.style.background='#E6EBF1'" onmouseout="this.style.background='#F6F9FC'"`}>›</button>
+      <button onclick="window.discPrev()" style="width:22px;height:22px;border-radius:50%;border:1px solid #E7E5E4;background:#F5F5F4;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#78716C;transition:all .15s" onmouseover="this.style.background='#E7E5E4'" onmouseout="this.style.background='#F5F5F4'">‹</button>
+      <div style="font-size:11px;font-weight:700;color:#1C1917;letter-spacing:.01em">${monthName}</div>
+      <button onclick="window.discNext()" style="width:22px;height:22px;border-radius:50%;border:1px solid #E7E5E4;background:${isMaxMonth?'#FAFAF9':'#F5F5F4'};cursor:${isMaxMonth?'not-allowed':'pointer'};display:flex;align-items:center;justify-content:center;font-size:11px;color:${isMaxMonth?'#D6D3D1':'#78716C'};transition:all .15s" ${isMaxMonth?'':`onmouseover="this.style.background='#E7E5E4'" onmouseout="this.style.background='#F5F5F4'"`}>›</button>
     </div>
 
     <!-- Day headers -->
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px">
-      ${DAY_LABELS.map(l=>`<div style="text-align:center;font-size:8px;font-weight:600;color:#94A3B8">${l}</div>`).join('')}
+      ${DAY_LABELS.map(l=>`<div style="text-align:center;font-size:8px;font-weight:600;color:#A8A29E">${l}</div>`).join('')}
     </div>
 
     <!-- Calendar — round circle style -->
@@ -11588,19 +11803,19 @@ function renderDisciplineScore(){
       ${[['#22C55E','Uploaded'],['#93C5FD','No upload'],['#EF4444','High risk'],['#3B82F6','Today']].map(([c,l])=>
         `<div style="display:flex;align-items:center;gap:3px">
           <div style="width:8px;height:8px;border-radius:50%;background:${c}"></div>
-          <span style="font-size:8px;color:#94A3B8">${l}</span>
+          <span style="font-size:8px;color:#A8A29E">${l}</span>
         </div>`).join('')}
     </div>
 
     <!-- Stats row -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
-      <div style="background:#F8FAFC;border-radius:8px;padding:7px 10px;border:1px solid #E2E8F0">
-        <div style="font-size:14px;font-weight:700;color:#0F172A">${consistency}%</div>
-        <div style="font-size:9px;color:#94A3B8;margin-top:1px">This month</div>
+      <div style="background:#FAFAF9;border-radius:8px;padding:7px 10px;border:1px solid #E7E5E4">
+        <div style="font-size:14px;font-weight:700;color:#1C1917">${consistency}%</div>
+        <div style="font-size:9px;color:#A8A29E;margin-top:1px">This month</div>
       </div>
-      <div style="background:#F8FAFC;border-radius:8px;padding:7px 10px;border:1px solid #E2E8F0">
+      <div style="background:#FAFAF9;border-radius:8px;padding:7px 10px;border:1px solid #E7E5E4">
         <div style="font-size:14px;font-weight:700;color:${streak>=5?'#10B981':streak>=2?'#F59E0B':'#64748B'}">${streak}d 🔥</div>
-        <div style="font-size:9px;color:#94A3B8;margin-top:1px">Streak</div>
+        <div style="font-size:9px;color:#A8A29E;margin-top:1px">Streak</div>
       </div>
     </div>
   </div>`;
@@ -11767,19 +11982,19 @@ function renderPreview(r){
 
   const initials=r.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
   const rows=[
-    {icon:'🆔',label:'Buyer ID',val:r.buyerId,col:'#4F46E5'},
-    {icon:'📍',label:'State',val:r.effState||'—',col:r.effState?'#0F172A':'#CBD5E1',sub:r.stateFromGstin?'from GSTIN':r.stateInferred?'inferred':''},
-    {icon:'🏙',label:'City',val:r.effCity||'—',col:r.effCity?'#0F172A':'#CBD5E1',sub:r.cityInferred&&!r.effCity?'':''},
-    {icon:'🏭',label:'Sector',val:r.effSector||'—',col:r.effSector?'#0F172A':'#CBD5E1',sub:r.sectorInferred?'inferred':''},
+    {icon:'🆔',label:'Buyer ID',val:r.buyerId,col:'#5B4FD9'},
+    {icon:'📍',label:'State',val:r.effState||'—',col:r.effState?'#1C1917':'#CBD5E1',sub:r.stateFromGstin?'from GSTIN':r.stateInferred?'inferred':''},
+    {icon:'🏙',label:'City',val:r.effCity||'—',col:r.effCity?'#1C1917':'#CBD5E1',sub:r.cityInferred&&!r.effCity?'':''},
+    {icon:'🏭',label:'Sector',val:r.effSector||'—',col:r.effSector?'#1C1917':'#CBD5E1',sub:r.sectorInferred?'inferred':''},
     {icon:'🔗',label:'Cluster',val:r.cluster||'—',col:r.cluster?'#6366F1':'#CBD5E1'},
-    {icon:'🌍',label:'Region',val:r.region||'—',col:r.region?'#0F172A':'#CBD5E1'},
+    {icon:'🌍',label:'Region',val:r.region||'—',col:r.region?'#1C1917':'#CBD5E1'},
     {icon:'⚡',label:'Risk',val:'Neutral',col:'#F59E0B'},
     {icon:'📊',label:'Initial Score',val:'70/100',col:'#6366F1'},
   ];
 
   pv.innerHTML=`
     <!-- Buyer avatar -->
-    <div style="background:linear-gradient(135deg,#4F46E5,#6366F1);border-radius:12px;padding:14px;text-align:center;margin-bottom:4px">
+    <div style="background:linear-gradient(135deg,#5B4FD9,#6366F1);border-radius:12px;padding:14px;text-align:center;margin-bottom:4px">
       <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.2);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff">${initials}</div>
       <div style="font-size:13px;font-weight:700;color:#fff;word-break:break-word">${r.name}</div>
       ${r.gstin?`<div style="font-size:9.5px;color:rgba(255,255,255,.6);margin-top:2px;font-family:monospace">${r.gstin}</div>`:''}
@@ -11787,10 +12002,10 @@ function renderPreview(r){
 
     <!-- Intelligence fields -->
     ${rows.map(row=>`
-    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:9px">
+    <div style="background:#fff;border:1px solid #E7E5E4;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:9px">
       <span style="font-size:14px;flex-shrink:0">${row.icon}</span>
       <div style="min-width:0;flex:1">
-        <div style="font-size:9px;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em">${row.label}</div>
+        <div style="font-size:9px;font-weight:600;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em">${row.label}</div>
         <div style="font-size:12px;font-weight:700;color:${row.col};margin-top:1px">${row.val}</div>
         ${row.sub?`<div style="font-size:9px;color:#10B981;margin-top:1px">✓ ${row.sub}</div>`:''}
       </div>
@@ -11850,17 +12065,58 @@ window.addBuyerClose=function(){
   setTimeout(()=>{ document.getElementById('add-buyer-overlay').style.display='none'; },350);
   // Reset form
   ['ab-name','ab-gstin','ab-state','ab-city','ab-sector','ab-contact','ab-phone','ab-email'].forEach(id=>{
-    const el=document.getElementById(id); if(el){el.value='';el.style.borderColor='#E2E8F0';}
+    const el=document.getElementById(id); if(el){el.value='';el.style.borderColor='#E7E5E4';}
   });
   const cd=document.getElementById('ab-credit-days'); if(cd) cd.value='30';
-  const ab=document.getElementById('ab-preview'); if(ab) ab.innerHTML=`<div style="text-align:center;padding:32px 16px"><div style="font-size:28px;margin-bottom:8px">🧠</div><div style="font-size:11.5px;font-weight:600;color:#94A3B8">Start typing a buyer name</div></div>`;
+  const ab=document.getElementById('ab-preview'); if(ab) ab.innerHTML=`<div style="text-align:center;padding:32px 16px"><div style="font-size:28px;margin-bottom:8px">🧠</div><div style="font-size:11.5px;font-weight:600;color:#A8A29E">Start typing a buyer name</div></div>`;
   const err=document.getElementById('ab-error'); if(err) err.style.display='none';
 };
 
 window.addBuyerEnrich=function(){
   const r=enrichFromInputs();
   renderPreview(r);
+  // ── Autocomplete suggestions from existing buyers ──
+  const inp=document.getElementById('ab-name');
+  const box=document.getElementById('ab-name-suggestions');
+  if(!inp||!box) return;
+  const q=inp.value.trim().toLowerCase();
+  if(q.length<1){box.style.display='none';return;}
+  const buyers=DB.buyers||[];
+  const matches=buyers.filter(b=>b.name&&b.name.toLowerCase().includes(q)).slice(0,6);
+  if(!matches.length){box.style.display='none';return;}
+  box.innerHTML=matches.map((b,i)=>{
+    const risk=b.riskScore<45?'High':b.riskScore<70?'Medium':'Low';
+    const rCol=risk==='High'?'#EF4444':risk==='Medium'?'#F59E0B':'#10B981';
+    const rBg=risk==='High'?'#FEF2F2':risk==='Medium'?'#FFFBEB':'#F0FDF4';
+    const delay=b.avgDelay>0?`· ${b.avgDelay}d avg delay`:'';
+    const highlighted=b.name.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark style="background:#EDEBFC;color:#4F43BE;border-radius:2px;padding:0 1px">$1</mark>');
+    return `<div onclick="window._abSuggestPick('${b.name.replace(/'/g,"\\'")}')"
+      style="padding:9px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:${i<matches.length-1?'1px solid #F5F5F4':'none'};transition:background .1s"
+      onmouseover="this.style.background='#F8FAFF'" onmouseout="this.style.background=''">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+        <div style="width:26px;height:26px;border-radius:7px;background:#EDEBFC;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#7C6EF0;flex-shrink:0">${(b.name||'?')[0]}</div>
+        <div style="min-width:0">
+          <div style="font-size:12.5px;font-weight:500;color:#1C1917;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${highlighted}</div>
+          <div style="font-size:10px;color:#A8A29E;margin-top:1px">${b.state||''}${b.state&&b.sector?' · ':''}${b.sector||''}${delay}</div>
+        </div>
+      </div>
+      <span style="background:${rBg};color:${rCol};border-radius:100px;padding:2px 7px;font-size:9.5px;font-weight:600;flex-shrink:0">${risk}</span>
+    </div>`;
+  }).join('');
+  box.style.display='block';
 };
+window._abSuggestPick=function(name){
+  const inp=document.getElementById('ab-name');
+  if(inp){inp.value=name;inp.dispatchEvent(new Event('input'));}
+  const box=document.getElementById('ab-name-suggestions');
+  if(box) box.style.display='none';
+};
+// Close suggestions when clicking outside
+document.addEventListener('click',function(e){
+  const box=document.getElementById('ab-name-suggestions');
+  const inp=document.getElementById('ab-name');
+  if(box&&inp&&!box.contains(e.target)&&e.target!==inp) box.style.display='none';
+},{capture:true});
 
 window.addBuyerSave=async function(){
   const name=(document.getElementById('ab-name')||{}).value.trim();
@@ -12624,10 +12880,10 @@ window.initCashExposureMap = function(){
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px">'
       +[{l:'Portfolio Share',v:r.share+'%'},{l:'Avg Delay',v:r.delay+' days'},{l:'Expected Collection',v:r.collect},{l:'Industry',v:r.industry}]
-       .map(function(k){return '<div style="background:#1e293b;border-radius:9px;padding:11px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin-bottom:3px">'+k.l+'</div><div style="font-size:13px;font-weight:800;color:#f1f5f9">'+k.v+'</div></div>';}).join('')
+       .map(function(k){return '<div style="background:#1e293b;border-radius:9px;padding:11px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#44403C;margin-bottom:3px">'+k.l+'</div><div style="font-size:13px;font-weight:800;color:#f1f5f9">'+k.v+'</div></div>';}).join('')
       +'</div>'
       +'<div style="background:#1e293b;border-radius:10px;padding:13px;margin-bottom:12px">'
-      +'<div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#475569;margin-bottom:7px">Recommended Action</div>'
+      +'<div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#44403C;margin-bottom:7px">Recommended Action</div>'
       +'<div style="font-size:12px;color:#cbd5e1;line-height:1.6">'+r.action+'</div>'
       +'</div>'
       +'<div style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:13px">'
@@ -12688,7 +12944,7 @@ window.initCashExposureMap = function(){
       var fo=makeSVGEl('foreignObject',{x:0,y:0,width:W,height:H});
       var d=document.createElement('div');
       d.setAttribute('xmlns','http://www.w3.org/1999/xhtml');
-      d.style.cssText='width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#475569;font-family:system-ui,sans-serif';
+      d.style.cssText='width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#44403C;font-family:system-ui,sans-serif';
       d.innerHTML='<div style="font-size:36px">📭</div>'
         +'<div style="font-size:14px;font-weight:700;color:#64748b">'+groupLabel+' information not available in uploaded data</div>'
         +'<button onclick="AppState.set({page:\'onboarding\'});App.onStateChange()" style="margin-top:8px;padding:9px 22px;background:#6366f1;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Upload Updated Data</button>';
@@ -12835,10 +13091,10 @@ window.initCashExposureMap = function(){
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px">'
       +[{l:'Portfolio Share',v:r.share+'%'},{l:'Buyers',v:r.count},{l:'Avg Delay',v:r.delay+' days'},{l:'Weighted Risk',v:r.riskScore+'/100'}]
-       .map(function(k){return '<div style="background:#1e293b;border-radius:9px;padding:11px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin-bottom:3px">'+k.l+'</div><div style="font-size:13px;font-weight:800;color:#f1f5f9">'+k.v+'</div></div>';}).join('')
+       .map(function(k){return '<div style="background:#1e293b;border-radius:9px;padding:11px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#44403C;margin-bottom:3px">'+k.l+'</div><div style="font-size:13px;font-weight:800;color:#f1f5f9">'+k.v+'</div></div>';}).join('')
       +'</div>'
       +'<div style="background:#1e293b;border-radius:10px;padding:13px;margin-bottom:12px">'
-      +'<div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#475569;margin-bottom:7px">Top Buyers</div>'
+      +'<div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#44403C;margin-bottom:7px">Top Buyers</div>'
       +topList
       +'</div>'
       +'<div style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:13px">'
@@ -12993,12 +13249,16 @@ function renderAllDrainers(){
         ${sortBtn('contrib','Contribution')}
         ${sortBtn('risk','Risk Score')}
         <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">Risk</th>
+        <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">Follow Up</th>
       </tr></thead>
       <tbody>
         ${rows.length ? rows.map((b,i)=>{
           const risk=classifyRisk(b),rc=riskCol(risk),rb=risk==='High'?'rgba(239,68,68,.03)':'transparent';
           const cc=b.contrib>=15?'#ef4444':b.contrib>=10?'#f97316':b.contrib>=5?'#f59e0b':'#6366f1';
           const delayCol=(b.avgDelay||0)>60?'#ef4444':(b.avgDelay||0)>30?'#f97316':'#10b981';
+          const ph=(b.phone||'').replace(/\s+/g,''); const hasPhone=ph&&ph!=='—';
+          const fuMsg=encodeURIComponent(`Dear ${b.contact||b.name}, this is a reminder regarding your outstanding payment with us. Kindly arrange the payment at the earliest. Thank you.`);
+          const fuIc='width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;text-decoration:none;';
           return `<tr style="border-top:1px solid var(--gray-100);background:${rb};cursor:pointer;transition:background .12s"
             onmouseover="this.style.background='${risk==='High'?'rgba(239,68,68,.06)':'rgba(99,102,241,.04)'}'"
             onmouseout="this.style.background='${rb}'"
@@ -13029,8 +13289,21 @@ function renderAllDrainers(){
             <td style="padding:9px 12px">
               <span style="background:${rc}18;color:${rc};border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:800;letter-spacing:.04em">${risk}</span>
             </td>
+            <td style="padding:9px 12px" onclick="event.stopPropagation()">
+              <div style="display:flex;gap:4px;justify-content:center;align-items:center">
+                <a href="${hasPhone?'tel:'+ph:'#'}" title="${hasPhone?'Call':'No phone'}" style="${fuIc}background:${hasPhone?'#fff':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 4px rgba(0,0,0,.18)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="${hasPhone?'#111827':'#D6D3D1'}"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.45 2.33.69 3.58.69a1 1 0 011 1V20a1 1 0 01-1 1C10.18 21 3 13.82 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.26.24 2.47.69 3.58a1 1 0 01-.24 1.01l-2.32 2.2z"/></svg>
+                </a>
+                <a href="${hasPhone?'https://wa.me/91'+ph.replace(/^\+91/,'').replace(/^91/,'')+'?text='+fuMsg:'#'}" target="_blank" title="${hasPhone?'WhatsApp':'No phone'}" style="${fuIc}background:${hasPhone?'#25D366':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 4px rgba(37,211,102,.4)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                  <svg width="13" height="13" viewBox="0 0 32 32" fill="none"><path d="M16 2C8.27 2 2 8.27 2 16c0 2.44.66 4.73 1.8 6.72L2 30l7.45-1.75A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="${hasPhone?'#fff':'#A8A29E'}"/><path d="M22.45 19.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="${hasPhone?'#25D366':'#D6D3D1'}"/></svg>
+                </a>
+                <a href="${b.email?'mailto:'+b.email+'?subject=Payment+Reminder&body='+fuMsg:'#'}" title="${b.email?'Email':'No email'}" style="${fuIc}background:${b.email?'#1C1C1E':'#F3F4F6'};border-radius:6px;box-shadow:${b.email?'0 1px 4px rgba(0,0,0,.25)':'none'};pointer-events:${b.email?'auto':'none'}" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                  <svg width="12" height="9" viewBox="0 0 20 15" fill="none"><rect x="0.8" y="0.8" width="18.4" height="13.4" rx="1.5" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4"/><path d="M1 2l9 6.5L19 2" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </a>
+              </div>
+            </td>
           </tr>`;
-        }).join('') : `<tr><td colspan="8" style="padding:48px;text-align:center;color:var(--gray-400);font-size:14px">No buyers found</td></tr>`}
+        }).join('') : `<tr><td colspan="9" style="padding:48px;text-align:center;color:var(--gray-400);font-size:14px">No buyers found</td></tr>`}
       </tbody>
     </table>
 
@@ -13135,10 +13408,14 @@ function renderAllPunctual(){
         ${sortBtn('contrib','Contribution')}
         ${sortBtn('risk','Risk Score')}
         <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">Risk</th>
+        <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em">Follow Up</th>
       </tr></thead>
       <tbody>
         ${rows.map((b,i)=>{
           const tl=timingLabel(b._timing),risk=classifyRisk(b),rc=riskCol(risk),cc=contribCol(b.contrib);
+          const ph=(b.phone||'').replace(/\s+/g,''); const hasPhone=ph&&ph!=='—';
+          const fuMsg=encodeURIComponent(`Dear ${b.contact||b.name}, this is a reminder regarding your outstanding payment with us. Kindly arrange the payment at the earliest. Thank you.`);
+          const fuIc='width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;text-decoration:none;';
           return `<tr style="border-top:1px solid var(--gray-100);background:${b._timing<0?'rgba(34,197,94,.02)':'transparent'};cursor:pointer;transition:background .12s"
             onmouseover="this.style.background='rgba(34,197,94,.06)'"
             onmouseout="this.style.background='${b._timing<0?'rgba(34,197,94,.02)':'transparent'}'"
@@ -13161,6 +13438,19 @@ function renderAllPunctual(){
             <td style="padding:9px 12px"><span style="background:${cc}18;color:${cc};border-radius:100px;padding:3px 10px;font-size:11px;font-weight:800">${contribFmt(b.contrib)}</span></td>
             <td style="padding:9px 12px;font-size:12px;font-weight:700;color:var(--gray-600)">${b.riskScore||'—'}/100</td>
             <td style="padding:9px 12px"><span style="background:${rc}18;color:${rc};border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:800">${risk}</span></td>
+            <td style="padding:9px 12px" onclick="event.stopPropagation()">
+              <div style="display:flex;gap:4px;justify-content:center;align-items:center">
+                <a href="${hasPhone?'tel:'+ph:'#'}" title="${hasPhone?'Call':'No phone'}" style="${fuIc}background:${hasPhone?'#fff':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 4px rgba(0,0,0,.18)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="${hasPhone?'#111827':'#D6D3D1'}"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.45 2.33.69 3.58.69a1 1 0 011 1V20a1 1 0 01-1 1C10.18 21 3 13.82 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.26.24 2.47.69 3.58a1 1 0 01-.24 1.01l-2.32 2.2z"/></svg>
+                </a>
+                <a href="${hasPhone?'https://wa.me/91'+ph.replace(/^\+91/,'').replace(/^91/,'')+'?text='+fuMsg:'#'}" target="_blank" title="${hasPhone?'WhatsApp':'No phone'}" style="${fuIc}background:${hasPhone?'#25D366':'#F3F4F6'};box-shadow:${hasPhone?'0 1px 4px rgba(37,211,102,.4)':'none'};pointer-events:${hasPhone?'auto':'none'}" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                  <svg width="13" height="13" viewBox="0 0 32 32" fill="none"><path d="M16 2C8.27 2 2 8.27 2 16c0 2.44.66 4.73 1.8 6.72L2 30l7.45-1.75A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="${hasPhone?'#fff':'#A8A29E'}"/><path d="M22.45 19.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="${hasPhone?'#25D366':'#D6D3D1'}"/></svg>
+                </a>
+                <a href="${b.email?'mailto:'+b.email+'?subject=Payment+Reminder&body='+fuMsg:'#'}" title="${b.email?'Email':'No email'}" style="${fuIc}background:${b.email?'#1C1C1E':'#F3F4F6'};border-radius:6px;box-shadow:${b.email?'0 1px 4px rgba(0,0,0,.25)':'none'};pointer-events:${b.email?'auto':'none'}" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                  <svg width="12" height="9" viewBox="0 0 20 15" fill="none"><rect x="0.8" y="0.8" width="18.4" height="13.4" rx="1.5" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4"/><path d="M1 2l9 6.5L19 2" stroke="${b.email?'#fff':'#A8A29E'}" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </a>
+              </div>
+            </td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -13190,12 +13480,12 @@ function renderCashExposureMap(){
     +'<div>'
     +'<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:3px">Cash Intelligence</div>'
     +'<div style="font-size:22px;font-weight:900;color:#f1f5f9;letter-spacing:-.3px">Cash Exposure Map</div>'
-    +'<div style="font-size:12px;color:#475569;margin-top:2px">Where your cash flow risk is concentrated &nbsp;·&nbsp; '+headerBuyers.length+' buyers &nbsp;·&nbsp; '+inrFmt(total)+' total exposure</div>'
+    +'<div style="font-size:12px;color:#44403C;margin-top:2px">Where your cash flow risk is concentrated &nbsp;·&nbsp; '+headerBuyers.length+' buyers &nbsp;·&nbsp; '+inrFmt(total)+' total exposure</div>'
     +'</div>'
     +'<div style="display:flex;align-items:center;gap:12px;flex-shrink:0">'
     +['low','medium','high','critical'].map(function(r){return '<div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:'+PAL[r].bg+'"></div><span style="font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase">'+PAL[r].label+'</span></div>';}).join('')
     +'<div style="width:1px;height:18px;background:#1e293b;margin:0 2px"></div>'
-    +'<div style="font-size:10.5px;color:#475569">Tile size = Outstanding</div>'
+    +'<div style="font-size:10.5px;color:#44403C">Tile size = Outstanding</div>'
     +'<div style="width:1px;height:18px;background:#1e293b;margin:0 2px"></div>'
     /* ── Exposure View dropdown ── */
     +'<div style="position:relative" id="cem-view-wrap">'
@@ -13224,13 +13514,13 @@ function renderCashExposureMap(){
     +'<span id="cem-tip-risk" style="font-size:9.5px;font-weight:900;letter-spacing:.06em"></span>'
     +'</div></div>'
     +'<div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#475569;margin-bottom:2px">Outstanding</div><div id="cem-tip-amt" style="font-size:15px;font-weight:900;color:#f1f5f9"></div></div>'
-    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#475569;margin-bottom:2px">Portfolio Share</div><div id="cem-tip-share" style="font-size:15px;font-weight:900;color:#f1f5f9"></div></div>'
-    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#475569;margin-bottom:2px">Avg Delay</div><div id="cem-tip-delay" style="font-size:15px;font-weight:900;color:#f1f5f9"></div></div>'
-    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#475569;margin-bottom:2px">Expected Collection</div><div id="cem-tip-collect" style="font-size:11.5px;font-weight:800;color:#818cf8"></div></div>'
+    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#44403C;margin-bottom:2px">Outstanding</div><div id="cem-tip-amt" style="font-size:15px;font-weight:900;color:#f1f5f9"></div></div>'
+    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#44403C;margin-bottom:2px">Portfolio Share</div><div id="cem-tip-share" style="font-size:15px;font-weight:900;color:#f1f5f9"></div></div>'
+    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#44403C;margin-bottom:2px">Avg Delay</div><div id="cem-tip-delay" style="font-size:15px;font-weight:900;color:#f1f5f9"></div></div>'
+    +'<div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#44403C;margin-bottom:2px">Expected Collection</div><div id="cem-tip-collect" style="font-size:11.5px;font-weight:800;color:#818cf8"></div></div>'
     +'</div>'
-    +'<div style="padding:0 16px 12px"><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#475569;margin-bottom:5px">Recommended Action</div><div id="cem-tip-action" style="font-size:11.5px;color:#94a3b8;line-height:1.5"></div></div>'
-    +'<div style="padding:8px 16px;background:#0a0f1a;border-top:1px solid #1e293b;font-size:10px;color:#475569;text-align:center">Click tile to open buyer detail →</div>'
+    +'<div style="padding:0 16px 12px"><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#44403C;margin-bottom:5px">Recommended Action</div><div id="cem-tip-action" style="font-size:11.5px;color:#94a3b8;line-height:1.5"></div></div>'
+    +'<div style="padding:8px 16px;background:#0a0f1a;border-top:1px solid #1e293b;font-size:10px;color:#44403C;text-align:center">Click tile to open buyer detail →</div>'
     +'</div></div>'
 
     /* Detail panel */
@@ -13848,6 +14138,7 @@ async function cfiqRegister(){
     errEl.textContent='Please fill in all fields.';errEl.style.display='';return;
   }
   btn.disabled=true;txt.textContent='Creating account…';errEl.style.display='none';
+  const _slowHint=setTimeout(()=>{txt.textContent='Almost there — server is warming up…';},3500);
   try{
     const res=await fetch((window.CFIQ_API_BASE||'')+'/api/auth/register',{
       method:'POST',headers:{'Content-Type':'application/json'},
@@ -13855,6 +14146,7 @@ async function cfiqRegister(){
     });
     const data=await res.json();
     if(!res.ok) throw new Error(data.message||'Registration failed');
+    clearTimeout(_slowHint);
     API.setToken(data.token);
     localStorage.setItem('cfiq_login','true');
     localStorage.setItem('cfiq_login_email',data.user.email);
@@ -13862,6 +14154,7 @@ async function cfiqRegister(){
     await initDB();
     cfiqShowOnboarding();
   }catch(e){
+    clearTimeout(_slowHint);
     errEl.textContent=e.message||'Registration failed.';errEl.style.display='';
     btn.disabled=false;txt.textContent='Create Account';
   }
@@ -14081,7 +14374,7 @@ function cfiqInjectRecommendedAction(page){
       </div>
       <div>
         <div style="font-size:10.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Why</div>
-        <div style="font-size:13px;color:#475569;line-height:1.5">${action.reason||''}</div>
+        <div style="font-size:13px;color:#44403C;line-height:1.5">${action.reason||''}</div>
       </div>
       <div>
         <div style="font-size:10.5px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Action</div>
@@ -14574,12 +14867,12 @@ window._iahWS_refreshPreview=function(){
     +'<div style="padding:10px 16px">'
     +'<div style="font-size:10px;color:#64748b;font-weight:600;letter-spacing:.05em;margin-bottom:6px">BILL TO</div>'
     +'<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px">'+buy_name+'</div>'
-    +(buy_gstin?'<div style="font-size:10px;color:#475569;margin-bottom:3px">GSTIN: '+buy_gstin+'</div>':'')
-    +(buy_addr?'<div style="font-size:10.5px;color:#475569;margin-bottom:2px">'+buy_addr+'</div>':'')
-    +((buy_city||buy_state)?'<div style="font-size:10.5px;color:#475569">'+(buy_city?buy_city+', ':'')+buy_state+'</div>':'')
-    +(buy_contact?'<div style="font-size:10.5px;color:#475569;margin-top:4px">Attn: '+buy_contact+'</div>':'')
-    +(buy_phone?'<div style="font-size:10.5px;color:#475569">📞 '+buy_phone+'</div>':'')
-    +(buy_email?'<div style="font-size:10.5px;color:#475569">✉ '+buy_email+'</div>':'')
+    +(buy_gstin?'<div style="font-size:10px;color:#44403C;margin-bottom:3px">GSTIN: '+buy_gstin+'</div>':'')
+    +(buy_addr?'<div style="font-size:10.5px;color:#44403C;margin-bottom:2px">'+buy_addr+'</div>':'')
+    +((buy_city||buy_state)?'<div style="font-size:10.5px;color:#44403C">'+(buy_city?buy_city+', ':'')+buy_state+'</div>':'')
+    +(buy_contact?'<div style="font-size:10.5px;color:#44403C;margin-top:4px">Attn: '+buy_contact+'</div>':'')
+    +(buy_phone?'<div style="font-size:10.5px;color:#44403C">📞 '+buy_phone+'</div>':'')
+    +(buy_email?'<div style="font-size:10.5px;color:#44403C">✉ '+buy_email+'</div>':'')
     +'</div>'
     +'</div>'
     /* items table */
@@ -14609,7 +14902,7 @@ window._iahWS_refreshPreview=function(){
     +'</div>'
     +'</div>'
     /* amount in words */
-    +'<div style="padding:0 16px 10px;font-size:10.5px;color:#475569;font-style:italic">Amount in Words: <strong style="color:#1e293b">'+window._iahWS_numWords(Math.round(calc.grand))+'</strong></div>'
+    +'<div style="padding:0 16px 10px;font-size:10.5px;color:#44403C;font-style:italic">Amount in Words: <strong style="color:#1e293b">'+window._iahWS_numWords(Math.round(calc.grand))+'</strong></div>'
     /* gst mode badge */
     +'<div style="padding:0 16px 12px"><span style="font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;'+(calc.interState?'background:#fef3c7;color:#92400e':'background:#d1fae5;color:#064e3b')+'">'+(calc.interState?'⟷ IGST (Inter-State Supply)':'⟨ CGST + SGST (Within State)')+'</span></div>'
     /* declaration */
@@ -14724,7 +15017,7 @@ window.iahShowCreateInvoice=function(existing){
     +'</div>'
     +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
     +'<button onclick="window._iahWS_triggerAI()" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(59,130,246,.2));border:1px solid rgba(139,92,246,.4);color:#a78bfa;padding:6px 13px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:600">✨ AI Extract</button>'
-    +'<button onclick="window._iahWS_saveInvoice(\'draft\')" style="background:#f1f5f9;border:1px solid #cbd5e1;color:#475569;padding:6px 13px;border-radius:7px;cursor:pointer;font-size:11.5px">💾 Save Draft</button>'
+    +'<button onclick="window._iahWS_saveInvoice(\'draft\')" style="background:#f1f5f9;border:1px solid #cbd5e1;color:#44403C;padding:6px 13px;border-radius:7px;cursor:pointer;font-size:11.5px">💾 Save Draft</button>'
     +'<button onclick="window._iahWS_saveInvoice(\'generate\')" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#fbbf24;padding:6px 13px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:600">📄 Generate PDF</button>'
     +'<button onclick="window._iahWS_saveInvoice(\'send\')" style="background:linear-gradient(135deg,#059669,#0284c7);border:none;color:#fff;padding:6px 16px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:700">📤 Send for Acceptance</button>'
     +'<button onclick="window.print()" style="background:rgba(255,255,255,.05);border:1px solid #1e3a5f;color:#64748b;padding:6px 11px;border-radius:7px;cursor:pointer;font-size:11.5px">🖨</button>'
@@ -14749,7 +15042,7 @@ window.iahShowCreateInvoice=function(existing){
     +'<div style="flex:1">'
     +'<div style="font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:3px">AI Invoice Extraction</div>'
     +'<div style="font-size:11.5px;color:#64748b">Upload an existing invoice PDF or image — fields will be auto-populated instantly.</div>'
-    +'<div style="font-size:10.5px;color:#475569;margin-top:4px">Extracts: Invoice No · Buyer · GSTIN · Amount · Date · Due Date · PO No · Line Items</div>'
+    +'<div style="font-size:10.5px;color:#44403C;margin-top:4px">Extracts: Invoice No · Buyer · GSTIN · Amount · Date · Due Date · PO No · Line Items</div>'
     +'</div>'
     +'<div style="font-size:11px;color:#a78bfa;padding:5px 13px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);border-radius:6px;white-space:nowrap;font-weight:600">Browse / Drop File</div>'
     +'</div>'
@@ -14829,7 +15122,7 @@ window.iahShowCreateInvoice=function(existing){
     +['Purchase Order','Delivery Challan','Transport Receipt','Supporting Docs'].map(function(n,i){
       return '<div>'
         +'<label style="'+lbl+'">'+n+'</label>'
-        +'<div id="iahWS_docZone'+i+'" onclick="document.getElementById(\'iahWS_file'+i+'\').click()" style="border:1.5px dashed #1e3a5f;border-radius:6px;padding:10px 12px;text-align:center;cursor:pointer;color:#475569;font-size:11px;transition:border-color .2s" onmouseover="this.style.borderColor=\'#38bdf8\'" onmouseout="this.style.borderColor=\'#1e3a5f\'">'
+        +'<div id="iahWS_docZone'+i+'" onclick="document.getElementById(\'iahWS_file'+i+'\').click()" style="border:1.5px dashed #1e3a5f;border-radius:6px;padding:10px 12px;text-align:center;cursor:pointer;color:#44403C;font-size:11px;transition:border-color .2s" onmouseover="this.style.borderColor=\'#38bdf8\'" onmouseout="this.style.borderColor=\'#1e3a5f\'">'
         +'<div style="font-size:16px;margin-bottom:3px">📄</div>'
         +'<div id="iahWS_docLbl'+i+'">Click to upload</div>'
         +'<input id="iahWS_file'+i+'" type="file" accept=".pdf,.jpg,.png,.xlsx,.jpeg" style="display:none" onchange="window._iahWS_loadDoc(this,'+i+')">'
@@ -15080,20 +15373,20 @@ window.iahShowSendLinks=function(invId){
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
     +'<span style="font-size:11.5px;font-weight:700;color:#38bdf8;letter-spacing:.04em">🔗 SECURE ACCEPTANCE LINK</span>'
     +'<button onclick="navigator.clipboard.writeText(\''+secureLink+'\');window.iahToast(\'🔗 Link copied to clipboard\',\'#1e3a5f\')" style="background:#1e3a5f;border:none;color:#94a3b8;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:5px">Copy</button>'
-    +'</div><div style="font-size:11px;color:#475569;word-break:break-all;font-family:monospace">'+secureLink+'</div>'
+    +'</div><div style="font-size:11px;color:#44403C;word-break:break-all;font-family:monospace">'+secureLink+'</div>'
     +'</div>'
     +'<div style="background:#0a1628;border:1px solid #1e3a5f;border-radius:10px;padding:14px 16px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
     +'<span style="font-size:11.5px;font-weight:700;color:#818cf8;letter-spacing:.04em">✉ EMAIL LINK</span>'
     +'<button onclick="navigator.clipboard.writeText(\''+emailLink+'\');window.iahToast(\'✉ Email link copied\',\'#1e3a5f\')" style="background:#1e3a5f;border:none;color:#94a3b8;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:5px">Copy</button>'
-    +'</div><div style="font-size:11px;color:#475569">Send to: finance@'+buyer.name.toLowerCase().replace(/[^a-z]/g,'')+'.com</div>'
+    +'</div><div style="font-size:11px;color:#44403C">Send to: finance@'+buyer.name.toLowerCase().replace(/[^a-z]/g,'')+'.com</div>'
     +'<a href="'+emailLink+'" style="display:inline-block;margin-top:8px;font-size:11.5px;color:#818cf8;text-decoration:none">Open Email Client →</a>'
     +'</div>'
     +'<div style="background:#0a1628;border:1px solid #1e3a5f;border-radius:10px;padding:14px 16px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
     +'<span style="font-size:11.5px;font-weight:700;color:#34d399;letter-spacing:.04em">💬 WHATSAPP LINK</span>'
     +'<button onclick="navigator.clipboard.writeText(\''+waLink+'\');window.iahToast(\'💬 WhatsApp link copied\',\'#14532d\')" style="background:#1e3a5f;border:none;color:#94a3b8;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:5px">Copy</button>'
-    +'</div><div style="font-size:11px;color:#475569">Sends link to buyer AP contact via WhatsApp</div>'
+    +'</div><div style="font-size:11px;color:#44403C">Sends link to buyer AP contact via WhatsApp</div>'
     +'<a href="'+waLink+'" target="_blank" style="display:inline-block;margin-top:8px;font-size:11.5px;color:#34d399;text-decoration:none">Open WhatsApp →</a>'
     +'</div>'
     +'</div>'
@@ -15200,7 +15493,7 @@ window.iahShowAuditTrail=function(invId){
     +'<div style="font-size:11.5px;color:#94a3b8;font-weight:600">VERIFICATION CONFIDENCE SCORE</div>'
     +'<div style="flex:1;height:8px;background:rgba(30,58,95,.8);border-radius:4px;overflow:hidden"><div style="width:'+score+'%;height:100%;background:linear-gradient(90deg,'+scoreCol+','+scoreCol+'cc);border-radius:4px;transition:width .5s"></div></div>'
     +'<div style="font-size:20px;font-weight:900;color:'+scoreCol+'">'+score+'%</div>'
-    +'<div style="font-size:11px;color:#475569">'+stageMap[inv.stage]+'</div>'
+    +'<div style="font-size:11px;color:#44403C">'+stageMap[inv.stage]+'</div>'
     +'</div>'
     +row('📎','Reference Number',inv.refNo||'REF-'+invId.replace('INV-','').replace(/-/g,'')+'-AUTO')
     +row('👁','Viewed Date',inv.viewedDate?D.fmtDate(inv.viewedDate):'Not yet viewed','#94a3b8')
