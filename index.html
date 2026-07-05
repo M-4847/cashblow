@@ -5907,6 +5907,18 @@ function renderDashboard(d){
   return _renderBusinessDashboard();
 }
 function _renderBusinessDashboard(){
+  // ── If still loading, show spinner and auto-retry ──
+  if(DB._loading){
+    return `<div id="dash-loading" style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 20px">
+  <div style="text-align:center">
+    <div style="width:40px;height:40px;border:3px solid #E7E5E4;border-top-color:#7C6EF0;border-radius:50%;animation:_dashSpin 0.8s linear infinite;margin:0 auto 16px"></div>
+    <div style="font-size:14px;font-weight:600;color:#44403C" id="dash-load-msg">Loading your dashboard…</div>
+    <div style="font-size:11.5px;color:#A8A29E;margin-top:6px">Connecting to server</div>
+  </div>
+</div>
+<style>@keyframes _dashSpin{to{transform:rotate(360deg)}}</style>`;
+  }
+
   // ── Only show live data if it came from the API (not demo defaults) ──
   const hasData = DB._fromAPI === true && DB.buyers && DB.buyers.length > 0;
   if(!hasData){
@@ -13896,8 +13908,11 @@ function prFaqToggle(btn){
   document.querySelectorAll('#pr-faq-list .pr-faq-item.open').forEach(el=>el.classList.remove('open'));
   if(!isOpen)item.classList.add('open');
 }
-async function initDB(){
+async function initDB(isRetry){
   if(!API.isConfigured()) return;
+  // Show spinner on dashboard while loading
+  DB._loading = true;
+  if(AppState.get().page==='dashboard') App.onStateChange();
   try {
     const [buyersRes, invoicesRes, ordersRes, receivablesRes, alertsRes] = await Promise.allSettled([
       API.get('/api/buyers?limit=2000'),
@@ -14085,15 +14100,28 @@ async function initDB(){
         Toast && Toast.show('Session expired. Please sign in again.', 'error');
         return;
       }
-      // Network error — don't set _fromAPI, let dashboard show upload prompt
+      // Network error — retry once after 4s (Railway cold start)
+      if(!isRetry){
+        console.warn('[CashFlowIQ] initDB: failed, retrying in 4s…');
+        const loadMsg = document.getElementById('dash-load-msg');
+        if(loadMsg) loadMsg.textContent = 'Server is warming up — retrying…';
+        await new Promise(r=>setTimeout(r,4000));
+        DB._loading = false;
+        return initDB(true);
+      }
+      DB._loading = false;
       console.warn('[CashFlowIQ] initDB: all calls failed —', reason?.message);
+      if(AppState.get().page==='dashboard') App.onStateChange();
       return;
     }
 
+    DB._loading = false;
     DB._fromAPI = true;
     console.log('[CashFlowIQ] DB loaded — buyers:'+DB.buyers.length+' invoices:'+DB.invoices.length);
   } catch(e) {
+    DB._loading = false;
     console.warn('[CashFlowIQ] initDB failed:', e.message);
+    if(AppState.get().page==='dashboard') App.onStateChange();
   }
 }
 
