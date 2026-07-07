@@ -24,7 +24,7 @@
   --gray-900:#1C1917;--gray-800:#292524;--gray-700:#44403C;--gray-600:#57534E;
   --gray-500:#78716C;--gray-400:#A8A29E;--gray-300:#D6D3D1;--gray-200:#E7E5E4;
   --gray-100:#F5F5F4;--gray-50:#FAFAF9;--white:#ffffff;
-  --sidebar-w:232px;--topbar-h:56px;
+  --sidebar-w:232px;--sidebar-w-c:72px;--topbar-h:56px;
   --r-sm:8px;--r-md:12px;--r-lg:16px;
   /* Warm-tinted shadows */
   --sh-sm:0 1px 4px rgba(28,25,23,.06),0 1px 2px rgba(28,25,23,.04);
@@ -92,7 +92,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 /* -- SIDEBAR -- */
 /* ═══ DARK NAVY SIDEBAR — Money.ex style ═══ */
 :root{--sidebar-bg:#1C1917;--sidebar-active:#7C6EF0;--sidebar-hover:rgba(255,255,255,.05);--sidebar-text:rgba(255,255,255,.48);--sidebar-text-active:#fff;--sidebar-border:rgba(255,255,255,.07)}
-.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);border-right:none;display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);border-right:none;display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 24px rgba(0,0,0,.18);transition:width 280ms cubic-bezier(.4,0,.2,1)}
 .logo-mark{width:32px;height:32px;background:linear-gradient(135deg,#D97757,#C86644);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(217,119,87,.35)}
 .logo-mark svg{width:16px;height:16px;fill:#fff}
 .logo-text{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px}
@@ -145,8 +145,50 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 .ng-receivables .nav-group-hdr{color:rgba(110,231,183,.5)}
 .ng-buyers .nav-group-hdr{color:rgba(125,211,252,.5)}
 .ng-risk .nav-group-hdr{color:rgba(252,165,165,.5)}
-.sidebar-logo{padding:0 18px;height:var(--topbar-h);display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--sidebar-border);cursor:pointer;transition:background .12s}
+.sidebar-logo{padding:0 18px;height:var(--topbar-h);display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--sidebar-border);cursor:pointer;transition:background .12s,padding 280ms cubic-bezier(.4,0,.2,1),gap 280ms cubic-bezier(.4,0,.2,1);position:relative;overflow:visible}
 .sidebar-logo:hover{background:rgba(255,255,255,.04)}
+
+/* ── Collapsible sidebar system ── */
+.nav-label{transition:opacity 180ms ease,max-width 280ms cubic-bezier(.4,0,.2,1),margin 280ms cubic-bezier(.4,0,.2,1);overflow:hidden;white-space:nowrap;max-width:160px;display:inline-block}
+.logo-text{transition:opacity 180ms ease,max-width 280ms cubic-bezier(.4,0,.2,1);overflow:hidden;white-space:nowrap;max-width:160px}
+/* sidebar toggle chevron */
+.sb-toggle{position:absolute;right:-11px;top:50%;transform:translateY(-50%);width:22px;height:22px;background:var(--sidebar-bg);border:1.5px solid rgba(255,255,255,.14);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:110;transition:opacity .18s,background .18s,border-color .18s;opacity:0}
+.sidebar:hover .sb-toggle,.sb-toggle:hover{opacity:1}
+.sb-toggle:hover{background:#3B382E;border-color:rgba(255,255,255,.28)}
+.sb-toggle svg{width:9px;height:9px;stroke:rgba(255,255,255,.7);transition:transform 280ms cubic-bezier(.4,0,.2,1)}
+/* collapsed state */
+body[data-sb=collapsed] .sidebar{width:var(--sidebar-w-c)}
+body[data-sb=collapsed] .topbar{left:var(--sidebar-w-c)}
+body[data-sb=collapsed] .main{margin-left:var(--sidebar-w-c)}
+body[data-sb=collapsed] .logo-text{opacity:0;max-width:0;pointer-events:none}
+body[data-sb=collapsed] .nav-label{opacity:0;max-width:0;pointer-events:none}
+body[data-sb=collapsed] .sidebar-logo{padding:0;justify-content:center;gap:0}
+body[data-sb=collapsed] .sb-toggle svg{transform:rotate(180deg)}
+body[data-sb=collapsed] .sb-toggle{opacity:1}
+body[data-sb=collapsed] .nav-item{justify-content:center;padding:9px 0;margin:2px 8px;width:calc(100% - 16px)}
+body[data-sb=collapsed] .nav-group-hdr{justify-content:center;padding:6px 0;margin:0 8px}
+body[data-sb=collapsed] .nav-group-hdr .ng-arrow{display:none}
+body[data-sb=collapsed] .nav-child{padding-left:0!important;justify-content:center;margin:1px 8px!important;width:calc(100% - 16px)!important}
+body[data-sb=collapsed] #sb-bottom-card{padding:10px 8px;display:flex;flex-direction:column;align-items:center}
+body[data-sb=collapsed] #sb-bottom-info{display:none}
+body[data-sb=collapsed] #sb-dark-toggle{display:none}
+body[data-sb=collapsed] #sb-bottom-row{justify-content:center}
+/* tooltips */
+body[data-sb=collapsed] [data-tip]{position:relative}
+body[data-sb=collapsed] [data-tip]::after{content:attr(data-tip);position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%) translateX(-4px);background:#292524;color:rgba(255,255,255,.92);padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:500;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:300;border:1px solid rgba(255,255,255,.1);box-shadow:0 4px 16px rgba(0,0,0,.35)}
+body[data-sb=collapsed] [data-tip]:hover::after{opacity:1;transform:translateY(-50%) translateX(0)}
+/* mobile drawer */
+@media(max-width:768px){
+  .sidebar{width:var(--sidebar-w)!important;transform:translateX(-100%);transition:transform 280ms cubic-bezier(.4,0,.2,1),width 0s}
+  body[data-sb=open] .sidebar{transform:translateX(0)}
+  .main,.topbar{margin-left:0!important;left:0!important;transition:none}
+  .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99}
+  body[data-sb=open] .sb-overlay{display:block}
+  .sb-hamburger{display:flex!important}
+}
+@media(min-width:769px) and (max-width:1100px){
+  :root{--sidebar-w:72px}
+}
 
 /* ── Dashboard: natural page scroll, nothing clipped ── */
 #dash-content{display:flex;flex-direction:column;overflow:visible!important}
@@ -238,7 +280,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 .u-role{font-size:11px;color:var(--gray-500)}
 
 /* -- TOPBAR -- */
-.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:14px;z-index:90}
+.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:14px;z-index:90;transition:left 280ms cubic-bezier(.4,0,.2,1)}
 .breadcrumbs{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
 .bc-link{font-size:13px;color:var(--gray-500);font-weight:450;cursor:pointer;white-space:nowrap}
 .bc-link:hover{color:var(--blue-600)}
@@ -298,7 +340,7 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 [data-theme='dark'] .so-cancel:hover{background:var(--gray-700)}
 
 /* -- MAIN -- */
-.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;overflow-x:hidden;padding:20px 24px;background:var(--stripe-bg);box-sizing:border-box}
+.main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;overflow-x:hidden;padding:20px 24px;background:var(--stripe-bg);box-sizing:border-box;transition:margin-left 280ms cubic-bezier(.4,0,.2,1)}
 .main.main-locked{overflow:hidden}
 
 /* -- BUTTONS -- */
@@ -2614,71 +2656,77 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 <div id="cfiq-app">
 
 <!-- -------- SIDEBAR -------- -->
+<div class="sb-overlay" onclick="cfiqToggleSidebar()"></div>
 <aside class="sidebar">
-  <div class="sidebar-logo" onclick="AppState.set({page:'dashboard'});App.onStateChange()" title="CashFlowIQ — Trade Intelligence Platform">
-    <div class="logo-mark">
+  <!-- Logo + collapse toggle -->
+  <div class="sidebar-logo" onclick="AppState.set({page:'dashboard'});App.onStateChange()" title="CashFlowIQ">
+    <div class="logo-mark" style="flex-shrink:0">
       <svg viewBox="0 0 20 20"><path d="M10 2L3 7v6l7 5 7-5V7L10 2zm0 2.3l5 3.6v4.6L10 15.6l-5-3.1V7.9l5-3.6z"/><circle cx="10" cy="10" r="2.5"/></svg>
     </div>
     <span class="logo-text">Cash<span>Flow</span>IQ</span>
+    <!-- collapse/expand chevron -->
+    <button class="sb-toggle" onclick="event.stopPropagation();cfiqToggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
+      <svg fill="none" viewBox="0 0 9 9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 1.5L2.5 4.5 6 7.5"/></svg>
+    </button>
   </div>
 
   <div class="sidebar-scroll">
 
-    <!-- ── Dashboard / Intelligence Hub ── -->
+    <!-- Dashboard -->
     <div style="margin:8px 8px 2px">
-      <button class="nav-item nav-standalone" data-page="dashboard" style="margin:0;width:100%;font-weight:600;font-size:12.5px">
+      <button class="nav-item nav-standalone" data-page="dashboard" data-tip="Dashboard" style="margin:0;width:100%;font-weight:600;font-size:12.5px">
         <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5z"/></svg></span>
-        Dashboard
+        <span class="nav-label">Dashboard</span>
       </button>
     </div>
 
-    <!-- ── Buyer Risk ── -->
+    <!-- Buyer Risk -->
     <div class="nav-group ng-buyers" id="ng-buyers">
-      <div class="nav-group-hdr" onclick="window.cfiqToggleGroup('ng-buyers')">
+      <div class="nav-group-hdr" data-tip="Buyer Risk" onclick="window.cfiqToggleGroup('ng-buyers')">
         <svg class="ng-icon" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 14c0-2.5 2-4.5 4.5-4.5" stroke-linecap="round"/><circle cx="11.5" cy="5" r="2"/><path d="M10 14c0-2 1.5-3.5 3.5-4" stroke-linecap="round"/></svg>
-        Buyer Risk
+        <span class="nav-label">Buyer Risk</span>
         <span class="ng-arrow">▶</span>
       </div>
       <div class="nav-group-body">
-        <button class="nav-item nav-child" data-page="buyerRiskProfiles">
+        <button class="nav-item nav-child" data-page="buyerRiskProfiles" data-tip="Risk Profiles">
           <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M8 1.5L3 4v4C3 11.5 5.2 13.8 8 14.5c2.8-.7 5-3 5-6.5V4L8 1.5z" stroke-linejoin="round"/></svg></span>
-          Risk Profiles
+          <span class="nav-label">Risk Profiles</span>
         </button>
-        <button class="nav-item nav-child" data-page="exposureAnalysis">
+        <button class="nav-item nav-child" data-page="exposureAnalysis" data-tip="Exposure Analysis">
           <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          Exposure Analysis
+          <span class="nav-label">Exposure Analysis</span>
         </button>
       </div>
     </div>
 
-    <!-- ── Settings ── -->
+    <!-- Settings -->
     <div style="margin:4px 8px 8px">
-      <button class="nav-item nav-standalone" data-page="settings" style="margin:0;width:100%">
+      <button class="nav-item nav-standalone" data-page="settings" data-tip="Settings" style="margin:0;width:100%">
         <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5V14M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke-linecap="round"/></svg></span>
-        Settings
+        <span class="nav-label">Settings</span>
       </button>
     </div>
 
   </div>
 
-  <!-- ── Bottom Interface Card — Money.ex style ── -->
-  <div style="margin:8px 10px 12px;background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 12px;border:1px solid rgba(255,255,255,.07);flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
-      <div style="width:34px;height:34px;background:linear-gradient(135deg,#3B82F6,#6366F1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(59,130,246,.35)">
+  <!-- Bottom card -->
+  <div id="sb-bottom-card" style="margin:8px 10px 12px;background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 12px;border:1px solid rgba(255,255,255,.07);flex-shrink:0;transition:padding 280ms cubic-bezier(.4,0,.2,1)">
+    <div id="sb-bottom-row" style="display:flex;align-items:center;gap:9px;margin-bottom:12px;transition:gap 280ms,margin 280ms cubic-bezier(.4,0,.2,1)">
+      <div data-tip="CashFlowIQ" style="width:34px;height:34px;background:linear-gradient(135deg,#D97757,#C86644);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(217,119,87,.3)">
         <svg width="16" height="16" viewBox="0 0 20 20" fill="#fff"><path d="M10 2L3 7v6l7 5 7-5V7L10 2zm0 2.3l5 3.6v4.6L10 15.6l-5-3.1V7.9l5-3.6z"/><circle cx="10" cy="10" r="2.5"/></svg>
       </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:#fff;line-height:1.2">CashFlowIQ</div>
-        <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:1px">Business Intelligence</div>
+      <div id="sb-bottom-info" style="overflow:hidden;transition:opacity 180ms ease,max-width 280ms cubic-bezier(.4,0,.2,1);max-width:160px">
+        <div style="font-size:12px;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap">CashFlowIQ</div>
+        <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:1px;white-space:nowrap">Business Intelligence</div>
       </div>
     </div>
-    <button onclick="Actions.toggleDarkMode()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:10px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
+    <button id="sb-dark-toggle" onclick="Actions.toggleDarkMode()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:10px;cursor:pointer;transition:background .15s,opacity 180ms,max-height 280ms" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
       <div style="display:flex;align-items:center;gap:8px">
         <svg id="iconMoon2" width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="rgba(255,255,255,.7)" stroke-width="1.8"><path d="M13.5 10A5.5 5.5 0 016 2.5a5.5 5.5 0 100 11 5.5 5.5 0 007.5-3.5z" stroke-linecap="round"/></svg>
         <svg id="iconSun2" width="13" height="13" fill="none" viewBox="0 0 16 16" stroke="rgba(255,255,255,.7)" stroke-width="1.8" style="display:none"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" stroke-linecap="round"/></svg>
         <span style="font-size:11.5px;font-weight:600;color:rgba(255,255,255,.7)">Light Mode</span>
       </div>
-      <div id="sidebar-theme-dot" style="width:28px;height:16px;background:#3B82F6;border-radius:8px;position:relative;transition:background .2s">
+      <div id="sidebar-theme-dot" style="width:28px;height:16px;background:#3B82F6;border-radius:8px;position:relative;transition:background .2s;flex-shrink:0">
         <div style="position:absolute;top:2px;left:2px;width:12px;height:12px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>
       </div>
     </button>
@@ -12190,6 +12238,35 @@ window.cfiqToggleGroup=function(id){
   const el=document.getElementById(id);
   if(el) el.classList.toggle('ng-closed');
 };
+
+// ── Collapsible sidebar ──
+window.cfiqToggleSidebar=function(){
+  const isMobile=window.innerWidth<=768;
+  if(isMobile){
+    const cur=document.body.getAttribute('data-sb');
+    document.body.setAttribute('data-sb', cur==='open'?'':'open');
+    localStorage.setItem('cfiq_sb', cur==='open'?'':'open');
+  } else {
+    const cur=document.body.getAttribute('data-sb');
+    const next=cur==='collapsed'?'':'collapsed';
+    document.body.setAttribute('data-sb', next);
+    localStorage.setItem('cfiq_sb', next);
+  }
+};
+// Init sidebar state from localStorage
+(function(){
+  const saved=localStorage.getItem('cfiq_sb');
+  const isMobile=window.innerWidth<=768;
+  if(isMobile){
+    document.body.setAttribute('data-sb',''); // always start closed on mobile
+  } else if(saved==='collapsed'){
+    document.body.setAttribute('data-sb','collapsed');
+  } else if(!saved && window.innerWidth<=1100){
+    // tablet: default collapsed
+    document.body.setAttribute('data-sb','collapsed');
+    localStorage.setItem('cfiq_sb','collapsed');
+  }
+})();
 
 /* ═══════════════════════════════════════════════════════════
    GALAXY PROCESSING ANIMATION
