@@ -6346,11 +6346,20 @@ function _renderBusinessDashboard(){
 <style>
 @keyframes _dashIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes _briefIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+/* ── Fixed-height cockpit layout ── */
+html,body{overflow:hidden!important;height:100%}
+.main{overflow:hidden!important;height:calc(100vh - var(--topbar-h))!important;padding:clamp(6px,1vh,14px) clamp(8px,1.2vw,20px)!important;box-sizing:border-box!important}
+#dash-content{height:100%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:clamp(5px,.8vh,10px)!important;box-sizing:border-box!important;padding:0!important;min-height:0!important}
+#dash-grid{flex:1!important;min-height:0!important;overflow:hidden!important;align-items:stretch!important;padding-bottom:0!important}
+#dash-grid>div{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
+#dash-grid>div::-webkit-scrollbar{width:3px}
+#dash-grid>div::-webkit-scrollbar-thumb{background:#D6D3D1;border-radius:3px}
+#dash-kpi{flex-shrink:0!important;margin-bottom:0!important}
 </style>
-<div id="dash-content" style="width:100%;box-sizing:border-box;display:flex;flex-direction:column;font-family:'Inter',-apple-system,sans-serif">
+<div id="dash-content" style="font-family:'Inter',-apple-system,sans-serif">
 
   <!-- ── Intelligent Business Operating System Header ── -->
-  <div style="background:rgba(255,255,255,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(230,235,241,.95);border-radius:20px;padding:18px 22px;margin-bottom:14px;box-shadow:0 4px 28px rgba(28,25,23,.07),0 1px 4px rgba(28,25,23,.04);animation:_dashIn .55s cubic-bezier(.22,1,.36,1) forwards;flex-shrink:0">
+  <div style="background:rgba(255,255,255,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(230,235,241,.95);border-radius:clamp(12px,1.2vw,20px);padding:clamp(10px,1.3vh,18px) clamp(12px,1.2vw,22px);margin-bottom:0;box-shadow:0 4px 28px rgba(28,25,23,.07),0 1px 4px rgba(28,25,23,.04);animation:_dashIn .55s cubic-bezier(.22,1,.36,1) forwards;flex-shrink:0">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px">
 
       <!-- Left: greeting + date + brief -->
@@ -6401,7 +6410,7 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- KPI Row — 90% neutral, color only where it earns it -->
-  <div id="dash-kpi" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;flex-shrink:0">
+  <div id="dash-kpi" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:0;flex-shrink:0">
     ${kpis.map(k=>`
     <div style="background:#fff;border:1.5px solid ${k.critical?'rgba(220,38,38,.25)':'#E7E5E4'};border-radius:12px;padding:10px 12px;box-shadow:0 1px 3px rgba(28,25,23,.04);position:relative;overflow:hidden;transition:box-shadow .2s,border-color .2s" onmouseover="this.style.boxShadow='0 3px 12px rgba(28,25,23,.08)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(28,25,23,.04)'">
       <!-- badge or spacer -->
