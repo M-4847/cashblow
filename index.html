@@ -187,33 +187,65 @@ body[data-sb=collapsed] [data-tip]:hover::after{opacity:1;transform:translateY(-
 }
 /* tablet: JS sets collapsed state on first load */
 
-/* ── Dashboard: natural page scroll, nothing clipped ── */
-#dash-content{display:flex;flex-direction:column;overflow:visible!important}
-#dash-grid{align-items:start;overflow:visible!important;height:auto!important}
-#dash-col2{display:flex;flex-direction:column;overflow:visible!important;height:auto!important}
-#rec-actions-list{overflow-y:visible!important;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
-/* Laptop: tighten spacing */
-@media(max-width:1440px){
-  #dash-grid{gap:8px}
+/* ── Dashboard: fixed viewport, zero page scroll ── */
+.main{overflow:hidden!important}
+#dash-content{
+  height:calc(100vh - var(--topbar-h));
+  padding:clamp(6px,1vh,14px) clamp(8px,1.2vw,20px)!important;
+  display:flex;flex-direction:column;gap:clamp(5px,.8vh,10px);
+  overflow:hidden!important;box-sizing:border-box
 }
-/* Laptop (≤1440px): shrink columns */
-@media(max-width:1440px){
-  .main{padding:12px 14px!important}
-  #dash-kpi{gap:8px!important;margin-bottom:10px!important}
-  #dash-grid{grid-template-columns:1fr 225px 185px 180px!important;gap:8px!important}
+/* Header card — compress vertically on small screens */
+#dash-content>div:first-child{
+  flex-shrink:0;
+  padding:clamp(9px,1.3vh,18px) clamp(12px,1.2vw,22px)!important;
+  margin-bottom:0!important;border-radius:clamp(12px,1.2vw,20px)!important
 }
-/* Small laptop (≤1280px): drop 4th column */
+/* Business brief chips — allow wrap but limit to 1 line on small screens */
+#dash-content>div:first-child .brief-chips{flex-wrap:nowrap;overflow:hidden}
+/* KPI row */
+#dash-kpi{
+  flex-shrink:0;margin-bottom:0!important;
+  gap:clamp(5px,.6vw,8px)!important
+}
+#dash-kpi>div{padding:clamp(6px,.9vh,10px) clamp(8px,.8vw,12px)!important}
+#dash-kpi .kpi-val{font-size:clamp(14px,1.5vw,20px)!important}
+#dash-kpi .kpi-lbl{font-size:clamp(9px,.75vw,11px)!important}
+#dash-kpi .kpi-sub{font-size:clamp(8px,.65vw,10px)!important}
+/* Grid — fills remaining height, no overflow */
+#dash-grid{
+  flex:1 1 0;min-height:0;height:100%!important;
+  overflow:hidden!important;align-items:stretch!important;
+  padding-bottom:0!important;gap:clamp(5px,.6vw,10px)!important
+}
+/* Every grid column fills height, scrolls its own content */
+#dash-grid>div{height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
+#dash-grid>div::-webkit-scrollbar{width:3px}
+#dash-grid>div::-webkit-scrollbar-track{background:transparent}
+#dash-grid>div::-webkit-scrollbar-thumb{background:#D6D3D1;border-radius:3px}
+/* Col2 (recommended actions) */
+#dash-col2{display:flex;flex-direction:column;overflow:hidden!important;height:100%!important}
+#rec-actions-list{overflow-y:auto!important;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
+/* Table typography scales with viewport */
+#dash-grid table{font-size:clamp(9.5px,.75vw,12.5px)!important}
+#dash-grid th{padding:clamp(4px,.5vh,7px) clamp(5px,.5vw,10px)!important;font-size:clamp(8px,.6vw,9.5px)!important}
+#dash-grid td{padding:clamp(4px,.55vh,8px) clamp(5px,.5vw,10px)!important}
+/* Greeting font scales */
+#dash-content .greeting-line{font-size:clamp(14px,1.4vw,20px)!important}
+#dash-content .headline-line{font-size:clamp(10px,1vw,13.5px)!important}
+/* ── Column breakpoints — same as before ── */
+@media(max-width:1440px){
+  #dash-grid{grid-template-columns:1fr 225px 185px 180px!important}
+}
 @media(max-width:1280px){
   #dash-grid{grid-template-columns:1fr 215px 180px!important}
   #dash-col4{display:none!important}
 }
-/* Tablet-ish (≤1100px): 2 columns */
 @media(max-width:1100px){
   #dash-grid{grid-template-columns:1fr 210px!important}
   #dash-col3{display:none!important}
   #dash-kpi{grid-template-columns:repeat(3,1fr)!important}
 }
-/* Small (≤900px): single column */
 @media(max-width:900px){
   #dash-grid{grid-template-columns:1fr!important}
   #dash-col2,#dash-col3,#dash-col4{display:none!important}
@@ -6326,12 +6358,12 @@ function _renderBusinessDashboard(){
       <div style="flex:1;min-width:0">
         <!-- Greeting + day/date -->
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-          <div style="font-size:20px;font-weight:700;color:#1C1917;letter-spacing:-.03em;line-height:1.2">${_greeting}, ${_userName}</div>
+          <div class="greeting-line" style="font-size:20px;font-weight:700;color:#1C1917;letter-spacing:-.03em;line-height:1.2">${_greeting}, ${_userName}</div>
           <div style="width:1px;height:15px;background:#D6D3D1;flex-shrink:0;align-self:center"></div>
           <div style="font-size:12.5px;font-weight:500;color:#78716C;letter-spacing:-.01em">${_dayName} • ${_dateStr}</div>
         </div>
         <!-- Headline insight — one sentence, one reason to log in -->
-        <div style="font-size:13.5px;font-weight:600;color:#1C1917;line-height:1.55;letter-spacing:-.01em;margin-bottom:6px;max-width:640px">${_headline}</div>
+        <div class="headline-line" style="font-size:13.5px;font-weight:600;color:#1C1917;line-height:1.55;letter-spacing:-.01em;margin-bottom:6px;max-width:640px">${_headline}</div>
         <!-- Last sync -->
         <div style="font-size:10.5px;color:#A8A29E;margin-bottom:13px;font-weight:400;letter-spacing:.01em">Last Data Sync: Today &nbsp;•&nbsp; ${_syncTime}</div>
 
@@ -6386,7 +6418,7 @@ function _renderBusinessDashboard(){
   </div>
 
   <!-- ── Main 4-column grid ── -->
-  <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:start;padding-bottom:20px">
+  <div id="dash-grid" style="display:grid;grid-template-columns:1fr 255px 210px 195px;gap:10px;align-items:stretch">
 
     <!-- COL 1: Top Delayed / Top Punctual Buyers (dual tab) -->
     <div style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(28,25,23,.05)">
