@@ -152,9 +152,8 @@ html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Sego
 .nav-label{transition:opacity 180ms ease,max-width 280ms cubic-bezier(.4,0,.2,1),margin 280ms cubic-bezier(.4,0,.2,1);overflow:hidden;white-space:nowrap;max-width:160px;display:inline-block}
 .logo-text{transition:opacity 180ms ease,max-width 280ms cubic-bezier(.4,0,.2,1);overflow:hidden;white-space:nowrap;max-width:160px}
 /* sidebar toggle chevron */
-.sb-toggle{position:absolute;right:-11px;top:50%;transform:translateY(-50%);width:22px;height:22px;background:var(--sidebar-bg);border:1.5px solid rgba(255,255,255,.14);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:110;transition:opacity .18s,background .18s,border-color .18s;opacity:0}
-.sidebar:hover .sb-toggle,.sb-toggle:hover{opacity:1}
-.sb-toggle:hover{background:#3B382E;border-color:rgba(255,255,255,.28)}
+.sb-toggle{position:absolute;right:-11px;top:50%;transform:translateY(-50%);width:22px;height:22px;background:var(--sidebar-bg);border:1.5px solid rgba(255,255,255,.22);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:110;transition:background .18s,border-color .18s,box-shadow .18s;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.sb-toggle:hover{background:#3B382E;border-color:rgba(255,255,255,.4);box-shadow:0 2px 12px rgba(0,0,0,.5)}
 .sb-toggle svg{width:9px;height:9px;stroke:rgba(255,255,255,.7);transition:transform 280ms cubic-bezier(.4,0,.2,1)}
 /* collapsed state */
 body[data-sb=collapsed] .sidebar{width:var(--sidebar-w-c)}
@@ -186,9 +185,7 @@ body[data-sb=collapsed] [data-tip]:hover::after{opacity:1;transform:translateY(-
   body[data-sb=open] .sb-overlay{display:block}
   .sb-hamburger{display:flex!important}
 }
-@media(min-width:769px) and (max-width:1100px){
-  :root{--sidebar-w:72px}
-}
+/* tablet: JS sets collapsed state on first load */
 
 /* ── Dashboard: natural page scroll, nothing clipped ── */
 #dash-content{display:flex;flex-direction:column;overflow:visible!important}
@@ -2659,7 +2656,7 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 <div class="sb-overlay" onclick="cfiqToggleSidebar()"></div>
 <aside class="sidebar">
   <!-- Logo + collapse toggle -->
-  <div class="sidebar-logo" onclick="AppState.set({page:'dashboard'});App.onStateChange()" title="CashFlowIQ">
+  <div class="sidebar-logo" onclick="cfiqToggleSidebar()" title="Toggle sidebar">
     <div class="logo-mark" style="flex-shrink:0">
       <svg viewBox="0 0 20 20"><path d="M10 2L3 7v6l7 5 7-5V7L10 2zm0 2.3l5 3.6v4.6L10 15.6l-5-3.1V7.9l5-3.6z"/><circle cx="10" cy="10" r="2.5"/></svg>
     </div>
