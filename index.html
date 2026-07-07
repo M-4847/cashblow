@@ -14519,9 +14519,9 @@ async function cfiqSignIn(){
     AppState.set({page:'dashboard'});
     cfiqShowApp();
     App.onStateChange();
-    // Show onboarding if user hasn't imported data yet
-    const hasOnboarded = localStorage.getItem('cfiq_ob');
-    if(!hasOnboarded) cfiqShowOnboarding();
+    // Only show onboarding if user genuinely has no data yet
+    const hasData = DB._fromAPI === true && DB.buyers && DB.buyers.length > 0;
+    if(!hasData) cfiqShowOnboarding();
   }catch(e){
     if(errEl){errEl.textContent=e.message||'Invalid email or password.';errEl.style.display='';}
     btn.disabled=false;
