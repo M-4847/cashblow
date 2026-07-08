@@ -2735,6 +2735,14 @@ body[data-pg=buyerRiskProfiles] .buyer-grid{flex:1!important;min-height:0!import
       </div>
     </div>
 
+    <!-- Ask CashFlowIQ -->
+    <div style="margin:4px 8px 2px">
+      <button class="nav-item nav-standalone" data-page="askCashFlowIQ" data-tip="Ask CashFlowIQ" style="margin:0;width:100%;font-weight:600;font-size:12.5px">
+        <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><path d="M8 1.5a5.5 5.5 0 015.5 5.5c0 2.1-1.4 3.9-3 4.9L8 14 5.5 11.9c-1.6-1-3-2.8-3-4.9A5.5 5.5 0 018 1.5z" stroke-linejoin="round"/><circle cx="8" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+        <span class="nav-label">Ask CashFlowIQ</span>
+      </button>
+    </div>
+
     <!-- Settings -->
     <div style="margin:4px 8px 8px">
       <button class="nav-item nav-standalone" data-page="settings" data-tip="Settings" style="margin:0;width:100%">
@@ -3640,7 +3648,8 @@ const PAGE_LABELS={
   financingReadiness:'Financing Readiness Score',
   settings:'Settings',
   tradeTermDetail:'Trade Term Detail',
-  buyers:'Buyers',reports:'Reports',integrations:'Integrations',tradeTerms:'Trade Terms'
+  buyers:'Buyers',reports:'Reports',integrations:'Integrations',tradeTerms:'Trade Terms',
+  askCashFlowIQ:'Ask CashFlowIQ',
 };
 
 /* ----------------------------------------
@@ -11601,6 +11610,507 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
     </div>`;
   },
 
+};
+
+/* ══════════════════════════════════════════════════════════════
+   ASK CASHFLOWIQ — Business Intelligence Assistant
+══════════════════════════════════════════════════════════════ */
+
+function _askMetrics(){
+  const buyers=DB.buyers||[],invoices=DB.invoices||[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const f=v=>v>=1e7?'₹'+(v/1e7).toFixed(1)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+'L':v>=1000?'₹'+(v/1000).toFixed(0)+'K':'₹'+Math.round(v);
+  const overdueInvs=[],paidInvs=[],pendingInvs=[];
+  invoices.forEach(i=>{
+    const isPaid=i.status==='Paid'||!!i.paidDate;
+    if(isPaid){paidInvs.push(i);}
+    else{const dd=i.dueDate?new Date(i.dueDate):null,daysOver=dd?Math.round((today-dd)/86400000):0;
+      if(daysOver>0)overdueInvs.push({...i,daysOverdue:daysOver});else pendingInvs.push(i);}
+  });
+  overdueInvs.sort((a,b)=>b.daysOverdue-a.daysOverdue);
+  const lateInvs=paidInvs.filter(i=>i.paidDate&&i.dueDate&&new Date(i.paidDate)>new Date(i.dueDate));
+  const totalOverdue=overdueInvs.reduce((s,i)=>s+(i.amount||0),0);
+  const totalPending=pendingInvs.reduce((s,i)=>s+(i.amount||0),0);
+  const totalOutstanding=totalOverdue+totalPending;
+  const bOvMap={};
+  overdueInvs.forEach(i=>{const k=i.buyerId||i.buyerName||'Unknown',nm=i.buyerName||k;
+    if(!bOvMap[k]){bOvMap[k]={name:nm,amount:0,count:0,maxDays:0};}
+    bOvMap[k].amount+=(i.amount||0);bOvMap[k].count++;bOvMap[k].maxDays=Math.max(bOvMap[k].maxDays,i.daysOverdue||0);});
+  const bOvList=Object.entries(bOvMap).map(([id,d])=>({id,...d})).sort((a,b)=>b.amount-a.amount);
+  const onTimeRate=paidInvs.length>0?(paidInvs.length-lateInvs.length)/paidInvs.length:1;
+  const overdueRatio=totalOutstanding>0?totalOverdue/totalOutstanding:0;
+  const avgDelay=buyers.length>0?buyers.reduce((s,b)=>s+(b.avgDelay||0),0)/buyers.length:0;
+  const topBuyerShare=buyers.length>0&&totalOutstanding>0?Math.max(...buyers.map(b=>(b.currentExposure||0)/totalOutstanding)):0;
+  const secMap={};
+  buyers.forEach(b=>{const sec=b.industry||b.sector||'Other';
+    if(!secMap[sec]){secMap[sec]={overdue:0,buyers:0,totalExp:0};}
+    secMap[sec].buyers++;secMap[sec].totalExp+=(b.currentExposure||0);
+    const bo=bOvMap[b.id]||bOvMap[b.name]||{amount:0};secMap[sec].overdue+=bo.amount;});
+  const secList=Object.entries(secMap).map(([name,d])=>({name,...d})).sort((a,b)=>b.overdue-a.overdue);
+  const c1=onTimeRate*30,c2=(1-Math.min(overdueRatio,1))*30,c3=Math.max(0,(1-avgDelay/45))*20,c4=Math.max(0,(1-topBuyerShare*1.5))*20;
+  const chs=Math.min(100,Math.max(0,Math.round(c1+c2+c3+c4)));
+  const top3Amt=bOvList.slice(0,3).reduce((s,b)=>s+b.amount,0);
+  const concentrationPct=totalOverdue>0?(top3Amt/totalOverdue)*100:0;
+  const buyerPriority=buyers.map(b=>{const bo=bOvMap[b.id]||bOvMap[b.name]||{amount:0,maxDays:0};
+    return{...b,overdueAmt:bo.amount,maxOverdueDays:bo.maxDays,urgency:(bo.amount*(bo.maxDays||1))/1e5};}).sort((a,b)=>b.urgency-a.urgency);
+  const now=new Date(),mStart=new Date(now.getFullYear(),now.getMonth(),1),pmStart=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const thisMonthPaid=paidInvs.filter(i=>i.paidDate&&new Date(i.paidDate)>=mStart);
+  const prevMonthPaid=paidInvs.filter(i=>i.paidDate&&new Date(i.paidDate)>=pmStart&&new Date(i.paidDate)<mStart);
+  const thisMonthAmt=thisMonthPaid.reduce((s,i)=>s+(i.amount||0),0);
+  const prevMonthAmt=prevMonthPaid.reduce((s,i)=>s+(i.amount||0),0);
+  return{buyers,invoices,today,f,overdueInvs,paidInvs,pendingInvs,lateInvs,
+    totalOverdue,totalPending,totalOutstanding,bOvList,bOvMap,
+    onTimeRate,overdueRatio,avgDelay,topBuyerShare,secList,chs,c1,c2,c3,c4,
+    concentrationPct,buyerPriority,thisMonthAmt,prevMonthAmt,thisMonthPaid,prevMonthPaid,
+    hasData:buyers.length>0||invoices.length>0};
+}
+
+function _askReport(key,questionText,m){
+  const{f,buyers,overdueInvs,paidInvs,lateInvs,totalOverdue,totalOutstanding,bOvList,
+    onTimeRate,overdueRatio,avgDelay,topBuyerShare,secList,chs,c1,c2,c3,c4,
+    concentrationPct,buyerPriority,thisMonthAmt,prevMonthAmt,thisMonthPaid,prevMonthPaid,hasData}=m;
+  const chsColor=chs>=70?'#10b981':chs>=50?'#f59e0b':'#ef4444';
+  const chsLabel=chs>=70?'Healthy':chs>=50?'Needs Attention':'Critical';
+  if(!hasData)return{title:questionText,summary:"There isn't enough data available to confidently answer this question. Please upload your receivables data first to unlock personalised business intelligence.",findings:[{type:'neu',text:'No invoice or buyer data found in the current session'}],impact:'Once you upload your data, CashFlowIQ will generate accurate, evidence-based answers to all questions.',actions:[{priority:1,action:'Upload your invoice data from the sidebar',impact:'Unlock full Business Intelligence',why:'All insights are computed from your actual data — never estimates'}],impactCards:[],followUps:['Why is my Cash Health Score low?','What should I do today?','Which buyer deserves my attention today?']};
+
+  switch(key){
+    case 'why_chs_low':{
+      const comps=[
+        {name:'On-Time Collection',score:c1,max:30,desc:`${Math.round(onTimeRate*100)}% of invoices paid on time`},
+        {name:'Overdue Exposure',score:c2,max:30,desc:`${Math.round(overdueRatio*100)}% of receivables overdue`},
+        {name:'Payment Delay',score:c3,max:20,desc:`${Math.round(avgDelay)}d avg delay vs 45d benchmark`},
+        {name:'Buyer Concentration',score:c4,max:20,desc:`Top buyer holds ${Math.round(topBuyerShare*100)}% of exposure`},
+      ].sort((a,b)=>(a.score/a.max)-(b.score/b.max));
+      const weak=comps[0],topB=bOvList[0];
+      return{title:`Why is your Cash Health Score ${chs}?`,
+        badge:{label:'Cash Health Score',value:chs+'/100',color:chsColor,status:chsLabel},
+        summary:`Your Cash Health Score of ${chs}/100 is primarily reduced by ${weak.name.toLowerCase()} — ${weak.desc}. ${topB?'The largest overdue concentration sits with '+topB.name+' at '+f(topB.amount)+', contributing disproportionate pressure to your cash cycle.':''} Addressing your lowest-scoring factor will produce the fastest improvement.`,
+        findings:[
+          {type:'neg',text:`${weak.name} is your lowest factor — only ${Math.round(weak.score)}/${weak.max} points`},
+          {type:overdueRatio>0.3?'neg':'neu',text:`${Math.round(overdueRatio*100)}% of receivables (${f(totalOverdue)}) are currently overdue`},
+          {type:onTimeRate>=0.8?'pos':'neg',text:`${Math.round(onTimeRate*100)}% on-time collection rate across all paid invoices`},
+          {type:avgDelay>30?'neg':'pos',text:`Average payment delay of ${Math.round(avgDelay)} days across your buyer portfolio`},
+          ...(topB?[{type:'neg',text:`${topB.name} holds ${f(topB.amount)} overdue — your single largest exposure`}]:[]),
+        ],
+        impact:`A score of ${chs} signals ${chs<50?'significant stress requiring immediate action':'moderate stress that will worsen without intervention'}. If patterns continue, your working capital cycle will extend, limiting capacity for new orders and increasing dependence on short-term financing.`,
+        actions:[
+          ...(topB?[{priority:1,action:`Contact ${topB.name} regarding ${f(topB.amount)} outstanding`,impact:'+6–8 Cash Health points',why:'Largest single recovery opportunity — highest score impact'}]:[]),
+          {priority:2,action:'Enforce credit terms strictly for buyers with delays over 30 days',impact:'+4–5 Cash Health points',why:'Structural fix — prevents future overdue accumulation'},
+          {priority:3,action:'Set automated payment reminders 7 days before invoice due dates',impact:'+3–4 Cash Health points',why:'Early reminders reduce late payments by 20–30% on average'},
+        ],
+        impactCards:[
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+15),unit:'/100',dir:'up'},
+          {label:'Overdue Exposure',before:f(totalOverdue),after:f(totalOverdue*0.65),unit:'',dir:'down'},
+          {label:'On-Time Rate',before:Math.round(onTimeRate*100)+'%',after:Math.min(100,Math.round(onTimeRate*100)+12)+'%',unit:'',dir:'up'},
+        ],
+        followUps:['Which buyer contributes most to my overdue?','What should I do today?','If I recover my top overdue invoices, what improves?','Am I dependent on a few buyers?']};
+    }
+    case 'hurting_cashflow':{
+      const topB=bOvList[0],urgentInvs=overdueInvs.filter(i=>i.daysOverdue>60);
+      return{title:'What is hurting your cash flow the most?',
+        summary:`Your cash flow is most impacted by ${bOvList.length?'concentrated overdue receivables from a small number of buyers':'extended payment delays across your portfolio'}. ${topB?topB.name+' alone holds '+f(topB.amount)+' overdue — your largest cash flow drag.':''} ${urgentInvs.length?urgentInvs.length+' invoice(s) exceed 60 days, where recovery probability begins to decline.':''}`,
+        findings:[
+          ...(topB?[{type:'neg',text:`${topB.name} — ${f(topB.amount)} overdue (${Math.round(topB.amount/Math.max(totalOverdue,1)*100)}% of all overdue)`}]:[]),
+          ...(bOvList.slice(1,3).map(b=>({type:'neu',text:`${b.name} — ${f(b.amount)} overdue, ${b.maxDays} days past due`}))),
+          ...(urgentInvs.length?[{type:'neg',text:`${urgentInvs.length} invoice(s) exceed 60 days overdue — recovery risk rising`}]:[]),
+          {type:avgDelay>30?'neg':'neu',text:`Average ${Math.round(avgDelay)}-day payment delay extends your cash conversion cycle`},
+          {type:'pos',text:`${Math.round(onTimeRate*100)}% of paid invoices collected on time — collection process partially effective`},
+        ],
+        impact:'Every ₹1L locked in overdue for 30 extra days costs ₹1,500–₹2,000 in opportunity or financing cost. The longer invoices remain unpaid, the lower the recovery probability. Concentrated overdue in a few buyers compounds risk further.',
+        actions:[
+          ...(topB?[{priority:1,action:`Escalate collection from ${topB.name} — ${f(topB.amount)} at risk`,impact:'Direct improvement to working capital',why:'Highest individual cash flow impact in your portfolio'}]:[]),
+          {priority:2,action:`Address ${urgentInvs.length||0} invoice(s) older than 60 days before they age to 90`,impact:'Prevent permanent cash flow loss',why:'Invoices beyond 90 days drop below 50% recovery rate'},
+          {priority:3,action:'Introduce advance billing (30% upfront) for large orders',impact:'Reduce cash flow gap by 30–40%',why:'Structural fix — reduces dependence on end-cycle collection'},
+        ],
+        impactCards:[
+          {label:'Overdue Exposure',before:f(totalOverdue),after:f(totalOverdue*0.6),unit:'',dir:'down'},
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+12),unit:'/100',dir:'up'},
+          {label:'Avg Delay',before:Math.round(avgDelay)+'d',after:Math.max(5,Math.round(avgDelay)-12)+'d',unit:'',dir:'down'},
+        ],
+        followUps:['Which buyer deserves my attention today?','Which invoices are most dangerous?','What should I do today?','How can I improve my Cash Health Score?']};
+    }
+    case 'buyer_attention':
+    case 'who_call_first':{
+      const topUrgent=buyerPriority.filter(b=>b.overdueAmt>0).slice(0,3);
+      if(!topUrgent.length)return{title:'Which buyer deserves your attention today?',summary:'There are currently no overdue receivables in your portfolio. All buyers are within their payment terms — an excellent position.',findings:[{type:'pos',text:'No buyers have invoices past their due date'},{type:'pos',text:'Portfolio is in a healthy collection position'}],impact:'Continue proactive follow-ups 7 days before due dates to maintain this health.',actions:[{priority:1,action:'Schedule check-ins with top buyers before next invoice cycle',impact:'Maintain current health',why:'Prevention is more cost-effective than collection'}],impactCards:[{label:'Cash Health Score',before:chs,after:Math.min(100,chs+2),unit:'/100',dir:'up'}],followUps:['Is my business becoming healthier?','What should I do today?','Show my biggest improvements']};
+      const topB=topUrgent[0];
+      return{title:key==='who_call_first'?'Who should you call first today?':'Which buyer deserves your attention today?',
+        badge:{label:'Priority Contact',value:topB.name,color:'#ef4444',status:'Call Today'},
+        summary:`${topB.name} is your highest-priority contact today — ${f(topB.overdueAmt)} overdue, oldest invoice ${topB.maxOverdueDays} days past due.${topUrgent.length>1?' '+topUrgent[1].name+(topUrgent[2]?' and '+topUrgent[2].name:'')+ ' require follow-up later this week.':''}`,
+        findings:topUrgent.map((b,i)=>({type:i===0?'neg':'neu',text:`${b.name} — ${f(b.overdueAmt)} overdue, oldest ${b.maxOverdueDays} days past due — Priority #${i+1}`})),
+        impact:`Each day of delay increases recovery difficulty. Buyers who receive a personal call are 3× more likely to commit to a payment date within 48 hours compared to email-only follow-up.`,
+        actions:[
+          {priority:1,action:`Call ${topB.name} today — reference ${f(topB.overdueAmt)} outstanding`,impact:'Direct recovery — highest value in portfolio',why:'Urgency × amount = maximum business impact'},
+          ...(topUrgent[1]?[{priority:2,action:`WhatsApp/email ${topUrgent[1].name} — ${f(topUrgent[1].overdueAmt)} outstanding`,impact:`Initiate ${f(topUrgent[1].overdueAmt)} recovery`,why:'Second priority — action within 24 hours'}]:[]),
+          {priority:3,action:'Log call outcomes and set 3-day follow-up dates',impact:'Structured collection pipeline',why:'Documented follow-ups increase collection rate by 40%'},
+        ],
+        impactCards:[
+          {label:'Overdue Recovery',before:f(topUrgent.reduce((s,b)=>s+b.overdueAmt,0)),after:f(topUrgent.reduce((s,b)=>s+b.overdueAmt,0)*0.55),unit:'',dir:'down'},
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+10),unit:'/100',dir:'up'},
+        ],
+        followUps:['Which buyer contributes most to my overdue?','Which invoices are most dangerous?','What should I complete this week?','Where is my biggest business risk?']};
+    }
+    case 'buyer_overdue_most':{
+      const topB=bOvList[0];
+      if(!topB)return{title:'Which buyer contributes most to your overdue?',summary:'No overdue invoices detected. All receivables are within payment terms.',findings:[{type:'pos',text:'No overdue invoices found'}],impact:'Keep monitoring.',actions:[{priority:1,action:'Upload latest receivables to track buyer performance',impact:'Real-time insights',why:'Data freshness is essential for accurate intelligence'}],impactCards:[],followUps:['Is my business becoming healthier?']};
+      const topShare=Math.round(topB.amount/Math.max(totalOverdue,1)*100);
+      return{title:'Which buyer contributes most to your overdue?',
+        badge:{label:'Highest Exposure',value:topB.name,color:'#dc2626',status:f(topB.amount)+' overdue'},
+        summary:`${topB.name} is your largest contributor to overdue receivables — ${f(topB.amount)} (${topShare}% of total overdue) across ${topB.count} invoice(s), oldest ${topB.maxDays} days past due. This buyer represents both your largest collection priority and highest concentration risk.`,
+        findings:[
+          ...bOvList.slice(0,4).map((b,i)=>({type:i===0?'neg':i===1?'neu':'pos',text:`${b.name} — ${f(b.amount)} (${Math.round(b.amount/Math.max(totalOverdue,1)*100)}%), ${b.count} invoice(s), oldest ${b.maxDays} days`})),
+          {type:'neg',text:`Top 3 buyers account for ${Math.round(concentrationPct)}% of all overdue — high concentration risk`},
+        ],
+        impact:'When a single buyer holds more than 30% of overdue, a payment failure creates systemic cash flow risk. The higher the concentration, the more urgently credit limits need enforcement.',
+        actions:[
+          {priority:1,action:`Initiate formal collection for ${topB.name} — ${f(topB.amount)} at risk`,impact:'Recovering this reduces total overdue by '+topShare+'%',why:'Largest single recovery opportunity in your portfolio'},
+          {priority:2,action:`Set a credit limit for ${topB.name} at ${f(topB.amount*0.5)} going forward`,impact:'Structural concentration control',why:'Prevents single-buyer exposure from growing further'},
+          {priority:3,action:'Diversify — no single buyer should exceed 20% of total outstanding',impact:'Long-term risk reduction',why:'Diversified portfolios absorb individual buyer failures without systemic impact'},
+        ],
+        impactCards:[
+          {label:'Top Buyer Share',before:topShare+'%',after:Math.max(20,topShare-15)+'%',unit:' of overdue',dir:'down'},
+          {label:'Overdue Exposure',before:f(totalOverdue),after:f(totalOverdue*0.7),unit:'',dir:'down'},
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+8),unit:'/100',dir:'up'},
+        ],
+        followUps:['Am I dependent on a few buyers?','Where is my biggest business risk?','Who should I call first today?','What happens if nothing changes for 45 days?']};
+    }
+    case 'biggest_risk':
+    case 'buyer_dependency':{
+      const risks=[];
+      if(concentrationPct>60)risks.push({sev:'high',label:'Buyer Concentration',desc:`Top 3 buyers hold ${Math.round(concentrationPct)}% of overdue`});
+      if(overdueRatio>0.3)risks.push({sev:'high',label:'Overdue Ratio',desc:`${Math.round(overdueRatio*100)}% of receivables overdue (${f(totalOverdue)})`});
+      if(secList[0]&&secList[0].overdue>totalOverdue*0.5)risks.push({sev:'med',label:`Sector Concentration (${secList[0].name})`,desc:`${f(secList[0].overdue)} in a single sector`});
+      const oldOvr=overdueInvs.filter(i=>i.daysOverdue>90);
+      if(oldOvr.length)risks.push({sev:'high',label:'Aging Invoices',desc:`${oldOvr.length} invoice(s) over 90 days — recovery probability dropping`});
+      if(!risks.length)risks.push({sev:'low',label:'Portfolio Health',desc:'No significant concentration or aging risks detected at this time'});
+      const topR=risks[0],topB=bOvList[0];
+      return{title:key==='buyer_dependency'?'Are you dependent on a few buyers?':'Where is your biggest business risk?',
+        badge:{label:'Primary Risk',value:topR.label,color:topR.sev==='high'?'#dc2626':'#f59e0b',status:topR.sev==='high'?'High Risk':'Medium Risk'},
+        summary:`Your most significant risk is ${topR.label.toLowerCase()} — ${topR.desc}. ${topB?'A single buyer ('+topB.name+') holds '+f(topB.amount)+' unpaid. A failure here would directly impact your operational commitments.':''}`,
+        findings:[
+          ...risks.map(r=>({type:r.sev==='high'?'neg':r.sev==='med'?'neu':'pos',text:`${r.label}: ${r.desc}`})),
+          ...(bOvList.slice(0,2).map((b,i)=>({type:i===0?'neg':'neu',text:`${b.name} — ${f(b.amount)} overdue, ${b.maxDays} days past due`}))),
+          {type:topBuyerShare>0.3?'neg':'pos',text:`Top single buyer holds ${Math.round(topBuyerShare*100)}% of total portfolio exposure`},
+        ],
+        impact:`Concentration reduces resilience. If your top overdue buyer fails to pay, your working capital cycle could extend by ${Math.round(avgDelay+30)} days — increasing financing pressure and reducing capacity for new orders.`,
+        actions:[
+          ...(topB?[{priority:1,action:`Initiate recovery from ${topB.name} — ${f(topB.amount)} concentrated exposure`,impact:'Reduce single-buyer risk immediately',why:'Largest single risk in your receivables portfolio'}]:[]),
+          {priority:2,action:'Enforce 20% maximum credit exposure per buyer',impact:'Structural concentration limit',why:'Prevents any single buyer becoming a critical dependency'},
+          {priority:3,action:'Expand buyer base to absorb individual failures without systemic impact',impact:'Long-term portfolio resilience',why:'Diversified portfolios survive individual buyer stress'},
+        ],
+        impactCards:[
+          {label:'Concentration Risk',before:Math.round(concentrationPct)+'%',after:Math.max(30,Math.round(concentrationPct)-20)+'%',unit:' top-3',dir:'down'},
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+8),unit:'/100',dir:'up'},
+        ],
+        followUps:['Which buyer contributes most to my overdue?','Which sector worries you most?','Which invoices are most dangerous?','What happens if nothing changes for 45 days?']};
+    }
+    case 'sector_worry':{
+      const top=secList[0];
+      if(!top||top.overdue===0)return{title:'Which sector worries you most?',summary:'No significant sector-level overdue concentration detected. Portfolio risk is well distributed.',findings:[{type:'pos',text:'No single sector dominates overdue exposure'}],impact:'Continue monitoring sector distribution with each upload.',actions:[{priority:1,action:'Review sector exposure quarterly',impact:'Proactive risk management',why:'Sector downturns affect all buyers simultaneously'}],impactCards:[],followUps:['Am I dependent on a few buyers?','Where is my biggest business risk?']};
+      return{title:'Which sector worries you most?',
+        badge:{label:'Highest Sector Risk',value:top.name,color:'#dc2626',status:f(top.overdue)+' overdue'},
+        summary:`The ${top.name} sector carries your highest risk — ${f(top.overdue)} overdue across ${top.buyers} buyer(s). Sector concentration means a market downturn or industry cash crunch would impact multiple buyers simultaneously.`,
+        findings:[
+          ...secList.filter(s=>s.overdue>0).slice(0,4).map((s,i)=>({type:i===0?'neg':i===1?'neu':'pos',text:`${s.name} — ${f(s.overdue)} overdue, ${s.buyers} buyer(s), ${f(s.totalExp)} total exposure`})),
+          {type:top.overdue/Math.max(totalOverdue,1)>0.5?'neg':'neu',text:`${top.name} accounts for ${Math.round(top.overdue/Math.max(totalOverdue,1)*100)}% of total overdue`},
+        ],
+        impact:`Sector concentration amplifies systemic risk. If the ${top.name} sector faces a cash crunch, multiple buyers may delay simultaneously — creating a compounding crisis rather than isolated incidents.`,
+        actions:[
+          {priority:1,action:`Review credit limits for all ${top.name} sector buyers`,impact:'Reduce sector exposure by 20–30%',why:'Sector downturns affect all buyers simultaneously'},
+          {priority:2,action:`Accelerate collection from ${top.name} buyers before next cycle`,impact:'Recover '+f(top.overdue*0.4)+' ahead of potential sector stress',why:'Early recovery beats late-stage collection in a stressed sector'},
+          {priority:3,action:'No sector should exceed 35% of total portfolio',impact:'Long-term sector diversification',why:'Diversification is your primary structural defence against sector risk'},
+        ],
+        impactCards:[
+          {label:'Sector Share',before:Math.round(top.overdue/Math.max(totalOverdue,1)*100)+'%',after:Math.max(25,Math.round(top.overdue/Math.max(totalOverdue,1)*100)-20)+'%',unit:' of overdue',dir:'down'},
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+6),unit:'/100',dir:'up'},
+        ],
+        followUps:['Am I dependent on a few buyers?','Which buyer contributes most to my overdue?','Where is my biggest business risk?','What should I do today?']};
+    }
+    case 'dangerous_invoices':{
+      const danger=overdueInvs.filter(i=>i.daysOverdue>45||(i.amount||0)>500000).sort((a,b)=>(b.daysOverdue*(b.amount||0))-(a.daysOverdue*(a.amount||0))).slice(0,5);
+      if(!danger.length)return{title:'Which invoices are most dangerous?',summary:'No invoices currently meet the high-risk threshold (over 45 days or above ₹5L). Your receivables are in good health.',findings:[{type:'pos',text:'No high-risk overdue invoices detected'}],impact:'Continue monitoring.',actions:[{priority:1,action:'Upload latest data to track aging trends',impact:'Early warning detection',why:'Aging invoices are easier to collect when caught early'}],impactCards:[],followUps:['Is my business becoming healthier?','What should I do today?']};
+      return{title:'Which invoices are most dangerous?',
+        summary:`You have ${danger.length} high-risk invoice(s) — either significantly overdue or high in value. ${danger[0]?'The most critical is with '+(danger[0].buyerName||'Unknown')+' for '+f(danger[0].amount||0)+', now '+danger[0].daysOverdue+' days past due.':''} Invoices beyond 90 days have materially lower recovery probability.`,
+        findings:danger.map((i,idx)=>({type:idx===0?'neg':idx<3?'neu':'pos',text:`${i.buyerName||'Unknown'} — ${f(i.amount||0)}, ${i.daysOverdue} days overdue${i.daysOverdue>90?' [CRITICAL]':i.daysOverdue>60?' [High Risk]':' [Monitor]'}`})),
+        impact:'Recovery probability drops approximately 10–15% for every additional 30 days an invoice remains unpaid beyond 60 days. An invoice at 90+ days has less than 50% recovery likelihood without formal intervention.',
+        actions:[
+          ...(danger[0]?[{priority:1,action:`Escalate ${danger[0].buyerName||'top buyer'} invoice (${f(danger[0].amount||0)}) immediately`,impact:'Highest-risk invoice — every day reduces recovery probability',why:danger[0].daysOverdue+' days overdue and counting'}]:[]),
+          {priority:2,action:'Send formal demand notice for all invoices over 90 days',impact:'Signals seriousness — accelerates payment',why:'Formal notices increase payment likelihood by 60% vs informal follow-up'},
+          {priority:3,action:'Engage collections specialist for invoices over ₹5L and 90+ days',impact:'Professional recovery of high-value aged debt',why:'Cost-effective above ₹5L — success fee models available'},
+        ],
+        impactCards:[
+          {label:'High-Risk Exposure',before:f(danger.reduce((s,i)=>s+(i.amount||0),0)),after:f(danger.reduce((s,i)=>s+(i.amount||0),0)*0.55),unit:'',dir:'down'},
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+10),unit:'/100',dir:'up'},
+        ],
+        followUps:['Who should I call first today?','What happens if nothing changes for 45 days?','Which buyer contributes most to my overdue?','What should I do today?']};
+    }
+    case 'what_if_45days':{
+      const extraOvr=overdueInvs.reduce((s,i)=>s+(i.amount||0)*0.15,0);
+      const futureOvr=totalOverdue+extraOvr,futureChs=Math.max(0,chs-12);
+      const willCross90=overdueInvs.filter(i=>i.daysOverdue>45).length;
+      return{title:'What happens if nothing changes for 45 days?',
+        badge:{label:'Forward Scenario',value:'45-Day Projection',color:'#f59e0b',status:'Without intervention'},
+        summary:`If current payment patterns continue for 45 more days, your overdue exposure is projected to increase by approximately ${f(extraOvr)}, reaching ${f(futureOvr)}. Your Cash Health Score could drop from ${chs} to ${futureChs}. ${willCross90} existing invoice(s) will cross the 90-day threshold — entering high-risk recovery territory.`,
+        findings:[
+          {type:'neg',text:`Overdue grows to approximately ${f(futureOvr)} — up ${f(extraOvr)} from today`},
+          {type:'neg',text:`Cash Health Score drops from ${chs} → ${futureChs} without intervention`},
+          {type:'neg',text:`${willCross90} invoice(s) will cross 90 days — recovery probability drops below 50%`},
+          {type:'neg',text:`Average delay extends from ${Math.round(avgDelay)}d to estimated ${Math.round(avgDelay+15)}d`},
+          {type:'neu',text:'New order capacity reduces as working capital cycle extends'},
+        ],
+        impact:'Without action, your receivables portfolio will deteriorate meaningfully. Buyers who observe no consequences for late payment continue the pattern. Proactive intervention today has exponentially more impact than reactive collection in 45 days.',
+        actions:[
+          {priority:1,action:'Begin structured collection calls this week — do not delay',impact:'Prevent '+f(extraOvr)+' additional overdue accumulation',why:'Every week of delay costs approximately '+f(extraOvr/6)+' in additional exposure'},
+          {priority:2,action:'Establish 15-day follow-up cycles for all pending invoices',impact:'Systematic overdue prevention',why:'Buyers on predictable follow-up schedules pay 40% faster'},
+          {priority:3,action:'Tighten credit terms before issuing new invoices',impact:'Reduce future overdue accumulation structurally',why:'New invoices with better terms reduce next cycle\'s risk'},
+        ],
+        impactCards:[
+          {label:'Cash Health Score',before:chs+'',after:futureChs+'',unit:'/100',dir:'down',warning:true},
+          {label:'Overdue Exposure',before:f(totalOverdue),after:f(futureOvr),unit:'',dir:'up',warning:true},
+          {label:'Avg Delay',before:Math.round(avgDelay)+'d',after:Math.round(avgDelay+15)+'d',unit:'',dir:'up',warning:true},
+        ],
+        followUps:['What should I do today?','Who should I call first today?','Which invoices are most dangerous?','How can I improve my Cash Health Score?']};
+    }
+    case 'recover_overdue':{
+      const top3=bOvList.slice(0,3),recoverAmt=top3.reduce((s,b)=>s+b.amount,0);
+      const newOvr=Math.max(0,totalOverdue-recoverAmt),newRatio=totalOutstanding>0?newOvr/totalOutstanding:0;
+      const newC2=(1-Math.min(newRatio,1))*30,newChs=Math.min(100,Math.round(c1+newC2+c3+c4));
+      return{title:'If you recover your top overdue invoices, what improves?',
+        badge:{label:'Recovery Simulation',value:'Top '+top3.length+' Buyers',color:'#10b981',status:'If you act now'},
+        summary:`Recovering your top ${top3.length} overdue buyer(s) (${f(recoverAmt)} combined) would reduce total overdue from ${f(totalOverdue)} to ${f(newOvr)} and improve your Cash Health Score from ${chs} to approximately ${newChs} — a gain of ${newChs-chs} points. This is the maximum near-term impact available from collection actions alone.`,
+        findings:[
+          ...top3.map((b,i)=>({type:i===0?'neg':'neu',text:`${b.name} — recovering ${f(b.amount)} contributes ~${Math.round((b.amount/Math.max(totalOverdue,1))*25)} points to score`})),
+          {type:'pos',text:`Combined recovery improves overdue ratio from ${Math.round(overdueRatio*100)}% → ${Math.round(newRatio*100)}%`},
+          {type:'pos',text:`Cash Health Score: ${chs} → ${newChs} (gain of ${newChs-chs} points)`},
+        ],
+        impact:'This simulation represents the maximum recoverable impact from your top outstanding invoices. Partial recovery (60–70%) is realistic within 30 days. Even at 60% recovery, your score would improve by 8–10 points.',
+        actions:[
+          ...(top3[0]?[{priority:1,action:`Start with ${top3[0].name} — ${f(top3[0].amount)} is your highest-impact collection`,impact:'+'+Math.round((top3[0].amount/Math.max(totalOverdue,1))*25)+' points on recovery',why:'Largest recovery = largest score improvement'}]:[]),
+          ...(top3[1]?[{priority:2,action:`Follow up with ${top3[1].name} — ${f(top3[1].amount)} outstanding`,impact:'Second highest score improvement',why:'Combined with first recovery, score could reach '+Math.min(100,chs+10)}]:[]),
+          {priority:3,action:'Re-upload updated invoice data after collection to refresh your score',impact:'Confirms improvement with accurate real-time data',why:'Score reflects most recent upload — update validates your progress'},
+        ],
+        impactCards:[
+          {label:'Cash Health Score',before:chs,after:newChs,unit:'/100',dir:'up'},
+          {label:'Overdue Exposure',before:f(totalOverdue),after:f(newOvr),unit:'',dir:'down'},
+          {label:'Overdue Ratio',before:Math.round(overdueRatio*100)+'%',after:Math.round(newRatio*100)+'%',unit:'',dir:'down'},
+        ],
+        followUps:['Who should I call first today?','What should I do today?','What actions will improve my score fastest?','What happens if nothing changes for 45 days?']};
+    }
+    case 'do_today':
+    case 'immediate_followup':
+    case 'do_this_week':
+    case 'improve_chs':
+    case 'fastest_score_improve':{
+      const urgent=buyerPriority.filter(b=>b.overdueAmt>0).slice(0,3);
+      const oldInvs=overdueInvs.filter(i=>i.daysOverdue>60);
+      const isWeek=key==='do_this_week';const isScore=key==='improve_chs'||key==='fastest_score_improve';
+      return{title:isScore?'How can you improve your Cash Health Score fastest?':key==='immediate_followup'?'Which buyers need immediate follow-up?':isWeek?'What should you complete this week?':'What should you do today?',
+        badge:{label:'Cash Health Score',value:chs+'/100',color:chsColor,status:chsLabel},
+        summary:`${isScore?'Your Cash Health Score can be improved most rapidly through three targeted actions.':'Today\'s priority is structured collection action.'} You have ${f(totalOverdue)} in overdue across ${bOvList.length} buyer(s). Focusing on your top ${urgent.length} buyers will address the majority of your exposure. ${isScore?'A score above '+Math.min(100,chs+20)+' is achievable within 30 days with consistent execution.':''}`,
+        findings:[
+          {type:'neg',text:`${f(totalOverdue)} total overdue — immediate action required`},
+          ...urgent.map((b,i)=>({type:i===0?'neg':'neu',text:`${b.name} — ${f(b.overdueAmt)} overdue, ${b.maxOverdueDays} days past due — Priority #${i+1}`})),
+          ...(oldInvs.length?[{type:'neg',text:`${oldInvs.length} invoice(s) over 60 days — escalation required`}]:[]),
+          {type:onTimeRate>=0.75?'pos':'neu',text:`On-time rate: ${Math.round(onTimeRate*100)}% — ${onTimeRate>=0.75?'above 75% threshold':'below 75% healthy threshold'}`},
+        ],
+        impact:'Buyers contacted within 7 days of an overdue invoice are 4× more likely to pay within 2 weeks. Cash Health Score improvements directly translate to business outcomes: lower financing cost, better supplier terms, and stronger negotiating position.',
+        actions:[
+          ...(urgent[0]?[{priority:1,action:`${isWeek?'This week, call':'Call'} ${urgent[0].name} — ${f(urgent[0].overdueAmt)} overdue, ${urgent[0].maxOverdueDays} days past due`,impact:isScore?'+6–8 Cash Health points':'Highest value collection today',why:'Urgency × value = maximum business impact'}]:[]),
+          ...(urgent[1]?[{priority:2,action:`${isWeek?'Send formal notice to':'Follow up with'} ${urgent[1].name} — ${f(urgent[1].overdueAmt)} outstanding`,impact:`Recovery of ${f(urgent[1].overdueAmt)}`,why:'Second priority — contact within 24 hours'}]:[]),
+          ...(oldInvs.length?[{priority:3,action:`Escalate ${oldInvs.length} invoice(s) over 60 days`,impact:isScore?'+2–3 points per invoice recovered':'Prevent further aging',why:'Invoices beyond 90 days drop below 50% recovery probability'}]:[]),
+          {priority:urgent.length+1+(oldInvs.length>0?1:0),action:'Set automated reminders 7 days before all upcoming due dates',impact:'+3–4 Cash Health points within 30 days',why:'Prevention is faster than collection — improves on-time rate immediately'},
+        ],
+        impactCards:[
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+20),unit:'/100',dir:'up'},
+          {label:'Overdue Exposure',before:f(totalOverdue),after:f(totalOverdue*0.6),unit:'',dir:'down'},
+          {label:'On-Time Rate',before:Math.round(onTimeRate*100)+'%',after:Math.min(100,Math.round(onTimeRate*100)+12)+'%',unit:'',dir:'up'},
+        ],
+        followUps:['Which buyer deserves my attention today?','Which invoices are most dangerous?','If I recover my top overdue invoices, what improves?','Why is my Cash Health Score low?']};
+    }
+    case 'month_compare':{
+      const delta=thisMonthAmt-prevMonthAmt,deltaDir=delta>=0?'up':'down';
+      return{title:'How does this month compare to last month?',
+        badge:{label:'Month-over-Month',value:delta>=0?'Collections Up':'Collections Down',color:delta>=0?'#10b981':'#ef4444',status:delta>=0?'Positive Trend':'Declining Trend'},
+        summary:`Collections this month: ${f(thisMonthAmt)} across ${thisMonthPaid.length} paid invoice(s). Last month: ${f(prevMonthAmt)} across ${prevMonthPaid.length} invoice(s). This represents a ${delta>=0?'improvement':'decline'} of ${f(Math.abs(delta))} (${prevMonthAmt>0?Math.round(Math.abs(delta)/prevMonthAmt*100):0}%).`,
+        findings:[
+          {type:delta>=0?'pos':'neg',text:`This month: ${f(thisMonthAmt)} collected across ${thisMonthPaid.length} invoices`},
+          {type:'neu',text:`Last month: ${f(prevMonthAmt)} collected across ${prevMonthPaid.length} invoices`},
+          {type:delta>=0?'pos':'neg',text:`Net change: ${delta>=0?'+':'-'}${f(Math.abs(delta))} (${prevMonthAmt>0?Math.round(Math.abs(delta)/prevMonthAmt*100):0}%)`},
+          {type:overdueRatio<0.2?'pos':'neg',text:`Current overdue ratio: ${Math.round(overdueRatio*100)}%`},
+          {type:onTimeRate>=0.75?'pos':'neu',text:`On-time collection rate: ${Math.round(onTimeRate*100)}%`},
+        ],
+        impact:delta>=0?'Improving month-over-month collections is a strong signal of business health. Maintain collection discipline — improvements are easily reversed without consistent process.':'Declining collections indicate a widening gap between invoices issued and amounts recovered. Identify which buyers declined and take targeted action before month-end.',
+        actions:delta>=0?[
+          {priority:1,action:'Maintain follow-up discipline — do not relax collection process',impact:'Sustain improvement trajectory',why:'Collection improvements are easily reversed without consistent process'},
+          {priority:2,action:'Identify which buyers drove improvement and reinforce behavior',impact:'Sustainable collection model',why:'Understanding what works lets you scale the approach'},
+        ]:[
+          {priority:1,action:'Investigate which buyers declined in payment this month',impact:'Targeted recovery action',why:'Declining collections usually trace to 2–3 specific buyers'},
+          {priority:2,action:'Accelerate collection calls in remaining days of this month',impact:'Close the gap before month-end',why:'Month-end collection pushes are 40% more effective'},
+        ],
+        impactCards:[
+          {label:'This Month vs Last',before:f(prevMonthAmt),after:f(thisMonthAmt),unit:'',dir:deltaDir},
+          {label:'Cash Health Score',before:chs,after:Math.min(100,Math.max(0,chs+(delta>=0?5:-5))),unit:'/100',dir:deltaDir},
+        ],
+        followUps:['Has my payment behaviour improved?','What should I do today?','Is my business becoming healthier?','Show my biggest improvements']};
+    }
+    default:{
+      const topB=bOvList[0];
+      return{title:questionText,
+        summary:`Based on your current data — ${buyers.length} buyer(s), ${overdueInvs.length} overdue invoice(s), ${f(totalOverdue)} outstanding — your Cash Health Score is ${chs}/100. ${topB?'Your primary collection opportunity is with '+topB.name+' ('+f(topB.amount)+' overdue).':''}`,
+        findings:[
+          {type:'neu',text:`Cash Health Score: ${chs}/100 (${chsLabel})`},
+          {type:overdueRatio>0.2?'neg':'pos',text:`Overdue: ${f(totalOverdue)} (${Math.round(overdueRatio*100)}% of receivables)`},
+          {type:onTimeRate>=0.75?'pos':'neg',text:`On-time collection rate: ${Math.round(onTimeRate*100)}%`},
+          {type:avgDelay>30?'neg':'pos',text:`Average payment delay: ${Math.round(avgDelay)} days`},
+          ...(topB?[{type:'neg',text:`Largest overdue: ${topB.name} at ${f(topB.amount)}`}]:[]),
+        ],
+        impact:'Use these insights as a starting point. For a deeper analysis, select one of the specific questions from the question grid.',
+        actions:[
+          ...(topB?[{priority:1,action:`Contact ${topB.name} — ${f(topB.amount)} overdue`,impact:'Highest immediate collection opportunity',why:'Top overdue buyer by amount'}]:[]),
+          {priority:2,action:'Review your Cash Health Score breakdown for targeted improvement',impact:'+10–15 points potential',why:'Score components reveal your specific weakness'},
+        ],
+        impactCards:[
+          {label:'Cash Health Score',before:chs,after:Math.min(100,chs+10),unit:'/100',dir:'up'},
+          {label:'Overdue Exposure',before:f(totalOverdue),after:f(totalOverdue*0.7),unit:'',dir:'down'},
+        ],
+        followUps:['Why is my Cash Health Score low?','What should I do today?','Which buyer deserves my attention today?','Where is my biggest business risk?']};
+    }
+  }
+}
+
+function _askRenderGrid(CATS){
+  const hasData=(DB.buyers&&DB.buyers.length>0)||(DB.invoices&&DB.invoices.length>0);
+  return `<style>
+body[data-pg=askCashFlowIQ] .main{overflow-y:auto!important;padding:clamp(14px,2vh,28px) clamp(14px,2vw,32px)!important;box-sizing:border-box!important}
+.ask-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;margin-top:20px}
+.ask-cat{background:var(--white);border:1px solid var(--gray-200);border-radius:14px;overflow:hidden;transition:box-shadow .18s}
+.ask-cat:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.ask-cat-hdr{padding:15px 18px 13px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:10px}
+.ask-q{padding:11px 18px;font-size:13px;color:var(--gray-700);cursor:pointer;transition:background .12s,color .12s;border:none;background:transparent;width:100%;text-align:left;line-height:1.4;display:flex;align-items:center;gap:8px;font-family:inherit}
+.ask-q:hover{background:var(--gray-50);color:var(--gray-900)}
+.ask-q:not(:last-child){border-bottom:1px solid var(--gray-50)}
+.ask-q-arr{margin-left:auto;opacity:0;transition:opacity .12s,transform .12s;color:var(--gray-400);flex-shrink:0;font-size:14px}
+.ask-q:hover .ask-q-arr{opacity:1;transform:translateX(3px)}
+</style>
+<div class="page-wrap fade-in" style="max-width:none;width:100%;padding-top:0">
+${!hasData?`<div style="background:#fff8ed;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#92400e"><svg width="15" height="15" fill="none" viewBox="0 0 16 16" stroke="#f59e0b" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11v.5" stroke-linecap="round"/></svg>No invoice data found. Upload your receivables to unlock data-backed answers.<button onclick="window.addBuyerOpenWithClear&&window.addBuyerOpenWithClear()" style="margin-left:auto;background:#f59e0b;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0">Upload Data</button></div>`:''}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+  <div style="width:38px;height:38px;background:linear-gradient(135deg,#6366f1,#4f46e5);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 018 8c0 3-2 5.5-4 7l-4 5-4-5c-2-1.5-4-4-4-7a8 8 0 018-8z"/><circle cx="12" cy="10" r="2.5" fill="#fff" stroke="none"/></svg></div>
+  <div>
+    <h1 style="font-size:clamp(19px,2.5vw,26px);font-weight:800;color:var(--gray-900);letter-spacing:-.5px;margin:0">Ask CashFlowIQ</h1>
+    <p style="font-size:12.5px;color:var(--gray-500);margin:2px 0 0">Understand your business through intelligent, data-backed questions.</p>
+  </div>
+</div>
+<div style="position:relative;margin:22px 0 28px">
+  <div style="display:flex;align-items:center;background:var(--white);border:1.5px solid var(--gray-200);border-radius:13px;padding:13px 17px;gap:11px;box-shadow:0 1px 4px rgba(0,0,0,.05)">
+    <svg width="17" height="17" fill="none" viewBox="0 0 20 20" stroke="var(--gray-400)" stroke-width="2"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M14 14l3 3" stroke-linecap="round"/></svg>
+    <span style="font-size:13.5px;color:var(--gray-400);flex:1">What would you like to understand about your business?</span>
+    <span style="font-size:10.5px;color:var(--gray-300);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:6px;padding:3px 8px;flex-shrink:0">Select a question below</span>
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="var(--gray-300)" stroke-width="1.8" title="Voice — coming soon"><path d="M12 2a3 3 0 013 3v6a3 3 0 01-6 0V5a3 3 0 013-3z"/><path d="M19 11a7 7 0 01-14 0M12 18v4M8 22h8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+</div>
+<div style="font-size:10.5px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Guided Business Questions</div>
+<div class="ask-grid">
+${CATS.map(cat=>`<div class="ask-cat"><div class="ask-cat-hdr"><div style="width:30px;height:30px;background:${cat.bg};border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${cat.icon}</div><div><div style="font-size:13px;font-weight:700;color:var(--gray-900)">${cat.label}</div><div style="font-size:10px;color:var(--gray-400);margin-top:1px">${cat.questions.length} questions</div></div></div>${cat.questions.map(q=>`<button class="ask-q" onclick="askCFIQOpen('${q.key}',${JSON.stringify(q.text).replace(/"/g,'&quot;')})"><span style="flex:1">${q.text}</span><span class="ask-q-arr">→</span></button>`).join('')}</div>`).join('')}
+</div>
+<div style="margin-top:24px;padding:14px 18px;background:var(--gray-50);border-radius:11px;border:1px solid var(--gray-100);display:flex;align-items:flex-start;gap:10px">
+  <svg width="14" height="14" fill="none" viewBox="0 0 16 16" stroke="var(--gray-400)" stroke-width="1.8" style="flex-shrink:0;margin-top:1px"><circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 5.5v.5" stroke-linecap="round"/></svg>
+  <div><div style="font-size:11.5px;font-weight:600;color:var(--gray-700);margin-bottom:2px">Data-Backed Answers Only</div><div style="font-size:11px;color:var(--gray-500);line-height:1.5">Every answer is generated from your uploaded invoice and buyer data. CashFlowIQ never fabricates information. If data is insufficient, it will tell you clearly.</div></div>
+</div>
+</div>`;
+}
+
+function _askRenderReport(report,CATS){
+  const tI={pos:'✓',neg:'⚠',neu:'ℹ'},tC={pos:'#065F46',neg:'#991B1B',neu:'#44403C'},tB={pos:'rgba(16,185,129,.07)',neg:'rgba(220,38,38,.07)',neu:'rgba(107,114,128,.06)'},tBd={pos:'rgba(16,185,129,.12)',neg:'rgba(220,38,38,.10)',neu:'rgba(107,114,128,.10)'};
+  const chip=f=>`<div style="display:flex;align-items:flex-start;gap:9px;padding:11px 15px;background:${tB[f.type]};border-radius:9px;border:1px solid ${tBd[f.type]}"><span style="font-size:11.5px;font-weight:700;color:${tC[f.type]};flex-shrink:0;margin-top:1px">${tI[f.type]}</span><span style="font-size:13px;color:var(--gray-700);line-height:1.5">${f.text}</span></div>`;
+  const act=a=>`<div style="display:flex;gap:13px;padding:15px 17px;background:var(--white);border:1px solid var(--gray-200);border-radius:12px"><div style="width:26px;height:26px;background:linear-gradient(135deg,#6366f1,#4f46e5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">${a.priority}</div><div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--gray-900);line-height:1.4">${a.action}</div><div style="margin-top:7px"><span style="font-size:11px;font-weight:600;color:#10b981;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);border-radius:20px;padding:3px 9px">⬆ ${a.impact}</span></div><div style="font-size:11px;color:var(--gray-400);margin-top:5px">Why: ${a.why}</div></div></div>`;
+  const icard=c=>{const isUp=c.dir==='up',warn=c.warning,ac=warn?(isUp?'#dc2626':'#dc2626'):(isUp?'#10b981':'#dc2626');return`<div style="background:var(--white);border:1px solid var(--gray-200);border-radius:13px;padding:16px 18px;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px">${c.label}</div><div style="font-size:21px;font-weight:800;color:var(--gray-700)">${c.before}${c.unit||''}</div><div style="font-size:17px;color:${ac};font-weight:700;margin:3px 0">${isUp?'↑':'↓'}</div><div style="font-size:21px;font-weight:800;color:${ac}">${c.after}${c.unit||''}</div></div>`;};
+  return `<style>
+body[data-pg=askCashFlowIQ] .main{overflow-y:auto!important;padding:clamp(14px,2vh,28px) clamp(14px,2vw,32px)!important;box-sizing:border-box!important}
+.ask-sec{margin-bottom:26px}
+.ask-lbl{font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.1em;margin-bottom:11px}
+</style>
+<div class="page-wrap fade-in" style="max-width:840px;width:100%;padding-top:0">
+<button onclick="askCFIQBack()" style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--gray-500);background:none;border:none;cursor:pointer;padding:0;margin-bottom:18px;transition:color .12s" onmouseover="this.style.color='var(--gray-900)'" onmouseout="this.style.color='var(--gray-500)'"><svg width="14" height="14" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2"><path d="M10 3L5 8l5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to Questions</button>
+<div style="margin-bottom:22px">
+  <h1 style="font-size:clamp(17px,2.2vw,24px);font-weight:800;color:var(--gray-900);line-height:1.25;letter-spacing:-.4px;margin:0 0 10px">${report.title}</h1>
+  ${report.badge?`<span style="display:inline-flex;align-items:center;gap:6px;background:${report.badge.color+'18'};border:1px solid ${report.badge.color+'30'};color:${report.badge.color};border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:700"><span style="width:6px;height:6px;border-radius:50%;background:${report.badge.color};flex-shrink:0"></span>${report.badge.label}: ${report.badge.value} · ${report.badge.status}</span>`:''}
+</div>
+<div class="ask-sec" style="background:linear-gradient(135deg,rgba(99,102,241,.04),rgba(79,70,229,.02));border:1px solid rgba(99,102,241,.12);border-radius:13px;padding:19px 21px">
+  <div class="ask-lbl" style="color:#6366f1">Executive Summary</div>
+  <p style="font-size:14px;line-height:1.7;color:var(--gray-700);margin:0">${report.summary}</p>
+</div>
+<div class="ask-sec">
+  <div class="ask-lbl">What We Found</div>
+  <div style="display:flex;flex-direction:column;gap:7px">${report.findings.map(chip).join('')}</div>
+</div>
+<div class="ask-sec" style="padding:17px 19px;background:var(--gray-50);border-radius:11px;border:1px solid var(--gray-100)">
+  <div class="ask-lbl">Why This Matters</div>
+  <p style="font-size:13px;line-height:1.65;color:var(--gray-600);margin:0">${report.impact}</p>
+</div>
+${report.actions&&report.actions.length?`<div class="ask-sec"><div class="ask-lbl">Recommended Actions</div><div style="display:flex;flex-direction:column;gap:9px">${report.actions.map(act).join('')}</div></div>`:''}
+${report.impactCards&&report.impactCards.length?`<div class="ask-sec"><div class="ask-lbl">Estimated Business Impact</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px">${report.impactCards.map(icard).join('')}</div><div style="margin-top:9px;font-size:10.5px;color:var(--gray-400);display:flex;align-items:center;gap:5px"><svg width="11" height="11" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 7v3M8 5.5v.3" stroke-linecap="round"/></svg>Projections are estimates based on current data and may vary with actual collection outcomes.</div></div>`:''}
+${report.followUps&&report.followUps.length?`<div class="ask-sec"><div class="ask-lbl">Explore Further</div><div style="display:flex;flex-wrap:wrap;gap:8px">${report.followUps.map(q=>{let qKey='';CATS.forEach(cat=>{cat.questions.forEach(cq=>{if(cq.text===q)qKey=cq.key;});});return`<button onclick="askCFIQOpen('${qKey||'_default'}',${JSON.stringify(q).replace(/"/g,'&quot;')})" style="padding:8px 15px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:22px;font-size:12.5px;color:var(--gray-600);cursor:pointer;transition:all .15s;font-family:inherit" onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1';this.style.background='rgba(99,102,241,.04)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-600)';this.style.background='var(--white)'">${q} →</button>`;}).join('')}</div></div>`:''}
+<div style="border-top:1px solid var(--gray-100);padding-top:14px;display:flex;align-items:center;gap:7px"><svg width="12" height="12" fill="none" viewBox="0 0 16 16" stroke="var(--gray-300)" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 7v3M8 5.5v.3" stroke-linecap="round"/></svg><span style="font-size:10.5px;color:var(--gray-400)">All insights are generated from your uploaded invoice data. Recommendations reflect evidence-based analysis only.</span></div>
+</div>`;
+}
+
+Pages.askCashFlowIQ=function(){
+  window._askState=window._askState||{question:null,questionText:''};
+  const st=window._askState;
+  const CATS=[
+    {icon:'💰',label:'Cash Flow',color:'#10b981',bg:'#f0fdf4',questions:[
+      {key:'why_chs_low',text:'Why is my Cash Health Score low?'},
+      {key:'hurting_cashflow',text:'What is hurting my cash flow the most?'},
+      {key:'improve_chs',text:'How can I improve my Cash Health Score?'},
+      {key:'recover_overdue',text:'If I recover my top overdue invoices, what improves?'},
+      {key:'what_changed',text:'What changed since my previous upload?'},
+    ]},
+    {icon:'👥',label:'Buyer Intelligence',color:'#6366f1',bg:'#eef2ff',questions:[
+      {key:'buyer_attention',text:'Which buyer deserves my attention today?'},
+      {key:'buyer_riskier',text:'Which buyer has become riskier?'},
+      {key:'buyer_improved',text:'Which buyer has improved?'},
+      {key:'who_call_first',text:'Who should I call first today?'},
+      {key:'buyer_overdue_most',text:'Which buyer contributes most to my overdue?'},
+    ]},
+    {icon:'📈',label:'Trends',color:'#2563eb',bg:'#eff6ff',questions:[
+      {key:'month_compare',text:'Compare this month with last month'},
+      {key:'payment_improved',text:'Has my payment behaviour improved?'},
+      {key:'after_upload',text:'What changed after my latest upload?'},
+      {key:'business_healthier',text:'Is my business becoming healthier?'},
+      {key:'biggest_improvements',text:'Show my biggest improvements'},
+    ]},
+    {icon:'⚠️',label:'Risk Analysis',color:'#dc2626',bg:'#fef2f2',questions:[
+      {key:'biggest_risk',text:'Where is my biggest business risk?'},
+      {key:'sector_worry',text:'Which sector worries you most?'},
+      {key:'buyer_dependency',text:'Am I dependent on a few buyers?'},
+      {key:'dangerous_invoices',text:'Which invoices are most dangerous?'},
+      {key:'what_if_45days',text:'What happens if nothing changes for 45 days?'},
+    ]},
+    {icon:'🎯',label:'Recommendations',color:'#7c3aed',bg:'#f5f3ff',questions:[
+      {key:'do_today',text:'What should I do today?'},
+      {key:'do_this_week',text:'What should I complete this week?'},
+      {key:'immediate_followup',text:'Which buyers need immediate follow-up?'},
+      {key:'fastest_score_improve',text:'What actions will improve my score fastest?'},
+    ]},
+  ];
+  if(st.question){
+    const m=_askMetrics();
+    const report=_askReport(st.question,st.questionText,m);
+    return _askRenderReport(report,CATS);
+  }
+  return _askRenderGrid(CATS);
+};
+
+window.askCFIQOpen=function(key,text){
+  window._askState={question:key,questionText:text};
+  AppState.set({page:'askCashFlowIQ'});App.onStateChange();
+  const main=document.getElementById('main-content');if(main)main.scrollTop=0;
+};
+window.askCFIQBack=function(){
+  window._askState={question:null,questionText:''};
+  AppState.set({page:'askCashFlowIQ'});App.onStateChange();
+  const main=document.getElementById('main-content');if(main)main.scrollTop=0;
 };
 
 /* ----------------------------------------
