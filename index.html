@@ -665,6 +665,14 @@ canvas.cfiq-chart{display:block;width:100%;max-height:220px}
 [data-theme="dark"] .brp-tab-bar{background:var(--gray-200)}
 [data-theme="dark"] .brp-tab.active{background:var(--gray-100)}
 [data-theme="dark"] .buyer-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.35)}
+/* BRP fixed-height layout — scoped so only active on this page */
+body[data-pg=buyerRiskProfiles] .main{overflow:hidden!important;padding:clamp(6px,1vh,14px) clamp(8px,1.2vw,20px)!important;box-sizing:border-box!important}
+body[data-pg=buyerRiskProfiles] #brp-profile-wrap{height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0!important;margin:0!important}
+body[data-pg=buyerRiskProfiles] #brp-sticky-hdr{flex-shrink:0!important}
+body[data-pg=buyerRiskProfiles] #brp-tab-content{flex:1!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
+body[data-pg=buyerRiskProfiles] #brp-list-wrap{height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+body[data-pg=buyerRiskProfiles] #brp-list-hdr{flex-shrink:0!important}
+body[data-pg=buyerRiskProfiles] .buyer-grid{flex:1!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent;align-content:start!important}
 
 /* -------------------------------------------
    LOGIN SCREEN
@@ -6346,15 +6354,14 @@ function _renderBusinessDashboard(){
 <style>
 @keyframes _dashIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes _briefIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
-/* ── Fixed-height cockpit layout ── */
-html,body{overflow:hidden!important;height:100%}
-.main{overflow:hidden!important;height:calc(100vh - var(--topbar-h))!important;padding:clamp(6px,1vh,14px) clamp(8px,1.2vw,20px)!important;box-sizing:border-box!important}
-#dash-content{height:100%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:clamp(5px,.8vh,10px)!important;box-sizing:border-box!important;padding:0!important;min-height:0!important}
-#dash-grid{flex:1!important;min-height:0!important;overflow:hidden!important;align-items:stretch!important;padding-bottom:0!important}
-#dash-grid>div{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
-#dash-grid>div::-webkit-scrollbar{width:3px}
-#dash-grid>div::-webkit-scrollbar-thumb{background:#D6D3D1;border-radius:3px}
-#dash-kpi{flex-shrink:0!important;margin-bottom:0!important}
+/* ── Fixed-height cockpit layout (dashboard only via body[data-pg=dashboard]) ── */
+body[data-pg=dashboard] .main{overflow:hidden!important;padding:clamp(6px,1vh,14px) clamp(8px,1.2vw,20px)!important;box-sizing:border-box!important}
+body[data-pg=dashboard] #dash-content{height:100%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:clamp(5px,.8vh,10px)!important;box-sizing:border-box!important;padding:0!important;min-height:0!important}
+body[data-pg=dashboard] #dash-grid{flex:1!important;min-height:0!important;overflow:hidden!important;align-items:stretch!important;padding-bottom:0!important}
+body[data-pg=dashboard] #dash-grid>div{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:#E7E5E4 transparent}
+body[data-pg=dashboard] #dash-grid>div::-webkit-scrollbar{width:3px}
+body[data-pg=dashboard] #dash-grid>div::-webkit-scrollbar-thumb{background:#D6D3D1;border-radius:3px}
+body[data-pg=dashboard] #dash-kpi{flex-shrink:0!important;margin-bottom:0!important}
 </style>
 <div id="dash-content" style="font-family:'Inter',-apple-system,sans-serif">
 
@@ -9615,8 +9622,8 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
         : cat.tier==='risk-low' ? 'Avg monthly purchase — 3 months'
         : 'Avg monthly purchase — 1.5 months';
 
-      return `<div class="page-wrap fade-in" style="max-width:none;width:100%;padding-top:0">
-        <div style="position:sticky;top:-20px;z-index:80;background:var(--bg, #f0f4f8);padding:16px 0 0;margin:-20px 0 0">
+      return `<div id="brp-profile-wrap" class="page-wrap fade-in" style="max-width:none;width:100%;padding-top:0">
+        <div id="brp-sticky-hdr" style="background:var(--bg, #f0f4f8);padding:16px 0 0">
         <div class="back-row" style="margin-bottom:10px">
           <button class="btn btn-ghost" onclick="brpBack()" style="display:flex;align-items:center;gap:6px;font-size:12.5px">
             <svg width="15" height="15" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2"><path d="M10 3L5 8l5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>All Profiles
@@ -10818,8 +10825,8 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
       </div>`;
     }
 
-    return `<div class="page-wrap fade-in" style="max-width:none;width:100%">
-      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+    return `<div id="brp-list-wrap" class="page-wrap fade-in" style="max-width:none;width:100%">
+      <div id="brp-list-hdr"><div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
         <div>
           <h1 class="page-title">Buyer Risk Profiles</h1>
           <p class="page-sub">360° payment risk intelligence — ${profiles.length} buyers in portfolio</p>
@@ -10842,7 +10849,7 @@ ${ints.map(i=>`<div class="detail-card" style="display:flex;gap:12px;align-items
             return `<button style="padding:6px 13px;border-radius:20px;border:1.5px solid ${act?fc:'var(--gray-200)'};background:${act?'var(--gray-50)':'var(--white)'};color:${act?fc:'var(--gray-600)'};font-size:12px;font-weight:${act?700:500};cursor:pointer;transition:all .12s" onclick="brpRiskFilter('${f}')">${f} <span style="opacity:.65">${counts[f]??0}</span></button>`;
           }).join('')}
         </div>
-      </div>
+      </div></div><!-- end brp-list-hdr -->
 
       <div class="buyer-grid">
         ${filtered.length
@@ -12240,33 +12247,42 @@ window.addBuyerSave=async function(){
     risk_score:70, outstanding:0,
   };
 
-  try{
-    if(API.isConfigured()){
+  const localBuyer = {
+    id:payload.id, name:payload.name, code:payload.code,
+    gstin:payload.gstin, contact:payload.contact_name, phone:payload.contact_phone,
+    email:payload.contact_email, tradeTerm:payload.trade_term,
+    cluster:payload.cluster, state:payload.state, industry:payload.industry,
+    sector:payload.industry, creditLimit:payload.credit_limit,
+    currentExposure:0, avgMonthlyPurchase:0, riskScore:70,
+    avgDelay:0, highestDelay:0, onTimePct:100, overdueCount:0,
+    concentrationRisk:'Low', tradeTermBreachPct:0, since:new Date().toISOString(),
+    _invoiceCount:0, _overdueAmount:0, _exposurePct:0, scenario:'', story:'',
+  };
+  let apiOk = true;
+  if(API.isConfigured()){
+    try{
       await API.post('/api/buyers', payload);
+    }catch(e){
+      apiOk = false;
+      // Still add locally so user can work; show warning
+      DB.buyers.push(localBuyer);
+      addBuyerClose();
+      Toast.show('Buyer saved locally — cloud sync failed: '+(e.message||'Unknown error'),'warning',5000);
+      setTimeout(()=>{
+        window._brpState={buyerId:payload.id,buyerName:name,tab:'overview'};
+        AppState.set({page:'buyerRiskProfiles'}); App.onStateChange();
+      },400);
+      if(btn){btn.textContent='Create Buyer Profile →';btn.disabled=false;}
+      return;
     }
-    // Add to local DB immediately
-    DB.buyers.push({
-      id:payload.id, name:payload.name, code:payload.code,
-      gstin:payload.gstin, contact:payload.contact_name, phone:payload.contact_phone,
-      email:payload.contact_email, tradeTerm:payload.trade_term,
-      cluster:payload.cluster, state:payload.state, industry:payload.industry,
-      sector:payload.industry, creditLimit:payload.credit_limit,
-      currentExposure:0, avgMonthlyPurchase:0, riskScore:70,
-      avgDelay:0, highestDelay:0, onTimePct:100, overdueCount:0,
-      concentrationRisk:'Low', tradeTermBreachPct:0, since:new Date().toISOString(),
-      _invoiceCount:0, _overdueAmount:0, _exposurePct:0, scenario:'', story:'',
-    });
-    addBuyerClose();
-    Toast.show('Buyer "'+name+'" created successfully','success',3000);
-    // Navigate to the new buyer's profile
-    setTimeout(()=>{
-      window._brpState={buyerId:payload.id,buyerName:name,tab:'overview'};
-      AppState.set({page:'buyerRiskProfiles'}); App.onStateChange();
-    },400);
-  }catch(e){
-    const err=document.getElementById('ab-error'); if(err){err.textContent='Save failed: '+(e.message||'Unknown error');err.style.display='block';}
-    if(btn){btn.textContent='Create Buyer Profile →';btn.disabled=false;}
   }
+  DB.buyers.push(localBuyer);
+  addBuyerClose();
+  Toast.show('Buyer "'+name+'" created successfully','success',3000);
+  setTimeout(()=>{
+    window._brpState={buyerId:payload.id,buyerName:name,tab:'overview'};
+    AppState.set({page:'buyerRiskProfiles'}); App.onStateChange();
+  },400);
 };
 
 })();
@@ -13696,6 +13712,8 @@ function _placeholderPage(title,subtitle,icon){
 const App = {
   onStateChange(){
     const s=AppState.get();
+    // Scope fixed-height styles only to dashboard
+    document.body.setAttribute('data-pg', s.page||'');
     const main=document.getElementById('main-content');
     const renderer=Pages[s.page];
     if(renderer) main.innerHTML=renderer();

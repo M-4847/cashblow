@@ -17,10 +17,10 @@ const jwt      = require('jsonwebtoken');
 const multer   = require('multer');
 const XLSX     = require('xlsx');
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB
 
 const JWT_SECRET  = process.env.JWT_SECRET || 'cfiq-dev-secret-change-in-prod';
-const JWT_EXPIRES = '7d';
+const JWT_EXPIRES = '30d';
 
 const app  = express();
 const port = process.env.PORT || 4000;
@@ -114,7 +114,7 @@ app.post('/api/auth/register', async (req, res) => {
     if (existing.rows.length) return res.status(409).json({ message: 'An account with this email already exists' });
     const companyRes = await db.query('INSERT INTO companies (name) VALUES ($1) RETURNING id', [companyName]);
     const companyId = companyRes.rows[0].id;
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, 8);
     const userRes = await db.query(
       `INSERT INTO users (email, password_hash, name, company_id) VALUES ($1,$2,$3,$4) RETURNING id, email, name, company_id`,
       [email.toLowerCase().trim(), hash, name, companyId]
@@ -342,70 +342,36 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
 
     if (!buyerAgg.size) return res.status(400).json({ message: 'No usable rows found — check the buyer name and amount columns', headers, detectedColumns: map });
 
+    // ── Compute all metrics in memory first (no DB calls yet) ──
     const buyersOut = [];
     let totalOutstanding = 0, totalOverdueAmt = 0, totalInvoices = 0, totalDelaySum = 0, delayedBuyerCount = 0, expectedCollections = 0;
 
+    // Rows for bulk insert
+    const buyerRows = [], invoiceRows = [], receivableRows = [], collectionRows = [];
+
     for (const [name, agg] of buyerAgg) {
       const invCount = agg.invoices.length;
-      // Count BOTH currently overdue AND historically late-paid as "not on time"
-      const badCount  = agg.overdueCount + agg.latePayCount;
-      const onTimeCount = invCount - badCount;
-      const onTimeRate = invCount ? Math.round((onTimeCount / invCount) * 100) : 100;
-
-      // Average delay across ALL delayed invoices (overdue + late-paid)
+      const badCount    = agg.overdueCount + agg.latePayCount;
+      const onTimeRate  = invCount ? Math.round(((invCount - badCount) / invCount) * 100) : 100;
       const totalDelayAll   = agg.totalDelay + agg.latePayDelay;
       const totalDelayCount = agg.overdueCount + agg.latePayCount;
-      const avgDelay = totalDelayCount ? Math.round(totalDelayAll / totalDelayCount) : 0;
-      const highestDelay = agg.maxDelay;
-
-      // Risk Score — 0-100 where 100 = perfect, 0 = worst
-      // paymentBehaviour (40%): on-time rate
-      // delayScore (30%): avg days late penalised heavily
-      // overdueScore (30%): current overdue invoice burden
-      const paymentBehaviourScore = onTimeRate;
+      const avgDelay    = totalDelayCount ? Math.round(totalDelayAll / totalDelayCount) : 0;
       const avgDelayScore  = Math.max(0, 100 - avgDelay * 1.5);
       const overdueScore   = invCount ? Math.max(0, 100 - (agg.overdueCount / invCount) * 200) : 100;
-      const riskScore = Math.min(100, Math.max(0, Math.round(
-        paymentBehaviourScore * 0.40 +
-        avgDelayScore         * 0.30 +
-        overdueScore          * 0.30
-      )));
-
-      const collectionConfidence = Math.min(100, Math.max(0, Math.round(
-        onTimeRate   * 0.50 +
-        avgDelayScore * 0.30 +
-        overdueScore  * 0.20
-      )));
-
+      const riskScore = Math.min(100, Math.max(0, Math.round(onTimeRate*0.40 + avgDelayScore*0.30 + overdueScore*0.30)));
+      const collectionConfidence = Math.min(100, Math.max(0, Math.round(onTimeRate*0.50 + avgDelayScore*0.30 + overdueScore*0.20)));
       const buyerId = genId('BUY');
-      const code = (name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() || 'GEN').padEnd(3, 'X');
+      const code = (name.replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase()||'GEN').padEnd(3,'X');
 
-      await client.query(
-        `INSERT INTO buyers (id, company_id, name, code, industry, cluster, trade_term, risk_score, credit_limit, outstanding)
-         VALUES ($1,$2,$3,$4,$5,$6,'Credit',$7,$8,$9)`,
-        [buyerId, cid, name, code, agg.sector||null, agg.state||null, riskScore, Math.round(agg.outstanding * 1.5), agg.outstanding]
-      );
+      buyerRows.push([buyerId, cid, name, code, agg.sector||null, agg.state||null, riskScore, Math.round(agg.outstanding*1.5), agg.outstanding]);
 
       for (const inv of agg.invoices) {
         const invId = genId('INV');
-        const isPaidInv = inv.isPaid || false;
-        const status = isPaidInv ? 'Paid' : (inv.daysOverdue > 0 ? 'Overdue' : 'Pending');
-        await client.query(
-          `INSERT INTO invoices (id, buyer_id, buyer_name, amount, issued_date, due_date, paid_date, trade_term, status, company_id)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,'Credit',$8,$9)`,
-          [invId, buyerId, name, inv.amount, inv.issued || inv.due, inv.due, inv.paymentDate||null, status, cid]
-        );
         const recId = genId('REC');
-        await client.query(
-          `INSERT INTO receivables (id, buyer_id, buyer_name, invoice_id, amount, due_date, days_overdue, status, company_id)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-          [recId, buyerId, name, invId, inv.amount, inv.due, inv.daysOverdue, status, cid]
-        );
-        await client.query(
-          `INSERT INTO collections (id, buyer_id, invoice_id, receivable_id, amount, scheduled_date, status, collection_confidence, delay_days, company_id)
-           VALUES (gen_random_uuid(),$1,$2,$3,$4,$5,'Pending',$6,$7,$8)`,
-          [buyerId, invId, recId, inv.amount, inv.due, collectionConfidence, inv.daysOverdue, cid]
-        );
+        const status = inv.isPaid ? 'Paid' : (inv.daysOverdue > 0 ? 'Overdue' : 'Pending');
+        invoiceRows.push([invId, buyerId, name, inv.amount, inv.issued||inv.due, inv.due, inv.paymentDate||null, status, cid]);
+        receivableRows.push([recId, buyerId, name, invId, inv.amount, inv.due, inv.daysOverdue, status, cid]);
+        collectionRows.push([buyerId, invId, recId, inv.amount, inv.due, 'Pending', collectionConfidence, inv.daysOverdue, cid]);
       }
 
       totalOutstanding += agg.outstanding;
@@ -416,6 +382,34 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
 
       buyersOut.push({ id: buyerId, name, outstanding: agg.outstanding, riskScore, avgDelay, invoiceCount: invCount });
     }
+
+    // ── Bulk INSERT all rows — single round-trip per table ──
+    function bulkInsert(table, cols, rows) {
+      if (!rows.length) return Promise.resolve();
+      const placeholders = rows.map((_, i) =>
+        '(' + cols.map((__, j) => `$${i * cols.length + j + 1}`).join(',') + ')'
+      ).join(',');
+      return client.query(`INSERT INTO ${table} (${cols.join(',')}) VALUES ${placeholders}`, rows.flat());
+    }
+
+    await bulkInsert('buyers',
+      ['id','company_id','name','code','industry','cluster','trade_term','risk_score','credit_limit','outstanding'],
+      buyerRows.map(r => [...r.slice(0,6), 'Credit', ...r.slice(6)]));
+
+    await bulkInsert('invoices',
+      ['id','buyer_id','buyer_name','amount','issued_date','due_date','paid_date','trade_term','status','company_id'],
+      invoiceRows.map(r => [...r.slice(0,7), 'Credit', ...r.slice(7)]));
+
+    await bulkInsert('receivables',
+      ['id','buyer_id','buyer_name','invoice_id','amount','due_date','days_overdue','status','company_id'],
+      receivableRows);
+
+    const { randomUUID } = require('crypto');
+    await bulkInsert('collections',
+      ['id','buyer_id','invoice_id','receivable_id','amount','scheduled_date','status','collection_confidence','delay_days','company_id'],
+      collectionRows.map(r => [randomUUID(), ...r]));
+
+    console.log(`[import] bulk inserted: ${buyerRows.length} buyers, ${invoiceRows.length} invoices`);
 
     const highRiskBuyers = buyersOut.filter(b => b.riskScore < 45);
     const maxBuyer = buyersOut.reduce((m, b) => b.outstanding > (m?.outstanding||0) ? b : m, null);
@@ -523,11 +517,10 @@ app.post('/api/onboarding/import', auth, upload.single('file'), async (req, res)
       },
     };
 
-    for (const b of highRiskBuyers) {
-      await client.query(
-        `INSERT INTO alerts (type, severity, title, message, buyer_id, company_id)
-         VALUES ('risk','high',$1,$2,$3,$4)`,
-        [`High risk buyer: ${b.name}`, `Risk score ${b.riskScore}/100 — ${fmt(b.outstanding)} outstanding with ${Math.round(b.avgDelay)} day avg delay`, b.id, cid]
+    if (highRiskBuyers.length) {
+      await bulkInsert('alerts',
+        ['type','severity','title','message','buyer_id','company_id'],
+        highRiskBuyers.map(b => ['risk','high',`High risk buyer: ${b.name}`,`Risk score ${b.riskScore}/100 — ${fmt(b.outstanding)} outstanding with ${Math.round(b.avgDelay)} day avg delay`, b.id, cid])
       );
     }
 
@@ -731,17 +724,17 @@ function riskScoreToCategory(score) {
 
 // POST /api/buyers
 app.post('/api/buyers', auth, async (req, res) => {
-  const { id, name, code, industry, cluster, trade_term, credit_limit, contact_name, contact_email, gstin } = req.body;
+  const { id, name, code, industry, cluster, trade_term, credit_limit, contact_name, contact_email, contact_phone, gstin, risk_score } = req.body;
   try {
     const { rows } = await db.query(
-      `INSERT INTO buyers (id,name,code,industry,cluster,trade_term,credit_limit,contact_name,contact_email,gstin)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-      [id, name, code, industry, cluster, trade_term, credit_limit, contact_name, contact_email, gstin]
+      `INSERT INTO buyers (id,name,code,industry,cluster,trade_term,credit_limit,contact_name,contact_email,contact_phone,gstin,risk_score)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+      [id, name, code, industry, cluster, trade_term||'Credit', credit_limit||0, contact_name||null, contact_email||null, contact_phone||null, gstin||null, risk_score||70]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to create buyer' });
+    console.error('POST /api/buyers error:', err.message, err.detail);
+    res.status(500).json({ message: 'Failed to create buyer', detail: err.message });
   }
 });
 
