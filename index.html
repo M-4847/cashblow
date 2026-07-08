@@ -14225,11 +14225,11 @@ async function initDB(isRetry){
       const reason = buyersRes.reason;
       const isAuth = reason?.status === 401 || reason?.message === 'Unauthorized';
       if(isAuth){
-        // Session expired — force re-login
+        // Session expired — go to landing page so user sees product first
         localStorage.removeItem('cfiq_login');
         localStorage.removeItem('cfiq_token');
-        cfiqShowLogin();
-        Toast && Toast.show('Session expired. Please sign in again.', 'error');
+        cfiqShowLanding();
+        Toast && Toast.show('Your session expired. Please sign in again.', 'info');
         return;
       }
       // Network error — retry once after 4s (Railway cold start)
