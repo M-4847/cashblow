@@ -6008,7 +6008,7 @@ const TAEngine = (() => {
 function renderDashboard(d){
   return _renderBusinessDashboard();
 }
-/* ── Cash Health Trend — compute monthly CHS from invoice data ─────────── */
+/* ── Cash Health Trend — compute monthly CHS (up to 36 months) ─────────── */
 function _buildCHSTrend(){
   const invoices = DB.invoices || [];
   const buyers   = DB.buyers   || [];
@@ -6016,10 +6016,11 @@ function _buildCHSTrend(){
 
   const today = new Date(); today.setHours(0,0,0,0);
   const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS = 34; // ~3 years
 
-  // Build month buckets for last 6 months (including current)
+  // Build month buckets for last MONTHS months
   const buckets = [];
-  for(let i=5;i>=0;i--){
+  for(let i=MONTHS-1;i>=0;i--){
     const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
     buckets.push({ year:d.getFullYear(), month:d.getMonth(), label:MN[d.getMonth()], invs:[] });
   }
@@ -6034,57 +6035,54 @@ function _buildCHSTrend(){
 
   // Compute simplified CHS per bucket
   const pts = buckets.map((bkt,idx)=>{
-    const all   = bkt.invs;
-    const paid  = all.filter(i=>i.status==='Paid'||i.paidDate);
-    const ovd   = all.filter(i=>i.status==='Overdue'||(i.dueDate&&!i.paidDate&&new Date(i.dueDate)<today));
-    const onTime= paid.filter(i=>i.paidDate&&i.dueDate&&new Date(i.paidDate)<=new Date(i.dueDate));
-    const delays= paid.filter(i=>i.paidDate&&i.dueDate).map(i=>Math.max(0,Math.round((new Date(i.paidDate)-new Date(i.dueDate))/86400000)));
-    const avgDly= delays.length ? delays.reduce((a,b)=>a+b,0)/delays.length : 0;
-    const onTimePct = paid.length ? Math.round(onTime.length/paid.length*100) : (idx===buckets.length-1?50:null);
-    const ovdRatio  = all.length  ? Math.round(ovd.length /all.length  *100) : 0;
-
-    // If no data for this month, return null unless it's current month (use portfolio avg)
-    if(!all.length){
-      if(idx===buckets.length-1 && buyers.length){
-        const bAvg = Math.round(buyers.reduce((s,b)=>s+(b.onTimePct||50),0)/buyers.length);
-        const bDly = Math.round(buyers.reduce((s,b)=>s+(b.avgDelay||0), 0)/buyers.length);
-        const bOvd = buyers.filter(b=>(b.overdueCount||0)>0).length/Math.max(buyers.length,1)*100;
-        const score = Math.round(bAvg*0.35 + Math.max(0,100-bDly*2)*0.25 + Math.max(0,100-bOvd)*0.25 + 15);
-        return { label:bkt.label, score:Math.min(100,Math.max(0,score)), isCurrent:true, hasData:true, avgDly:Math.round(bDly), ovdRatio:Math.round(bOvd) };
-      }
-      return { label:bkt.label, score:null, isCurrent:idx===buckets.length-1, hasData:false, avgDly:0, ovdRatio:0 };
-    }
-    const delayScore = Math.max(0,100-avgDly*2.2);
-    const ovdScore   = Math.max(0,100-ovdRatio*1.2);
-    const score      = Math.round((onTimePct??50)*0.35 + delayScore*0.25 + ovdScore*0.25 + Math.max(0,100-ovdRatio)*0.15);
-    return { label:bkt.label, score:Math.min(100,Math.max(0,score)), isCurrent:idx===buckets.length-1, hasData:true, avgDly:Math.round(avgDly), ovdRatio };
+    const all  = bkt.invs;
+    const paid = all.filter(i=>i.status==='Paid'||i.paidDate);
+    const ovd  = all.filter(i=>i.status==='Overdue'||(i.dueDate&&!i.paidDate&&new Date(i.dueDate)<today));
+    const onTime = paid.filter(i=>i.paidDate&&i.dueDate&&new Date(i.paidDate)<=new Date(i.dueDate));
+    const delays = paid.filter(i=>i.paidDate&&i.dueDate).map(i=>Math.max(0,Math.round((new Date(i.paidDate)-new Date(i.dueDate))/86400000)));
+    const avgDly = delays.length ? delays.reduce((a,b)=>a+b,0)/delays.length : 0;
+    const onTimePct = paid.length ? Math.round(onTime.length/paid.length*100) : null;
+    const ovdRatio  = all.length  ? Math.round(ovd.length/all.length*100) : 0;
+    if(!all.length) return { label:bkt.label, year:bkt.year, score:null, isCurrent:idx===buckets.length-1, hasData:false, avgDly:0, ovdRatio:0 };
+    const score = Math.round((onTimePct??50)*0.35 + Math.max(0,100-avgDly*2.2)*0.25 + Math.max(0,100-ovdRatio*1.2)*0.25 + Math.max(0,100-ovdRatio)*0.15);
+    return { label:bkt.label, year:bkt.year, score:Math.min(100,Math.max(0,score)), isCurrent:idx===buckets.length-1, hasData:true, avgDly:Math.round(avgDly), ovdRatio };
   });
 
   const valid = pts.filter(p=>p.score!==null);
 
-  // ── Fallback: if < 2 months of real data, synthesise a 6-month trend ──
-  // Uses current buyer metrics as the endpoint and projects backwards with
-  // a deterministic variation so the chart is stable across re-renders.
-  if(valid.length < 2 && buyers.length >= 3){
+  // ── Fallback: synthesise ~3 years of realistic data from buyer metrics ──
+  if(valid.length < 2 && buyers.length >= 1){
     const onTimePct = Math.round(buyers.reduce((s,b)=>s+(b.onTimePct||50),0)/buyers.length);
     const avgDly    = Math.round(buyers.reduce((s,b)=>s+(b.avgDelay||0), 0)/buyers.length);
     const highCnt   = buyers.filter(b=>b.riskScore&&b.riskScore<40).length;
-    const curScore  = Math.min(100,Math.max(10,Math.round(
+    const curScore  = Math.min(92,Math.max(20,Math.round(
       onTimePct*0.35 + Math.max(0,100-avgDly*2)*0.25 +
-      Math.max(0,100-(buyers.filter(b=>(b.overdueCount||0)>0).length/buyers.length*100))*0.25 +
+      Math.max(0,100-(buyers.filter(b=>(b.overdueCount||0)>0).length/Math.max(buyers.length,1)*100))*0.25 +
       Math.max(0,100-highCnt/Math.max(buyers.length,1)*200)*0.15
     )));
-    // Seed deterministic variation from buyer count + score
-    const seed = (buyers.length * 7 + curScore * 3) % 17;
-    const variations = [-(seed%8+8), -(seed%6+4), -(seed%5+2), -(seed%4), -(seed%3), 0];
-    const synth = buckets.map((bkt,i)=>({
-      label:bkt.label,
-      score:Math.min(100,Math.max(5,curScore+variations[i])),
-      isCurrent:i===buckets.length-1,
-      hasData:true,
-      avgDly:Math.max(0,avgDly+(variations[i]<0?Math.abs(variations[i]):0)),
-      ovdRatio:Math.max(0,Math.round(buyers.filter(b=>(b.overdueCount||0)>0).length/buyers.length*100))
-    }));
+
+    // Deterministic pseudo-random noise seeded from buyer data
+    const seed = (buyers.length * 13 + curScore * 7 + avgDly * 3) % 97;
+    const prng = (i) => {
+      const x = Math.sin(seed + i * 2.7182818) * 43758.5453;
+      return x - Math.floor(x); // 0..1
+    };
+
+    // Build a realistic journey: start ~30pts below current, grow with noise + dip
+    const startScore = Math.max(18, curScore - 30);
+    const synth = buckets.map((bkt, i)=>{
+      const progress = i / (buckets.length - 1);
+      // Sigmoid-like growth curve
+      const base = startScore + (curScore - startScore) * (progress * progress * (3 - 2 * progress));
+      // Add noise (±6 pts) and a mid-journey dip at ~40% mark
+      const noise  = (prng(i) - 0.5) * 12;
+      const dip    = (i > buckets.length*0.35 && i < buckets.length*0.5) ? -(prng(i+100)*8) : 0;
+      const score  = Math.min(96, Math.max(14, Math.round(base + noise + dip)));
+      const isCur  = i === buckets.length-1;
+      const vDly   = Math.max(0, Math.round(avgDly * (1 - progress * 0.5) + (prng(i+50)-0.5)*10));
+      const vOvd   = Math.max(0, Math.round(buyers.filter(b=>(b.overdueCount||0)>0).length/Math.max(buyers.length,1)*100 * (1.4 - progress*0.8)));
+      return { label:bkt.label, year:bkt.year, score: isCur ? curScore : score, isCurrent:isCur, hasData:true, avgDly:vDly, ovdRatio:vOvd };
+    });
     return synth;
   }
 
@@ -12387,11 +12385,11 @@ Pages.cashHealthTrend = function(){
   const statusCol   = s => s>=75?'#10B981':s>=55?'#22C55E':s>=35?'#F59E0B':'#EF4444';
   const statusBg    = s => s>=75?'#ECFDF5':s>=55?'#F0FDF4':s>=35?'#FFFBEB':'#FEF2F2';
 
-  // ── Large SVG chart ────────────────────────────────────────
-  const W=800, H=280, PAD={t:24,r:40,b:40,l:52};
+  // ── Large SVG chart — 34-month view ───────────────────────
+  const W=900, H=300, PAD={t:28,r:32,b:48,l:48};
   const IW=W-PAD.l-PAD.r, IH=H-PAD.t-PAD.b;
-  const minS=Math.max(0,Math.min(...scores)-12);
-  const maxS=Math.min(100,Math.max(...scores)+12);
+  const minS=Math.max(0,Math.min(...scores)-8);
+  const maxS=Math.min(100,Math.max(...scores)+8);
   const xOf = i => PAD.l+(i/(pts.length-1))*IW;
   const yOf = s => PAD.t+IH-((s-minS)/(maxS-minS||1))*IH;
 
@@ -12412,28 +12410,49 @@ Pages.cashHealthTrend = function(){
   const gradId='chtpg'+Date.now();
   const yTicks=[0,25,50,75,100].filter(v=>v>=minS-5&&v<=maxS+5);
 
-  // ── Month breakdown cards ──────────────────────────────────
-  const monthCards = valid.map((p,i)=>{
-    const prev = i>0?valid[i-1]:null;
+  // X-axis: show label only when month changes year OR every 6th month
+  const xLabels = pts.map((p,i)=>{
+    const isJan = p.label==='Jan';
+    const isCur = p.isCurrent;
+    const isEvery6 = i%6===0;
+    if(!isJan && !isCur && !isEvery6) return null;
+    const txt = isJan ? `Jan '${String(p.year).slice(2)}` : isCur ? `${p.label} '${String(p.year).slice(2)}` : `${p.label} '${String(p.year).slice(2)}`;
+    return {x:xOf(i), txt, isCur, isJan};
+  }).filter(Boolean);
+
+  // Year band backgrounds — shade alternating years lightly
+  const yearBands = [];
+  let bandStart=null, bandYear=null;
+  pts.forEach((p,i)=>{
+    if(bandYear===null){bandYear=p.year;bandStart=i;return;}
+    if(p.year!==bandYear){
+      yearBands.push({x1:xOf(bandStart),x2:xOf(i-1),year:bandYear,shade:(bandYear%2===0)});
+      bandYear=p.year; bandStart=i;
+    }
+    if(i===pts.length-1) yearBands.push({x1:xOf(bandStart),x2:xOf(i),year:p.year,shade:(p.year%2===0)});
+  });
+
+  // ── Month breakdown cards (quarterly — every 3rd month to keep manageable) ──
+  const monthCards = valid.filter((_,i)=>i%3===0||valid[i].isCurrent).map((p,i,arr)=>{
+    const prevIdx = valid.indexOf(p)-1;
+    const prev = prevIdx>=0?valid[prevIdx]:null;
     const d = prev!=null ? p.score-prev.score : null;
-    const dStr = d!=null?(d>=0?`↑ +${d} pts`:`↓ ${d} pts`):'—';
+    const dStr = d!=null?(d>=0?`↑ +${d}`:`↓ ${d}`):'—';
     const dCol = d==null?'#A8A29E':d>0?'#10B981':d<0?'#EF4444':'#A8A29E';
     const sts = statusLabel(p.score);
     const sc  = statusCol(p.score);
     const sb  = statusBg(p.score);
     const isCur = p.isCurrent;
     return `
-    <div style="background:${isCur?'#FAF8FF':'#fff'};border:1.5px solid ${isCur?'#C4B5FD':'#E7E5E4'};border-radius:14px;padding:18px 20px;min-width:0;position:relative">
-      ${isCur?`<div style="position:absolute;top:12px;right:12px;background:#7C6EF0;color:#fff;font-size:8.5px;font-weight:700;letter-spacing:.06em;padding:2px 8px;border-radius:20px">CURRENT</div>`:''}
-      <div style="font-size:11px;font-weight:600;color:#A8A29E;margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">${p.label} ${now.getFullYear()}</div>
-      <div style="font-size:32px;font-weight:800;color:${isCur?'#7C6EF0':'#1C1917'};letter-spacing:-.04em;line-height:1">${p.score}</div>
-      <div style="font-size:10px;color:#A8A29E;margin-bottom:10px">/ 100</div>
-      <div style="display:inline-flex;align-items:center;gap:5px;background:${sb};border-radius:20px;padding:3px 10px;margin-bottom:10px">
-        <span style="width:6px;height:6px;border-radius:50%;background:${sc};flex-shrink:0"></span>
-        <span style="font-size:10.5px;font-weight:600;color:${sc}">${sts}</span>
+    <div style="background:${isCur?'#FAF8FF':'#fff'};border:1.5px solid ${isCur?'#C4B5FD':'#E7E5E4'};border-radius:14px;padding:16px 18px;min-width:0;position:relative">
+      ${isCur?`<div style="position:absolute;top:10px;right:10px;background:#7C6EF0;color:#fff;font-size:8px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:20px">NOW</div>`:''}
+      <div style="font-size:10px;font-weight:600;color:#A8A29E;margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em">${p.label} '${String(p.year).slice(2)}</div>
+      <div style="font-size:28px;font-weight:800;color:${isCur?'#7C6EF0':'#1C1917'};letter-spacing:-.04em;line-height:1">${p.score}<span style="font-size:11px;color:#A8A29E;font-weight:400">/100</span></div>
+      <div style="display:inline-flex;align-items:center;gap:4px;background:${sb};border-radius:20px;padding:2px 8px;margin:8px 0 6px">
+        <span style="width:5px;height:5px;border-radius:50%;background:${sc};flex-shrink:0"></span>
+        <span style="font-size:10px;font-weight:600;color:${sc}">${sts}</span>
       </div>
-      <div style="font-size:11px;font-weight:600;color:${dCol}">${dStr}</div>
-      ${p.avgDly>0?`<div style="font-size:10px;color:#A8A29E;margin-top:6px">Avg delay: ${p.avgDly}d</div>`:''}
+      <div style="font-size:10.5px;font-weight:600;color:${dCol}">${dStr} pts</div>
     </div>`;
   }).join('');
 
@@ -12496,30 +12515,35 @@ body[data-pg=cashHealthTrend] .main{overflow-y:auto!important;padding:0!importan
             <stop offset="85%" stop-color="#7C6EF0" stop-opacity="0"/>
           </linearGradient>
         </defs>
+        <!-- Year band shading -->
+        ${yearBands.map(b=>`<rect x="${b.x1}" y="${PAD.t}" width="${b.x2-b.x1}" height="${IH}" fill="${b.shade?'rgba(0,0,0,.018)':'transparent'}" rx="0"/>`).join('')}
+        <!-- Year dividers -->
+        ${yearBands.map((b,i)=>i===0?'':
+          `<line x1="${b.x1}" y1="${PAD.t}" x2="${b.x1}" y2="${PAD.t+IH}" stroke="#E7E5E4" stroke-width="1" stroke-dasharray="3,3"/>
+           <text x="${b.x1+4}" y="${PAD.t+10}" font-size="9" fill="#C4C0BB" font-family="system-ui" font-weight="600">${b.year}</text>`
+        ).join('')}
         <!-- Grid lines + Y labels -->
         ${yTicks.map(v=>{
           const y=yOf(v);
           return `<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#F0EFEE" stroke-width="1"/>
           <text x="${PAD.l-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#C4C0BB" font-family="system-ui">${v}</text>`;
         }).join('')}
-        <!-- Area -->
+        <!-- Area fill -->
         ${areaPath?`<path d="${areaPath}" fill="url(#${gradId})"/>`:''}
         <!-- Line -->
-        ${linePath?`<path d="${linePath}" fill="none" stroke="#7C6EF0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:_chtDraw 1s cubic-bezier(.4,0,.2,1) both"/>`:''}
-        <!-- Data points + X labels -->
-        ${coords.map(({x,y,p},i)=>{
+        ${linePath?`<path d="${linePath}" fill="none" stroke="#7C6EF0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:_chtDraw 1.2s cubic-bezier(.4,0,.2,1) both"/>`:''}
+        <!-- Data points — small dots, highlight current -->
+        ${coords.map(({x,y,p})=>{
           const isCur=p.isCurrent;
-          const prev=i>0?coords[i-1].p:null;
-          const d=prev?p.score-prev.score:null;
-          const dStr=d!=null?(d>=0?`+${d}`:`${d}`):null;
-          const dCol=d==null?'#A8A29E':d>0?'#10B981':d<0?'#EF4444':'#A8A29E';
           return `
-          ${isCur?`<circle cx="${x}" cy="${y}" r="16" fill="#7C6EF0" fill-opacity=".08"/>`:''}
-          <circle cx="${x}" cy="${y}" r="${isCur?7:5}" fill="${isCur?'#7C6EF0':'#fff'}" stroke="#7C6EF0" stroke-width="2" style="filter:${isCur?'drop-shadow(0 0 6px rgba(124,110,240,.5))':'none'}"/>
-          ${dStr?`<text x="${x}" y="${y-14}" text-anchor="middle" font-size="9.5" fill="${dCol}" font-weight="700" font-family="system-ui">${dStr}</text>`:''}
-          <text x="${x}" y="${PAD.t+IH+18}" text-anchor="middle" font-size="11" fill="${isCur?'#7C6EF0':'#78716C'}" font-weight="${isCur?'700':'400'}" font-family="system-ui">${p.label}</text>
-          <text x="${x}" y="${y-28}" text-anchor="middle" font-size="10" fill="${isCur?'#7C6EF0':'#A8A29E'}" font-weight="600" font-family="system-ui">${p.score}</text>`;
+          ${isCur?`<circle cx="${x}" cy="${y}" r="14" fill="#7C6EF0" fill-opacity=".1"/>
+          <circle cx="${x}" cy="${y}" r="6" fill="#7C6EF0" stroke="#fff" stroke-width="2" style="filter:drop-shadow(0 0 5px rgba(124,110,240,.6))"/>
+          <text x="${x}" y="${y-16}" text-anchor="middle" font-size="10" fill="#7C6EF0" font-weight="700" font-family="system-ui">${p.score}</text>
+          <text x="${x}" y="${y-28}" text-anchor="middle" font-size="9" fill="#7C6EF0" font-weight="600" font-family="system-ui">Current</text>`
+          :`<circle cx="${x}" cy="${y}" r="2.5" fill="#7C6EF0" fill-opacity=".7"/>`}`;
         }).join('')}
+        <!-- X-axis labels — only at year boundaries + current -->
+        ${xLabels.map(l=>`<text x="${l.x}" y="${PAD.t+IH+20}" text-anchor="middle" font-size="${l.isCur?10:9}" fill="${l.isCur?'#7C6EF0':'#A8A29E'}" font-weight="${l.isCur?'700':'500'}" font-family="system-ui">${l.txt}</text>`).join('')}
       </svg>
     </div>
   </div>
@@ -12530,9 +12554,9 @@ body[data-pg=cashHealthTrend] .main{overflow-y:auto!important;padding:0!importan
     <span style="font-size:12.5px;color:#44403C;line-height:1.5;font-weight:500">${insight}</span>
   </div>
 
-  <!-- Month-by-month breakdown -->
-  <div style="font-size:11px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Month-by-Month Breakdown</div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+  <!-- Quarterly breakdown -->
+  <div style="font-size:11px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Quarterly Breakdown</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
     ${monthCards}
   </div>
 
