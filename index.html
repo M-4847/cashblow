@@ -2735,6 +2735,14 @@ body[data-pg=buyerRiskProfiles] .buyer-grid{flex:1!important;min-height:0!import
       </div>
     </div>
 
+    <!-- Cash Health Trend -->
+    <div style="margin:4px 8px 2px">
+      <button class="nav-item nav-standalone" data-page="cashHealthTrend" data-tip="Cash Health Trend" style="margin:0;width:100%;font-weight:600;font-size:12.5px">
+        <span class="ni-wrap"><svg class="ni" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.7"><polyline points="1,12 5,7 9,9 15,3" stroke-linecap="round" stroke-linejoin="round"/><polyline points="11,3 15,3 15,7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="nav-label">Cash Health Trend</span>
+      </button>
+    </div>
+
     <!-- Ask CashFlowIQ -->
     <div style="margin:4px 8px 2px">
       <button class="nav-item nav-standalone" data-page="askCashFlowIQ" data-tip="Ask CashFlowIQ" style="margin:0;width:100%;font-weight:600;font-size:12.5px">
@@ -3650,6 +3658,7 @@ const PAGE_LABELS={
   tradeTermDetail:'Trade Term Detail',
   buyers:'Buyers',reports:'Reports',integrations:'Integrations',tradeTerms:'Trade Terms',
   askCashFlowIQ:'Ask CashFlowIQ',
+  cashHealthTrend:'Cash Health Trend',
 };
 
 /* ----------------------------------------
@@ -12349,6 +12358,187 @@ window.askCFIQBack=function(){
   const main=document.getElementById('main-content');if(main)main.scrollTop=0;
 };
 
+/* ─────────────────────────────────────────
+   Cash Health Trend — full page
+───────────────────────────────────────── */
+Pages.cashHealthTrend = function(){
+  const pts = _buildCHSTrend();
+  const buyers   = DB.buyers   || [];
+  const invoices = DB.invoices || [];
+  const MFull = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const now = new Date();
+
+  if(!pts){
+    return `<div style="height:100%;display:flex;align-items:center;justify-content:center;padding:40px 24px">
+      <div style="max-width:480px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">📈</div>
+        <div style="font-size:22px;font-weight:800;color:#1C1917;letter-spacing:-.03em;margin-bottom:10px">No Trend Data Yet</div>
+        <div style="font-size:13px;color:#A8A29E;line-height:1.7">Your Cash Health Trend will appear after multiple monthly uploads.<br>Upload data regularly to understand how your receivables health evolves over time.</div>
+      </div>
+    </div>`;
+  }
+
+  const valid  = pts.filter(p=>p.score!==null);
+  const scores = valid.map(p=>p.score);
+  const first  = scores[0], last = scores[scores.length-1];
+  const delta  = last - first;
+  const deltaSign = delta >= 0 ? '+' : '';
+  const statusLabel = s => s>=75?'Excellent':s>=55?'Good':s>=35?'Watch':'Critical';
+  const statusCol   = s => s>=75?'#10B981':s>=55?'#22C55E':s>=35?'#F59E0B':'#EF4444';
+  const statusBg    = s => s>=75?'#ECFDF5':s>=55?'#F0FDF4':s>=35?'#FFFBEB':'#FEF2F2';
+
+  // ── Large SVG chart ────────────────────────────────────────
+  const W=800, H=280, PAD={t:24,r:40,b:40,l:52};
+  const IW=W-PAD.l-PAD.r, IH=H-PAD.t-PAD.b;
+  const minS=Math.max(0,Math.min(...scores)-12);
+  const maxS=Math.min(100,Math.max(...scores)+12);
+  const xOf = i => PAD.l+(i/(pts.length-1))*IW;
+  const yOf = s => PAD.t+IH-((s-minS)/(maxS-minS||1))*IH;
+
+  const plotPts = pts.filter(p=>p.score!==null);
+  const coords  = plotPts.map(p=>({x:xOf(pts.indexOf(p)),y:yOf(p.score),p}));
+
+  let linePath='', areaPath='';
+  if(coords.length>=2){
+    let d=`M${coords[0].x},${coords[0].y}`;
+    for(let i=0;i<coords.length-1;i++){
+      const cx=(coords[i].x+coords[i+1].x)/2;
+      d+=` C${cx},${coords[i].y} ${cx},${coords[i+1].y} ${coords[i+1].x},${coords[i+1].y}`;
+    }
+    linePath=d;
+    areaPath=d+` L${coords[coords.length-1].x},${PAD.t+IH} L${coords[0].x},${PAD.t+IH} Z`;
+  }
+
+  const gradId='chtpg'+Date.now();
+  const yTicks=[0,25,50,75,100].filter(v=>v>=minS-5&&v<=maxS+5);
+
+  // ── Month breakdown cards ──────────────────────────────────
+  const monthCards = valid.map((p,i)=>{
+    const prev = i>0?valid[i-1]:null;
+    const d = prev!=null ? p.score-prev.score : null;
+    const dStr = d!=null?(d>=0?`↑ +${d} pts`:`↓ ${d} pts`):'—';
+    const dCol = d==null?'#A8A29E':d>0?'#10B981':d<0?'#EF4444':'#A8A29E';
+    const sts = statusLabel(p.score);
+    const sc  = statusCol(p.score);
+    const sb  = statusBg(p.score);
+    const isCur = p.isCurrent;
+    return `
+    <div style="background:${isCur?'#FAF8FF':'#fff'};border:1.5px solid ${isCur?'#C4B5FD':'#E7E5E4'};border-radius:14px;padding:18px 20px;min-width:0;position:relative">
+      ${isCur?`<div style="position:absolute;top:12px;right:12px;background:#7C6EF0;color:#fff;font-size:8.5px;font-weight:700;letter-spacing:.06em;padding:2px 8px;border-radius:20px">CURRENT</div>`:''}
+      <div style="font-size:11px;font-weight:600;color:#A8A29E;margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">${p.label} ${now.getFullYear()}</div>
+      <div style="font-size:32px;font-weight:800;color:${isCur?'#7C6EF0':'#1C1917'};letter-spacing:-.04em;line-height:1">${p.score}</div>
+      <div style="font-size:10px;color:#A8A29E;margin-bottom:10px">/ 100</div>
+      <div style="display:inline-flex;align-items:center;gap:5px;background:${sb};border-radius:20px;padding:3px 10px;margin-bottom:10px">
+        <span style="width:6px;height:6px;border-radius:50%;background:${sc};flex-shrink:0"></span>
+        <span style="font-size:10.5px;font-weight:600;color:${sc}">${sts}</span>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:${dCol}">${dStr}</div>
+      ${p.avgDly>0?`<div style="font-size:10px;color:#A8A29E;margin-top:6px">Avg delay: ${p.avgDly}d</div>`:''}
+    </div>`;
+  }).join('');
+
+  // ── Insight ────────────────────────────────────────────────
+  const last3 = scores.slice(-3);
+  let insight, insightCol;
+  if(last3.length>=3&&last3[1]<last3[0]&&last3[2]<last3[1]){
+    insightCol='#EF4444'; insight=`Cash Health has declined for two consecutive months. Investigate overdue buyers and follow up immediately.`;
+  } else if(last3.length>=3&&Math.abs(last3[2]-last3[0])<=4){
+    insightCol='#F59E0B'; insight=`Cash Health has remained stable over the last three months. Consistent performance — focus on improving collection speed.`;
+  } else if(delta>0){
+    insightCol='#10B981'; insight=`Cash Health has improved by ${Math.abs(delta)} points over ${valid.length} months. Strong trajectory — keep reducing delays and following up on overdue accounts.`;
+  } else {
+    insightCol='#EF4444'; insight=`Cash Health has declined by ${Math.abs(delta)} points. Review your highest-delay buyers and set stricter follow-up cadence.`;
+  }
+
+  return `
+<style>
+body[data-pg=cashHealthTrend] .main{overflow-y:auto!important;padding:0!important}
+</style>
+<div style="max-width:1100px;margin:0 auto;padding:clamp(20px,3vh,36px) clamp(20px,3vw,40px)">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:10px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Analytics</div>
+      <div style="font-size:clamp(20px,2.2vw,28px);font-weight:800;color:#1C1917;letter-spacing:-.03em;line-height:1.1">Cash Health Trend</div>
+      <div style="font-size:12px;color:#A8A29E;margin-top:5px">Monthly Cash Health Score based on receivables performance</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="background:#F5F5F4;border-radius:10px;padding:8px 16px;text-align:center">
+        <div style="font-size:9px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.06em">Current Score</div>
+        <div style="font-size:24px;font-weight:800;color:#7C6EF0;letter-spacing:-.03em">${last}<span style="font-size:12px;color:#A8A29E;font-weight:500">/100</span></div>
+      </div>
+      <div style="background:#F5F5F4;border-radius:10px;padding:8px 16px;text-align:center">
+        <div style="font-size:9px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.06em">${valid.length}-Month Change</div>
+        <div style="font-size:24px;font-weight:800;color:${delta>=0?'#10B981':'#EF4444'};letter-spacing:-.03em">${deltaSign}${delta}</div>
+      </div>
+      <div style="background:#F5F5F4;border-radius:10px;padding:8px 16px;text-align:center">
+        <div style="font-size:9px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.06em">Status</div>
+        <div style="font-size:14px;font-weight:700;color:${statusCol(last)};margin-top:4px">${statusLabel(last)}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart Card -->
+  <div style="background:#fff;border:1px solid #E7E5E4;border-radius:20px;padding:28px 28px 20px;box-shadow:0 2px 12px rgba(28,25,23,.06);margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;color:#1C1917;letter-spacing:-.02em">Monthly Trend</div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:2px;background:#7C6EF0;border-radius:2px;display:inline-block"></span><span style="font-size:10px;color:#A8A29E">Cash Health Score</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:#7C6EF0;display:inline-block"></span><span style="font-size:10px;color:#A8A29E">Current Month</span></div>
+      </div>
+    </div>
+    <div style="position:relative">
+      <svg width="100%" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">
+        <defs>
+          <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#7C6EF0" stop-opacity="0.15"/>
+            <stop offset="85%" stop-color="#7C6EF0" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Grid lines + Y labels -->
+        ${yTicks.map(v=>{
+          const y=yOf(v);
+          return `<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#F0EFEE" stroke-width="1"/>
+          <text x="${PAD.l-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#C4C0BB" font-family="system-ui">${v}</text>`;
+        }).join('')}
+        <!-- Area -->
+        ${areaPath?`<path d="${areaPath}" fill="url(#${gradId})"/>`:''}
+        <!-- Line -->
+        ${linePath?`<path d="${linePath}" fill="none" stroke="#7C6EF0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:_chtDraw 1s cubic-bezier(.4,0,.2,1) both"/>`:''}
+        <!-- Data points + X labels -->
+        ${coords.map(({x,y,p},i)=>{
+          const isCur=p.isCurrent;
+          const prev=i>0?coords[i-1].p:null;
+          const d=prev?p.score-prev.score:null;
+          const dStr=d!=null?(d>=0?`+${d}`:`${d}`):null;
+          const dCol=d==null?'#A8A29E':d>0?'#10B981':d<0?'#EF4444':'#A8A29E';
+          return `
+          ${isCur?`<circle cx="${x}" cy="${y}" r="16" fill="#7C6EF0" fill-opacity=".08"/>`:''}
+          <circle cx="${x}" cy="${y}" r="${isCur?7:5}" fill="${isCur?'#7C6EF0':'#fff'}" stroke="#7C6EF0" stroke-width="2" style="filter:${isCur?'drop-shadow(0 0 6px rgba(124,110,240,.5))':'none'}"/>
+          ${dStr?`<text x="${x}" y="${y-14}" text-anchor="middle" font-size="9.5" fill="${dCol}" font-weight="700" font-family="system-ui">${dStr}</text>`:''}
+          <text x="${x}" y="${PAD.t+IH+18}" text-anchor="middle" font-size="11" fill="${isCur?'#7C6EF0':'#78716C'}" font-weight="${isCur?'700':'400'}" font-family="system-ui">${p.label}</text>
+          <text x="${x}" y="${y-28}" text-anchor="middle" font-size="10" fill="${isCur?'#7C6EF0':'#A8A29E'}" font-weight="600" font-family="system-ui">${p.score}</text>`;
+        }).join('')}
+      </svg>
+    </div>
+  </div>
+
+  <!-- Insight strip -->
+  <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #E7E5E4;border-radius:14px;padding:14px 20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(28,25,23,.04)">
+    <span style="width:9px;height:9px;border-radius:50%;background:${insightCol};flex-shrink:0"></span>
+    <span style="font-size:12.5px;color:#44403C;line-height:1.5;font-weight:500">${insight}</span>
+  </div>
+
+  <!-- Month-by-month breakdown -->
+  <div style="font-size:11px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Month-by-Month Breakdown</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+    ${monthCards}
+  </div>
+
+</div>`;
+};
+
 /* ----------------------------------------
    Payment Table — state + helpers
 ---------------------------------------- */
@@ -17847,7 +18037,7 @@ window.initCashFlowForecast = function(){
     if(tip) tip.style.display='none';
   });
   window._openCHSDetail=function(){
-    typeof Toast!=='undefined'&&Toast.show('Detailed Cash Health page coming soon','info',2500);
+    AppState.set({page:'cashHealthTrend'}); App.onStateChange();
   };
 })();
 
