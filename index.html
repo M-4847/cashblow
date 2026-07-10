@@ -14552,9 +14552,7 @@ function prFaqToggle(btn){
 }
 async function initDB(isRetry){
   if(!API.isConfigured()) return;
-  // Show spinner on dashboard while loading
   DB._loading = true;
-  if(AppState.get().page==='dashboard') App.onStateChange();
   try {
     const [buyersRes, invoicesRes, ordersRes, receivablesRes, alertsRes] = await Promise.allSettled([
       API.get('/api/buyers?limit=2000'),
