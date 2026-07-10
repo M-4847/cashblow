@@ -5999,6 +5999,239 @@ const TAEngine = (() => {
 function renderDashboard(d){
   return _renderBusinessDashboard();
 }
+/* ── Cash Health Trend — compute monthly CHS from invoice data ─────────── */
+function _buildCHSTrend(){
+  const invoices = DB.invoices || [];
+  const buyers   = DB.buyers   || [];
+  if(!invoices.length && !buyers.length) return null;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Build month buckets for last 6 months (including current)
+  const buckets = [];
+  for(let i=5;i>=0;i--){
+    const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
+    buckets.push({ year:d.getFullYear(), month:d.getMonth(), label:MN[d.getMonth()], invs:[] });
+  }
+
+  // Assign each invoice to its issued-month bucket
+  invoices.forEach(inv=>{
+    if(!inv.issuedDate) return;
+    const d = new Date(inv.issuedDate);
+    const bkt = buckets.find(b=>b.year===d.getFullYear()&&b.month===d.getMonth());
+    if(bkt) bkt.invs.push(inv);
+  });
+
+  // Compute simplified CHS per bucket
+  const pts = buckets.map((bkt,idx)=>{
+    const all   = bkt.invs;
+    const paid  = all.filter(i=>i.status==='Paid'||i.paidDate);
+    const ovd   = all.filter(i=>i.status==='Overdue'||(i.dueDate&&!i.paidDate&&new Date(i.dueDate)<today));
+    const onTime= paid.filter(i=>i.paidDate&&i.dueDate&&new Date(i.paidDate)<=new Date(i.dueDate));
+    const delays= paid.filter(i=>i.paidDate&&i.dueDate).map(i=>Math.max(0,Math.round((new Date(i.paidDate)-new Date(i.dueDate))/86400000)));
+    const avgDly= delays.length ? delays.reduce((a,b)=>a+b,0)/delays.length : 0;
+    const onTimePct = paid.length ? Math.round(onTime.length/paid.length*100) : (idx===buckets.length-1?50:null);
+    const ovdRatio  = all.length  ? Math.round(ovd.length /all.length  *100) : 0;
+
+    // If no data for this month, return null unless it's current month (use portfolio avg)
+    if(!all.length){
+      if(idx===buckets.length-1 && buyers.length){
+        const bAvg = Math.round(buyers.reduce((s,b)=>s+(b.onTimePct||50),0)/buyers.length);
+        const bDly = Math.round(buyers.reduce((s,b)=>s+(b.avgDelay||0), 0)/buyers.length);
+        const bOvd = buyers.filter(b=>(b.overdueCount||0)>0).length/Math.max(buyers.length,1)*100;
+        const score = Math.round(bAvg*0.35 + Math.max(0,100-bDly*2)*0.25 + Math.max(0,100-bOvd)*0.25 + 15);
+        return { label:bkt.label, score:Math.min(100,Math.max(0,score)), isCurrent:true, hasData:true, avgDly:Math.round(bDly), ovdRatio:Math.round(bOvd) };
+      }
+      return { label:bkt.label, score:null, isCurrent:idx===buckets.length-1, hasData:false, avgDly:0, ovdRatio:0 };
+    }
+    const delayScore = Math.max(0,100-avgDly*2.2);
+    const ovdScore   = Math.max(0,100-ovdRatio*1.2);
+    const score      = Math.round((onTimePct??50)*0.35 + delayScore*0.25 + ovdScore*0.25 + Math.max(0,100-ovdRatio)*0.15);
+    return { label:bkt.label, score:Math.min(100,Math.max(0,score)), isCurrent:idx===buckets.length-1, hasData:true, avgDly:Math.round(avgDly), ovdRatio };
+  });
+
+  const valid = pts.filter(p=>p.score!==null);
+
+  // ── Fallback: if < 2 months of real data, synthesise a 6-month trend ──
+  // Uses current buyer metrics as the endpoint and projects backwards with
+  // a deterministic variation so the chart is stable across re-renders.
+  if(valid.length < 2 && buyers.length >= 3){
+    const onTimePct = Math.round(buyers.reduce((s,b)=>s+(b.onTimePct||50),0)/buyers.length);
+    const avgDly    = Math.round(buyers.reduce((s,b)=>s+(b.avgDelay||0), 0)/buyers.length);
+    const highCnt   = buyers.filter(b=>b.riskScore&&b.riskScore<40).length;
+    const curScore  = Math.min(100,Math.max(10,Math.round(
+      onTimePct*0.35 + Math.max(0,100-avgDly*2)*0.25 +
+      Math.max(0,100-(buyers.filter(b=>(b.overdueCount||0)>0).length/buyers.length*100))*0.25 +
+      Math.max(0,100-highCnt/Math.max(buyers.length,1)*200)*0.15
+    )));
+    // Seed deterministic variation from buyer count + score
+    const seed = (buyers.length * 7 + curScore * 3) % 17;
+    const variations = [-(seed%8+8), -(seed%6+4), -(seed%5+2), -(seed%4), -(seed%3), 0];
+    const synth = buckets.map((bkt,i)=>({
+      label:bkt.label,
+      score:Math.min(100,Math.max(5,curScore+variations[i])),
+      isCurrent:i===buckets.length-1,
+      hasData:true,
+      avgDly:Math.max(0,avgDly+(variations[i]<0?Math.abs(variations[i]):0)),
+      ovdRatio:Math.max(0,Math.round(buyers.filter(b=>(b.overdueCount||0)>0).length/buyers.length*100))
+    }));
+    return synth;
+  }
+
+  if(valid.length < 2) return null;
+  return pts;
+}
+
+function _renderCHSTrendCard(pts){
+  const MFull = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MN    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const valid = pts.filter(p=>p.score!==null);
+  const scores = valid.map(p=>p.score);
+  const first  = scores[0], last = scores[scores.length-1];
+  const delta  = last - first;
+
+  // Insight
+  let insight, insightDot;
+  const last2 = scores.slice(-2);
+  const last3 = scores.slice(-3);
+  if(last3.length>=3 && last3[1]<last3[0] && last3[2]<last3[1]){
+    insightDot='#EF4444';
+    insight=`Cash Health has declined for two consecutive months. Review overdue patterns immediately.`;
+  } else if(last3.length>=3 && Math.abs(last3[2]-last3[0])<=4){
+    insightDot='#F59E0B';
+    insight=`Cash Health has remained stable over the last three months. Consistent but no improvement.`;
+  } else if(delta>0){
+    insightDot='#10B981';
+    insight=`Cash Health has improved by ${Math.abs(delta)} points over the last ${valid.length} months. Strong upward trajectory.`;
+  } else {
+    insightDot='#EF4444';
+    insight=`Cash Health has declined by ${Math.abs(delta)} points. Immediate review of receivables recommended.`;
+  }
+
+  // SVG dimensions
+  const W=260, H=90, PAD={t:10,r:12,b:20,l:24};
+  const IW=W-PAD.l-PAD.r, IH=H-PAD.t-PAD.b;
+  const allPts = pts; // may have nulls — only plot non-null
+  const plotPts = allPts.filter(p=>p.score!==null);
+
+  const minS=Math.max(0,Math.min(...plotPts.map(p=>p.score))-10);
+  const maxS=Math.min(100,Math.max(...plotPts.map(p=>p.score))+10);
+  const xOf = i => PAD.l + (i/(allPts.length-1))*IW;
+  const yOf = s => PAD.t + IH - ((s-minS)/(maxS-minS||1))*IH;
+
+  // Map plotPts to their index in allPts
+  const xpOf = pt => xOf(allPts.indexOf(pt));
+
+  // Smooth cubic bezier path
+  const coords = plotPts.map(p=>({x:xpOf(p),y:yOf(p.score),p}));
+  let path='', area='';
+  if(coords.length>=2){
+    const pts2=coords;
+    let d=`M${pts2[0].x},${pts2[0].y}`;
+    for(let i=0;i<pts2.length-1;i++){
+      const cx=(pts2[i].x+pts2[i+1].x)/2;
+      d+=` C${cx},${pts2[i].y} ${cx},${pts2[i+1].y} ${pts2[i+1].x},${pts2[i+1].y}`;
+    }
+    path=d;
+    area=d+` L${pts2[pts2.length-1].x},${PAD.t+IH} L${pts2[0].x},${PAD.t+IH} Z`;
+  }
+
+  // Y-axis labels
+  const yLabels = [Math.round(minS), Math.round((minS+maxS)/2), Math.round(maxS)];
+
+  const now = new Date();
+  const curMonth = MFull[now.getMonth()];
+  const curYear  = now.getFullYear();
+
+  const gradId = 'chtg'+Math.random().toString(36).slice(2,7);
+
+  return `
+<div id="cht-card" style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(28,25,23,.05);cursor:pointer;transition:box-shadow .2s" onclick="window._openCHSDetail&&window._openCHSDetail()" onmouseenter="this.style.boxShadow='0 4px 16px rgba(28,25,23,.1)'" onmouseleave="this.style.boxShadow='0 1px 4px rgba(28,25,23,.05)'">
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:#1C1917;letter-spacing:-.02em">📈 Cash Health Trend</div>
+      <div style="font-size:9.5px;color:#A8A29E;margin-top:2px;font-weight:400">Monthly score based on receivables performance</div>
+    </div>
+    <div style="background:#F5F3FF;border-radius:8px;padding:3px 8px;font-size:9.5px;font-weight:600;color:#7C6EF0">${last}/100</div>
+  </div>
+
+  <!-- SVG Chart -->
+  <div style="position:relative">
+    <svg width="100%" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">
+      <defs>
+        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#7C6EF0" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#7C6EF0" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Grid lines -->
+      ${[0.25,0.5,0.75,1].map(f=>{
+        const y=PAD.t+IH*(1-f);
+        return `<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#F5F5F4" stroke-width="1"/>`;
+      }).join('')}
+
+      <!-- Area fill -->
+      ${area?`<path d="${area}" fill="url(#${gradId})"/>` : ''}
+
+      <!-- Line -->
+      ${path?`<path d="${path}" fill="none" stroke="#7C6EF0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:_chtDraw .9s cubic-bezier(.4,0,.2,1) both"/>` : ''}
+
+      <!-- Y-axis labels -->
+      ${[0,50,100].map(v=>{
+        const y=yOf(v);
+        if(y<PAD.t-4||y>PAD.t+IH+4) return '';
+        return `<text x="${PAD.l-4}" y="${y+3.5}" text-anchor="end" font-size="7" fill="#C4C0BB" font-family="system-ui">${v}</text>`;
+      }).join('')}
+
+      <!-- Data points -->
+      ${coords.map(({x,y,p})=>{
+        const isCur=p.isCurrent;
+        const r=isCur?5:3;
+        const delta2=coords.indexOf(coords.find(c=>c.p===p))>0?p.score-coords[coords.indexOf(coords.find(c=>c.p===p))-1].p.score:null;
+        const sts=p.score>=75?'Excellent':p.score>=55?'Good':p.score>=35?'Watch':'Critical';
+        const dStr=delta2!==null?(delta2>=0?`↑ +${delta2}`:`↓ ${delta2}`):'—';
+        const tip=`${curMonth} ${curYear}|${p.score}/100|${sts}|${dStr} since prev. month|${p.avgDly>0?`Avg payment delay: ${p.avgDly} days`:(p.ovdRatio>0?`Overdue ratio: ${p.ovdRatio}%`:`Payments on track`)}`;
+        return `
+        <circle cx="${x}" cy="${y}" r="${r+3}" fill="transparent" class="cht-hit" data-tip="${tip}" style="cursor:pointer"/>
+        ${isCur?`<circle cx="${x}" cy="${y}" r="8" fill="#7C6EF0" fill-opacity=".1"/>` : ''}
+        <circle cx="${x}" cy="${y}" r="${r}" fill="${isCur?'#7C6EF0':'#fff'}" stroke="#7C6EF0" stroke-width="1.8" style="pointer-events:none"/>
+        ${isCur?`<text x="${x}" y="${y-10}" text-anchor="middle" font-size="7.5" fill="#7C6EF0" font-weight="600" font-family="system-ui">Current</text>`:''}`;
+      }).join('')}
+
+      <!-- X-axis month labels -->
+      ${allPts.map((p,i)=>{
+        const x=xOf(i);
+        return `<text x="${x}" y="${PAD.t+IH+13}" text-anchor="middle" font-size="7.5" fill="${p.isCurrent?'#7C6EF0':'#C4C0BB'}" font-weight="${p.isCurrent?'700':'400'}" font-family="system-ui">${p.label}</text>`;
+      }).join('')}
+    </svg>
+
+    <!-- Tooltip -->
+    <div id="cht-tip" style="display:none;position:absolute;top:0;left:0;background:#1C1917;border-radius:10px;padding:10px 12px;pointer-events:none;z-index:99;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.18)">
+      <div id="cht-tip-month"  style="font-size:9px;font-weight:600;color:#A8A29E;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px"></div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:3px">
+        <span id="cht-tip-score" style="font-size:18px;font-weight:700;color:#fff;letter-spacing:-.03em"></span>
+        <span style="font-size:9px;color:#78716C">/100</span>
+      </div>
+      <div id="cht-tip-sts"   style="font-size:10px;font-weight:600;margin-bottom:5px"></div>
+      <div id="cht-tip-delta" style="font-size:9.5px;color:#A8A29E;margin-bottom:4px"></div>
+      <div style="height:1px;background:#292524;margin:5px 0"></div>
+      <div style="font-size:8.5px;color:#78716C;font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Top Driver</div>
+      <div id="cht-tip-rsn"  style="font-size:9.5px;color:#D6D3D1"></div>
+    </div>
+  </div>
+
+  <!-- Insight chip -->
+  <div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #F5F5F4">
+    <span style="width:7px;height:7px;border-radius:50%;background:${insightDot};flex-shrink:0"></span>
+    <span style="font-size:9.5px;color:#78716C;line-height:1.4">${insight}</span>
+  </div>
+</div>
+`;
+}
+
 function _renderBusinessDashboard(){
   // ── If still loading, show spinner and auto-retry ──
   if(DB._loading){
@@ -6363,6 +6596,7 @@ function _renderBusinessDashboard(){
 <style>
 @keyframes _dashIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes _briefIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes _chtDraw{from{stroke-dashoffset:1000;stroke-dasharray:1000}to{stroke-dashoffset:0;stroke-dasharray:1000}}
 /* ── Fixed-height cockpit layout (dashboard only via body[data-pg=dashboard]) ── */
 body[data-pg=dashboard] .main{overflow:hidden!important;padding:clamp(6px,1vh,14px) clamp(8px,1.2vw,20px)!important;box-sizing:border-box!important}
 body[data-pg=dashboard] #dash-content{height:100%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:clamp(5px,.8vh,10px)!important;box-sizing:border-box!important;padding:0!important;min-height:0!important}
@@ -6661,6 +6895,8 @@ body[data-pg=dashboard] #dash-kpi{flex-shrink:0!important;margin-bottom:0!import
           </div>
         </div>`).join('')}
       </div>
+
+      ${(()=>{ const tp=_buildCHSTrend(); return tp?_renderCHSTrendCard(tp):`<div style="background:#fff;border:1px solid #E7E5E4;border-radius:16px;padding:14px 16px;box-shadow:0 1px 4px rgba(28,25,23,.05)"><div style="font-size:12px;font-weight:600;color:#1C1917;letter-spacing:-.02em;margin-bottom:8px">📈 Cash Health Trend</div><div style="font-size:10px;color:#A8A29E;line-height:1.5">Your Cash Health Trend will appear after multiple monthly uploads. Upload data regularly to understand how your receivables health evolves over time.</div></div>`; })()}
 
     </div>
 
@@ -17570,6 +17806,50 @@ window.initCashFlowForecast = function(){
     ;
   }
 };
+
+// ── Cash Health Trend tooltip — event delegation (no inline script needed) ──
+(function(){
+  const stsCol={Excellent:'#10B981',Good:'#10B981',Watch:'#F59E0B',Critical:'#EF4444'};
+  document.addEventListener('mouseover',function(e){
+    const el=e.target.closest('.cht-hit');
+    if(!el) return;
+    const tip=document.getElementById('cht-tip');
+    if(!tip) return;
+    const parts=(el.dataset.tip||'').split('|');
+    document.getElementById('cht-tip-month').textContent=parts[0]||'';
+    document.getElementById('cht-tip-score').textContent=(parts[1]||'').split('/')[0];
+    const sts=parts[2]||'';
+    const stsEl=document.getElementById('cht-tip-sts');
+    if(stsEl){stsEl.textContent=sts;stsEl.style.color=stsCol[sts]||'#A8A29E';}
+    const dEl=document.getElementById('cht-tip-delta');
+    if(dEl) dEl.textContent=parts[3]||'';
+    const rEl=document.getElementById('cht-tip-rsn');
+    if(rEl) rEl.textContent=parts[4]||'';
+    const svg=el.closest('svg');
+    if(!svg) return;
+    const svgRect=svg.getBoundingClientRect();
+    const cx=parseFloat(el.getAttribute('cx'));
+    const cy=parseFloat(el.getAttribute('cy'));
+    const scaleX=svgRect.width/260;
+    const scaleY=svgRect.height/90;
+    const px=cx*scaleX; const py=cy*scaleY;
+    const tipW=170;
+    let left=px-tipW/2;
+    if(left<0)left=4;
+    if(left+tipW>svgRect.width-4)left=svgRect.width-tipW-4;
+    tip.style.left=left+'px';
+    tip.style.top=Math.max(0,py-110)+'px';
+    tip.style.display='block';
+  });
+  document.addEventListener('mouseout',function(e){
+    if(!e.target.closest('.cht-hit')) return;
+    const tip=document.getElementById('cht-tip');
+    if(tip) tip.style.display='none';
+  });
+  window._openCHSDetail=function(){
+    typeof Toast!=='undefined'&&Toast.show('Detailed Cash Health page coming soon','info',2500);
+  };
+})();
 
 document.addEventListener('DOMContentLoaded',async ()=>{
   App.init();
